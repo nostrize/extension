@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "make any website nostr enabled and donate to anything via bitcoin lightning",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "preinstall": "cd imgui-dom && git submodule update --init --recursive",
     "build": "./build.sh",
+    "lint": "eslint . --fix --ext .js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -27,6 +29,15 @@
   },
   "homepage": "https://github.com/nostrize/extension#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "rollup": "^4.13.0"
+  },
+  "dependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.5",
+    "ramda": "^0.29.1"
   }
 }

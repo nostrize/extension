@@ -3,10 +3,13 @@
 rm -rf dist
 mkdir dist
 
-# copy extension files
-cp background.js dist/background.js
 cp manifest.json dist/manifest.json
+
+# run rollup (check out rollup.config.js)
+./node_modules/.bin/rollup -c
 
 # copy github specific extension files
 mkdir -p dist/github/content
-./node_modules/.bin/rollup github/content/issues.js --file dist/github/content/issues.js
+
+# move rollup generated files to its own directory
+mv dist/issues.js dist/github/content/issues.js

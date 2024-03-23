@@ -1,0 +1,74 @@
+<mxfile host="app.diagrams.net" modified="2024-03-23T18:42:15.316Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="hVZ2FAKvwNFK2IY9V9pX" version="24.1.0" type="github">
+  <diagram name="Page-1" id="evUG6YISS2im7E91H2Ip">
+    <mxGraphModel dx="1013" dy="734" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dD89SNBYdo-dca2-tYXd-1" value="Nosterize Backend&lt;br&gt;(Nostr Relay)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-2" target="dD89SNBYdo-dca2-tYXd-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-2" value="Nostrize Extension" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="190" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-3" target="dD89SNBYdo-dca2-tYXd-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-3" target="dD89SNBYdo-dca2-tYXd-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-3" value="Website" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="320" y="290" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-5" target="dD89SNBYdo-dca2-tYXd-14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-5" target="dD89SNBYdo-dca2-tYXd-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-5" target="dD89SNBYdo-dca2-tYXd-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-5" value="Github" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="420" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-8" target="dD89SNBYdo-dca2-tYXd-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-8" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="210" y="30" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-10" value="Alice" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="450" y="70" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-11" value="Bob" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="630" y="70" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-14" value="issues" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="555" width="80" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-15" value="user page" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="190" y="555" width="80" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-16" value="repo page" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="334" y="555" width="80" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-19" target="dD89SNBYdo-dca2-tYXd-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="dD89SNBYdo-dca2-tYXd-19" target="dD89SNBYdo-dca2-tYXd-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dD89SNBYdo-dca2-tYXd-19" value="Nostrize Extension" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="190" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

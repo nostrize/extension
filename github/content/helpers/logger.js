@@ -1,7 +1,7 @@
-export function logger({ state }) {
+export function logger(debug) {
   return (...text) => {
-    if (state.debug) {
-      console.log(...text);
+    if (debug && debug.enabled) {
+      console.log(debug.namespace, ...text);
     }
-  }
+  };
 }

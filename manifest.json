@@ -7,7 +7,8 @@
     "service_worker": "background.js"
   },
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
   "content_scripts": [
     {
