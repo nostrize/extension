@@ -1,0 +1,32 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "description": "make any website nostr enabled and donate to anything via bitcoin lightning",
+  "main": "index.js",
+  "scripts": {
+    "preinstall": "cd imgui-dom && git submodule update --init --recursive",
+    "build": "./build.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nostrize/extension.git"
+  },
+  "keywords": [
+    "nostr",
+    "bitcoin",
+    "lightning",
+    "tip",
+    "donate",
+    "grants"
+  ],
+  "author": "dhalsim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nostrize/extension/issues"
+  },
+  "homepage": "https://github.com/nostrize/extension#readme",
+  "devDependencies": {
+    "rollup": "^4.13.0"
+  }
+}

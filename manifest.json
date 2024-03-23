@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub UI Enhancer",
+  "version": "1.0",
+  "description": "Enhance the UI of GitHub with custom scripts",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*/*/issues"],
+      "js": ["github/content/issues.js"],
+      "type": "module"
+    }
+  ]
+}
