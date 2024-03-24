@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "preinstall": "cd imgui-dom && git submodule update --init --recursive",
+    "preinstall": "cd src/imgui-dom && git submodule update --init --recursive",
     "build": "./build.sh",
     "lint": "eslint . --fix --ext .js",
     "test": "echo \"Error: no test specified\" && exit 1"
