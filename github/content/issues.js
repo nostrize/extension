@@ -1,4 +1,4 @@
-// import { buildApp } from '../../imgui-dom/src/html'
+import { buildApp } from "../../imgui-dom/src/html";
 import { logger } from "./helpers/logger";
 
 async function githubIssuePage() {
@@ -23,10 +23,10 @@ async function githubIssuePage() {
   const repo = pathParts[1];
   log(`User: ${user}, Repo: ${repo}`);
 
-  // buildApp({
-  //   appId: "",
-  //   children: []
-  // });
+  buildApp({
+    appId: "",
+    children: [],
+  });
 
   // iterate over issue links (eg: id=issue_2_link)
   document
