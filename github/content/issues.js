@@ -24,7 +24,7 @@ async function githubIssuePage() {
   log(`User: ${user}, Repo: ${repo}`);
 
   buildApp({
-    appId: "",
+    appId: "issue_2",
     children: [],
   });
 
