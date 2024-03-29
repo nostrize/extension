@@ -1,4 +1,5 @@
-import { buildApp, div, span } from "../../imgui-dom/src/html";
+import { div, span } from "../../imgui-dom/src/html";
+import { reset } from "../../imgui-dom/src/gui";
 import { logger } from "./helpers/logger";
 
 async function githubIssuePage() {
@@ -24,11 +25,6 @@ async function githubIssuePage() {
   const repo = pathParts[1];
   log(`User: ${user}, Repo: ${repo}`);
 
-  buildApp({
-    appId: "issue_2",
-    children: [],
-  });
-
   // iterate over issue links (eg: id=issue_2_link)
   document
     .querySelectorAll('a[id^="issue_"][id$="_link"]')
@@ -36,11 +32,71 @@ async function githubIssuePage() {
       const issueId = a.id.split("issue_")[1].split("_")[0];
       log(`issue ${issueId}`);
 
-      const container = div({ classList: "n_issue_container" });
-      a.parentNode.insertBefore(container, a);
+      let rewardIconState = {
+        onMouseOver: false,
+      };
 
-      container.appendChild(a);
-      container.appendChild(div({ children: [span({ text: "🏅" })] }));
+      const issueApp = div({
+        classList: "n-issue-container",
+      });
+
+      a.parentNode.insertBefore(issueApp, a);
+      issueApp.appendChild(a);
+
+      function loop() {
+        const resetFn = () =>
+          reset({ app: emojiContainer, state: rewardIconState, log });
+
+        const rewardTooptipBuilder = () =>
+          span({ text: "Give a reward for this issue" });
+
+        const reward = span({
+          text: "🏅",
+          eventTuples: [
+            [
+              "mouseover",
+              () => {
+                rewardIconState.onMouseOver = true;
+
+                resetFn();
+
+                loop();
+              },
+            ],
+            [
+              "mouseout",
+              () => {
+                rewardIconState.onMouseOver = false;
+
+                resetFn();
+
+                loop();
+              },
+            ],
+          ],
+        });
+
+        const children = rewardIconState.onMouseOver
+          ? [rewardTooptipBuilder(), reward]
+          : [reward];
+
+        const emojiContainer = div({
+          classList: ["n-emoji-container"],
+          children,
+        });
+
+        issueApp.replaceChild(emojiContainer);
+
+        if (settings.debug.border) {
+          ["div", "a"].forEach((tag) => {
+            issueApp
+              .querySelectorAll(tag)
+              .forEach((_) => (_.style.border = "1px solid #000"));
+          });
+        }
+      }
+
+      loop();
     });
 }
 

@@ -8,12 +8,14 @@
   },
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "content_scripts": [
     {
       "matches": ["https://github.com/*/*/issues"],
       "js": ["github/content/issues.js"],
+      "css": ["github/content/issues.css"],
       "type": "module"
     }
   ]

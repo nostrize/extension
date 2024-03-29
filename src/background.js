@@ -5,7 +5,8 @@ const defaultSettings = {
     issues: true,
   },
   debug: {
-    enabled: true,
+    log: true,
+    border: true,
     namespace: "[nosterize]",
   },
 };
