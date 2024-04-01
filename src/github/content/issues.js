@@ -27,6 +27,9 @@ async function githubIssuePage() {
   const repo = pathParts[1];
   log(`User: ${user}, Repo: ${repo}`);
 
+  const createIssueHref = (issueId) =>
+    `https://github.com/${user}/${repo}/issues/${issueId}?n-grant-an-issue=1`;
+
   // iterate over issue links (eg: id=issue_2_link)
   document
     .querySelectorAll('a[id^="issue_"][id$="_link"]')
@@ -40,7 +43,9 @@ async function githubIssuePage() {
         <div class="n-emoji-container">
           <ul>
             <li>
-              <span class="emoji">🏅</span>
+              <span class="emoji">
+                <a href="${createIssueHref(issueId)}">🏅</a>
+              </span>
               <span class="tooltiptext">Give a reward for this issue</span>
             </li>
           </ul>
