@@ -3,12 +3,40 @@ div.n-issue-container {
 }
 
 div.n-emoji-container {
+  display: none;
+}
+
+/* Show the emoji container only when the parent container is hovered */
+.n-issue-container:hover .n-emoji-container {
   display: inline-block;
   position: relative;
 }
 
-span.tooltiptext {
+/* bide reward tooltiptext by default */
+.n-emoji-container .tooltiptext {
+  visibility: hidden;
+}
+
+.tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+/* Show text when the emoji is hovered */
+.n-emoji-container .emoji + .tooltiptext {
+  visibility: visible;
+
   width: 120px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+
   background-color: black;
   color: #fff;
   text-align: center;
@@ -16,4 +44,12 @@ span.tooltiptext {
   border-radius: 6px;
   position: absolute;
   z-index: 1;
+}
+
+.n-emoji-container ul {
+  list-style-type: none;
+}
+
+.n-emoji-container a {
+  text-decoration: none;
 }

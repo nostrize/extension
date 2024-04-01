@@ -1,5 +1,7 @@
-import { div, span } from "../../imgui-dom/src/html";
-import { reset } from "../../imgui-dom/src/gui";
+import { render } from "preact";
+import { html } from "htm/preact";
+
+import { div } from "../../imgui-dom/src/html";
 import { logger } from "./helpers/logger";
 
 async function githubIssuePage() {
@@ -32,71 +34,25 @@ async function githubIssuePage() {
       const issueId = a.id.split("issue_")[1].split("_")[0];
       log(`issue ${issueId}`);
 
-      let rewardIconState = {
-        onMouseOver: false,
-      };
+      const parentContainer = a.parentElement;
 
-      const issueApp = div({
-        classList: "n-issue-container",
-      });
+      const emojiContainer = html`
+        <div class="n-emoji-container">
+          <ul>
+            <li>
+              <span class="emoji">🏅</span>
+              <span class="tooltiptext">Give a reward for this issue</span>
+            </li>
+          </ul>
+        </div>
+      `;
 
-      a.parentNode.insertBefore(issueApp, a);
-      issueApp.appendChild(a);
+      const issueContainer = div({ classList: "n-issue-container" });
+      parentContainer.insertBefore(issueContainer, parentContainer.firstChild);
 
-      function loop() {
-        const resetFn = () =>
-          reset({ app: emojiContainer, state: rewardIconState, log });
+      render(emojiContainer, issueContainer);
 
-        const rewardTooptipBuilder = () =>
-          span({ text: "Give a reward for this issue" });
-
-        const reward = span({
-          text: "🏅",
-          eventTuples: [
-            [
-              "mouseover",
-              () => {
-                rewardIconState.onMouseOver = true;
-
-                resetFn();
-
-                loop();
-              },
-            ],
-            [
-              "mouseout",
-              () => {
-                rewardIconState.onMouseOver = false;
-
-                resetFn();
-
-                loop();
-              },
-            ],
-          ],
-        });
-
-        const children = rewardIconState.onMouseOver
-          ? [rewardTooptipBuilder(), reward]
-          : [reward];
-
-        const emojiContainer = div({
-          classList: ["n-emoji-container"],
-          children,
-        });
-
-        issueApp.replaceChild(emojiContainer);
-
-        if (settings.debug.border) {
-          ["div", "a"].forEach((tag) => {
-            issueApp
-              .querySelectorAll(tag)
-              .forEach((_) => (_.style.border = "1px solid #000"));
-          });
-        }
-      }
-
-      loop();
+      issueContainer.insertBefore(a, issueContainer.firstChild);
     });
 }
 
