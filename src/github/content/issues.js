@@ -30,6 +30,18 @@ async function githubIssuePage() {
   const createIssueHref = (issueId) =>
     `https://github.com/${user}/${repo}/issues/${issueId}?n-grant-an-issue=1`;
 
+  const createEmojiContainer = (issueId) =>
+    html`<div class="n-emoji-container">
+      <ul>
+        <li>
+          <span class="emoji">
+            <a class="no-underline" href="${createIssueHref(issueId)}">🏅</a>
+          </span>
+          <span class="tooltiptext">Give a reward for this issue</span>
+        </li>
+      </ul>
+    </div> `;
+
   // iterate over issue links (eg: id=issue_2_link)
   document
     .querySelectorAll('a[id^="issue_"][id$="_link"]')
@@ -38,20 +50,7 @@ async function githubIssuePage() {
       log(`issue ${issueId}`);
 
       const parentContainer = a.parentElement;
-
-      const emojiContainer = html`
-        <div class="n-emoji-container">
-          <ul>
-            <li>
-              <span class="emoji">
-                <a href="${createIssueHref(issueId)}">🏅</a>
-              </span>
-              <span class="tooltiptext">Give a reward for this issue</span>
-            </li>
-          </ul>
-        </div>
-      `;
-
+      const emojiContainer = createEmojiContainer(issueId);
       const issueContainer = div({ classList: "n-issue-container" });
       parentContainer.insertBefore(issueContainer, parentContainer.firstChild);
 

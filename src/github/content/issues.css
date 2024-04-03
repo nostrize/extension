@@ -7,17 +7,22 @@ div.n-emoji-container {
 }
 
 /* Show the emoji container only when the parent container is hovered */
-.n-issue-container:hover .n-emoji-container {
+div.n-issue-container:hover div.n-emoji-container {
   display: inline-block;
   position: relative;
 }
 
-/* bide reward tooltiptext by default */
-.n-emoji-container .tooltiptext {
+/* except the issue link */
+div.n-issue-container a:hover + div.n-emoji-container span.tooltiptext {
   visibility: hidden;
 }
 
-.tooltiptext::after {
+/* hide reward tooltiptext by default */
+div.n-emoji-container span.tooltiptext {
+  visibility: hidden;
+}
+
+span.tooltiptext::after {
   content: " ";
   position: absolute;
   top: 100%; /* At the bottom of the tooltip */
@@ -28,12 +33,17 @@ div.n-emoji-container {
   border-color: black transparent transparent transparent;
 }
 
+span.emoji {
+  position: relative;
+  top: 2px;
+}
+
 /* Show text when the emoji is hovered */
-.n-emoji-container .emoji + .tooltiptext {
+div.n-emoji-container span.emoji + span.tooltiptext {
   visibility: visible;
 
   width: 120px;
-  bottom: 100%;
+  bottom: 130%;
   left: 50%;
   margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
 
@@ -46,10 +56,6 @@ div.n-emoji-container {
   z-index: 1;
 }
 
-.n-emoji-container ul {
+div.n-emoji-container ul {
   list-style-type: none;
-}
-
-.n-emoji-container a {
-  text-decoration: none;
 }
