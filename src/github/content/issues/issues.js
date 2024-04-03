@@ -1,10 +1,9 @@
-import { render } from "preact";
-import { html } from "htm/preact";
+import { html, render } from "htm/preact";
 
-import { div } from "../../imgui-dom/src/html";
-import { logger } from "./helpers/logger";
+import { div } from "../../../imgui-dom/src/html";
+import { logger } from "../../../helpers/logger";
 
-async function githubIssuePage() {
+async function githubIssuesPage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
   if (!settings.github.issues) {
@@ -19,7 +18,7 @@ async function githubIssuePage() {
     .filter((part) => part.length > 0);
 
   // Assuming the URL pattern is https://github.com/{user}/{repo}/issues
-  if (pathParts.length < 3 || pathParts[2] !== "issues") {
+  if (pathParts.length !== 3 || pathParts[2] !== "issues") {
     throw new Error("Unexpected content script issues, or github URL mismatch");
   }
 
@@ -60,4 +59,4 @@ async function githubIssuePage() {
     });
 }
 
-githubIssuePage();
+githubIssuesPage();

@@ -14,8 +14,14 @@
   "content_scripts": [
     {
       "matches": ["https://github.com/*/*/issues"],
-      "js": ["github/content/issues.js"],
-      "css": ["github/content/issues.css"],
+      "js": ["issues.js"],
+      "css": ["issues.css"],
+      "type": "module"
+    },
+    {
+      "matches": ["https://github.com/*/*/issues/*"],
+      "js": ["issue.js"],
+      "css": ["issue.css"],
       "type": "module"
     }
   ]
