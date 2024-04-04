@@ -33,53 +33,57 @@ async function githubIssuePage() {
     `User: ${user}, Repo: ${repo}, Issue Id: ${issueId}, Is Grant: ${isGrant}`,
   );
 
-  if (isGrant) {
-    const putRewardTemplate = () => {
-      const commentBox = document.querySelector(
-        'textarea[name="comment[body]"]',
-      );
+  const createEmojiContainer = () =>
+    html`<div class="n-emoji-container">
+      <ul>
+        <li>
+          <span class="emoji">
+            <a
+              class="no-underline"
+              href="javascript:void(0)"
+              onClick=${() => putRewardTemplate({ auto: false })}
+              >🏅</a
+            >
+          </span>
+          <span class="tooltiptext">Put a reward template</span>
+        </li>
+      </ul>
+    </div> `;
+
+  const toolbarItemContainer = document.body.querySelectorAll(
+    'div[data-target="action-bar.itemContainer"]',
+  )[1];
+
+  const toolbarContainer = div({
+    id: "n-toolbar-container",
+    classList: "ActionBar-item",
+  });
+
+  toolbarItemContainer.insertBefore(
+    toolbarContainer,
+    toolbarItemContainer.firstChild,
+  );
+
+  render(createEmojiContainer(), toolbarContainer);
+
+  const putRewardTemplate = ({ auto }) => {
+    const commentBox = document.querySelector('textarea[name="comment[body]"]');
+
+    // Don't append the template if it is isGrant & comment box is not empty
+    if (!(auto && commentBox.value)) {
       commentBox.value += IssueTemplate;
+    }
 
-      const commentButton = document.querySelector(
-        'div#partial-new-comment-form-actions button[type="submit"].btn-primary',
-      );
-
-      commentButton.disabled = false;
-    };
-
-    const createEmojiContainer = () =>
-      html`<div class="n-emoji-container">
-        <ul>
-          <li>
-            <span class="emoji">
-              <a
-                class="no-underline"
-                href="javascript:void(0)"
-                onClick=${putRewardTemplate}
-              >
-                🏅
-              </a>
-            </span>
-            <span class="tooltiptext">Put a reward template</span>
-          </li>
-        </ul>
-      </div> `;
-
-    const toolbarItemContainer = document.body.querySelectorAll(
-      'div[data-target="action-bar.itemContainer"]',
-    )[1];
-
-    const toolbarContainer = div({
-      id: "n-toolbar-container",
-      classList: "ActionBar-item",
-    });
-
-    toolbarItemContainer.insertBefore(
-      toolbarContainer,
-      toolbarItemContainer.firstChild,
+    const commentButton = document.querySelector(
+      'div#partial-new-comment-form-actions button[type="submit"].btn-primary',
     );
 
-    render(createEmojiContainer(), toolbarContainer);
+    // TODO: It's not enough to make it enabled, validation system doesn't recognize comment box has been filled
+    commentButton.disabled = false;
+  };
+
+  if (isGrant) {
+    putRewardTemplate({ auto: true });
   }
 }
 
