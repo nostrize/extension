@@ -1,4 +1,8 @@
+import { html, render } from "htm/preact";
+
 import { logger } from "../../../helpers/logger";
+import { div } from "../../../imgui-dom/src/html";
+import IssueTemplate from "./issue-template";
 
 async function githubIssuePage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
@@ -8,7 +12,6 @@ async function githubIssuePage() {
   }
 
   const log = logger(settings.debug);
-  // const tap = tapper(settings.debug);
 
   const pathParts = window.location.pathname
     .split("/")
@@ -23,7 +26,61 @@ async function githubIssuePage() {
   const repo = pathParts[1];
   const issueId = pathParts[3];
 
-  log(`User: ${user}, Repo: ${repo}, Issue Id: ${issueId}`);
+  const isGrant =
+    new URLSearchParams(window.location.search).get("n-grant-an-issue") === "1";
+
+  log(
+    `User: ${user}, Repo: ${repo}, Issue Id: ${issueId}, Is Grant: ${isGrant}`,
+  );
+
+  if (isGrant) {
+    const putRewardTemplate = () => {
+      const commentBox = document.querySelector(
+        'textarea[name="comment[body]"]',
+      );
+      commentBox.value += IssueTemplate;
+
+      const commentButton = document.querySelector(
+        'div#partial-new-comment-form-actions button[type="submit"].btn-primary',
+      );
+
+      commentButton.disabled = false;
+    };
+
+    const createEmojiContainer = () =>
+      html`<div class="n-emoji-container">
+        <ul>
+          <li>
+            <span class="emoji">
+              <a
+                class="no-underline"
+                href="javascript:void(0)"
+                onClick=${putRewardTemplate}
+              >
+                🏅
+              </a>
+            </span>
+            <span class="tooltiptext">Put a reward template</span>
+          </li>
+        </ul>
+      </div> `;
+
+    const toolbarItemContainer = document.body.querySelectorAll(
+      'div[data-target="action-bar.itemContainer"]',
+    )[1];
+
+    const toolbarContainer = div({
+      id: "n-toolbar-container",
+      classList: "ActionBar-item",
+    });
+
+    toolbarItemContainer.insertBefore(
+      toolbarContainer,
+      toolbarItemContainer.firstChild,
+    );
+
+    render(createEmojiContainer(), toolbarContainer);
+  }
 }
 
 githubIssuePage();

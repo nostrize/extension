@@ -1,0 +1,46 @@
+div#n-toolbar-container {
+  display: inline-block;
+}
+
+/* hide reward tooltiptext by default */
+div.n-emoji-container span.tooltiptext {
+  visibility: hidden;
+}
+
+span.tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+span.emoji {
+  position: relative;
+  top: 6px;
+}
+
+/* Show text when the emoji is hovered */
+div.n-emoji-container span.emoji + span.tooltiptext {
+  visibility: visible;
+
+  width: 120px;
+  top: 130%;
+  left: 50%;
+  margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+}
+
+div.n-emoji-container ul {
+  list-style-type: none;
+}
