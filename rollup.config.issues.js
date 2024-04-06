@@ -3,7 +3,6 @@ import commonjs from "@rollup/plugin-commonjs";
 
 export default {
   input: {
-    background: "src/background.js",
     issues: "src/github/content/issues/issues.js",
   },
   output: {

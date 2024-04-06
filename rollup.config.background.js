@@ -3,7 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 
 export default {
   input: {
-    issue: "src/github/content/issue/issue.js",
+    background: "src/background.js",
   },
   output: {
     dir: "dist", // Outputs will be saved in the dist directory

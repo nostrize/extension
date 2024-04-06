@@ -9,20 +9,10 @@
   "permissions": [
     "activeTab",
     "storage",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
-  "content_scripts": [
-    {
-      "matches": ["https://github.com/*/*/issues"],
-      "js": ["issues.js"],
-      "css": ["issues.css"],
-      "type": "module"
-    },
-    {
-      "matches": ["https://github.com/*/*/issues/*"],
-      "js": ["issue.js"],
-      "css": ["issue.css"],
-      "type": "module"
-    }
+  "host_permissions": [
+    "*://github.com/*"
   ]
 }
