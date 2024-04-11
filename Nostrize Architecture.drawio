@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2024-04-08T17:53:49.057Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="BlnTFwl2CGTAwBRUkn9b" version="24.2.2" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2024-04-11T22:14:45.468Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="WWpJ6K7iXx-7qixGkoZB" version="24.2.3" type="github" pages="2">
   <diagram name="Grants" id="evUG6YISS2im7E91H2Ip">
-    <mxGraphModel dx="912" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="791" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -105,92 +105,66 @@
     </mxGraphModel>
   </diagram>
   <diagram id="gFAVIOknlwgJxWS9QiGl" name="Nostr Github Connection">
-    <mxGraphModel dx="912" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="791" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="k914pkCeleKOS9EQimiK-1" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Connect your nostr account to your github account&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Create a new repository in your github account.&lt;/li&gt;&lt;li&gt;Using your nostr account nsec (private key), sign a message into your local repo&lt;/li&gt;&lt;li&gt;commit and push your file to github&lt;/li&gt;&lt;li&gt;extension will publish this as a nostr event&lt;/li&gt;&lt;li&gt;other extension clients will fetch this new event and will match your nostr account with your github account&lt;/li&gt;&lt;li&gt;now you&#39;ll able to tip someone from github using your nostr account&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="20" y="10" width="710" height="150" as="geometry" />
+        <mxCell id="k914pkCeleKOS9EQimiK-1" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Connect your nostr account to your github account&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;If you don&#39;t have a NIP-05 Address with github.io already:&lt;/li&gt;&lt;ul&gt;&lt;li&gt;Create a new repository in your github account.&lt;/li&gt;&lt;li&gt;Put your nostr.json under .well-known&lt;/li&gt;&lt;li&gt;Setup your repo as github pages (static website), and publish&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Be sure lnurl (lud16) is set on your profile to receive sats&amp;nbsp;&lt;/span&gt;&lt;br&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Update your your nostr profile (kind: 0) with your NIP-05 Adress (ex: xxxx@username.github.io)&lt;/span&gt;&lt;br&gt;&lt;/li&gt;&lt;li&gt;Update your nostrize settings with NIP-05 property&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="20" y="10" width="710" height="160" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-2" target="k914pkCeleKOS9EQimiK-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-2" value="alice@github" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="125" y="510" width="90" height="30" as="geometry" />
+        <mxCell id="k914pkCeleKOS9EQimiK-2" value="alice@alice.github.io" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="160" y="510" width="130" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-3" target="k914pkCeleKOS9EQimiK-5" edge="1">
+        <mxCell id="k914pkCeleKOS9EQimiK-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="dJHAY3hgasfSkWd7OsIV-1" target="k914pkCeleKOS9EQimiK-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-3" value="Create a repository" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="110" y="400" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-5" target="k914pkCeleKOS9EQimiK-7" edge="1">
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="k914pkCeleKOS9EQimiK-3" target="dJHAY3hgasfSkWd7OsIV-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-5" value="Get nsec from your nostr account" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="294" y="400" width="120" height="60" as="geometry" />
+        <mxCell id="k914pkCeleKOS9EQimiK-3" value=".well-known/nostr.json" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="160" y="400" width="130" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-7" target="k914pkCeleKOS9EQimiK-9" edge="1">
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="k914pkCeleKOS9EQimiK-5" target="dJHAY3hgasfSkWd7OsIV-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-7" target="k914pkCeleKOS9EQimiK-11" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-20" value="Creates a file" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="k914pkCeleKOS9EQimiK-12" vertex="1" connectable="0">
-          <mxGeometry x="-0.1429" y="1" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-7" value="Sign message to your local branch" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="471" y="400" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-9" target="k914pkCeleKOS9EQimiK-21" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-9" value="commit &amp;amp; push to repository" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="671" y="400" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-11" value="{&lt;div&gt;&amp;nbsp;version: 1&lt;br&gt;&amp;nbsp;user: alice@github.com&lt;div&gt;&amp;nbsp;repo: nostrize-guthub-connect&lt;/div&gt;&lt;div&gt;&amp;nbsp;sig: .....&amp;nbsp;&lt;br&gt;}&lt;/div&gt;&lt;/div&gt;" style="shape=tape;whiteSpace=wrap;html=1;size=0.11023622047244094;align=left;" parent="1" vertex="1">
-          <mxGeometry x="431" y="210" width="200" height="107" as="geometry" />
+        <mxCell id="k914pkCeleKOS9EQimiK-5" value="set your nostrize NIP-05" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="480" y="400" width="144" height="60" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-14" target="k914pkCeleKOS9EQimiK-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-26" value="Controls" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="k914pkCeleKOS9EQimiK-16" vertex="1" connectable="0">
           <mxGeometry x="-0.3881" y="2" relative="1" as="geometry">
-            <mxPoint x="390" y="12" as="offset" />
+            <mxPoint x="360" y="12" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-14" target="k914pkCeleKOS9EQimiK-17" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="531" y="600" />
+              <mxPoint x="552" y="600" />
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="k914pkCeleKOS9EQimiK-14" target="dJHAY3hgasfSkWd7OsIV-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-14" value="Alice" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
-          <mxGeometry x="30" y="570" width="27" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-17" target="k914pkCeleKOS9EQimiK-7" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-17" target="k914pkCeleKOS9EQimiK-21" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry x="56.5" y="570" width="27" height="60" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-17" target="k914pkCeleKOS9EQimiK-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-17" value="nostrize extension" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="471" y="540" width="120" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-21" value="publish message to nostr relays" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="671" y="525" width="120" height="60" as="geometry" />
+          <mxGeometry x="492" y="540" width="120" height="30" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-28" target="k914pkCeleKOS9EQimiK-35" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="240" y="730" />
-              <mxPoint x="240" y="730" />
+              <mxPoint x="266.5" y="730" />
+              <mxPoint x="266.5" y="730" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -208,13 +182,13 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-28" value="Bob" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
-          <mxGeometry x="30" y="700" width="27" height="60" as="geometry" />
+          <mxGeometry x="56.5" y="700" width="27" height="60" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-42" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="k914pkCeleKOS9EQimiK-32" target="k914pkCeleKOS9EQimiK-41" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-32" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;github.com/alice&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
-          <mxGeometry x="125" y="810" width="120" height="60" as="geometry" />
+          <mxGeometry x="151.5" y="810" width="120" height="70" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="k914pkCeleKOS9EQimiK-35" target="k914pkCeleKOS9EQimiK-41" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -223,16 +197,28 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="k914pkCeleKOS9EQimiK-35" value="nostrize extension" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="340" y="715" width="110" height="30" as="geometry" />
+          <mxGeometry x="366.5" y="715" width="110" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-41" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Fetches nostr event &amp;amp; connects two accoutns" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
-          <mxGeometry x="322.5" y="810" width="145" height="60" as="geometry" />
+        <mxCell id="k914pkCeleKOS9EQimiK-41" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Fetches nostr event with lnurl (lud16) &amp;amp; connects two accounts" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="349" y="810" width="145" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-45" value="Zap Alice" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="525" y="700" width="120" height="60" as="geometry" />
+        <mxCell id="k914pkCeleKOS9EQimiK-45" value="Zaps Alice" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="551.5" y="700" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="HGmZXRdyTxiF-nQ1onsn-1" value="TODO:&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;Message properties&lt;/span&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;A new kind?&lt;/li&gt;&lt;li&gt;give metadata as tags&lt;/li&gt;&lt;/ul&gt;&lt;br style=&quot;background-color: initial;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;TODO: How to sign messages&lt;/span&gt;&lt;div style=&quot;background-color: initial;&quot;&gt;&lt;ul&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;https://github.com/nostr-dev-kit/ndk/?tab=readme-ov-file#using-a-nip-07-browser-extension-eg-alby-nos2x&amp;nbsp;?&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Or putting in nsec to Nostrize&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="50" y="210" width="360" height="40" as="geometry" />
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-3" value="Nostrize relay will save nostr event for caching" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="400" width="144" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-5" value="sets lnurl (lud16) on her nostr profile to receive funds" style="whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="10" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="k914pkCeleKOS9EQimiK-3" target="dJHAY3hgasfSkWd7OsIV-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="290" y="430" as="sourcePoint" />
+            <mxPoint x="480" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dJHAY3hgasfSkWd7OsIV-1" value=".well-known/nostr.json" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="400" width="130" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
