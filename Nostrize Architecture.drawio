@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-04-11T22:14:45.468Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="WWpJ6K7iXx-7qixGkoZB" version="24.2.3" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2024-04-11T22:15:29.777Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="o5NthImPFlxATl5fe7X2" version="24.2.3" type="github" pages="2">
   <diagram name="Grants" id="evUG6YISS2im7E91H2Ip">
     <mxGraphModel dx="791" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -202,7 +202,7 @@
         <mxCell id="k914pkCeleKOS9EQimiK-41" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Fetches nostr event with lnurl (lud16) &amp;amp; connects two accounts" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="349" y="810" width="145" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="k914pkCeleKOS9EQimiK-45" value="Zaps Alice" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="k914pkCeleKOS9EQimiK-45" value="Zaps Alice&#39;s lnurl" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="551.5" y="700" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="dJHAY3hgasfSkWd7OsIV-3" value="Nostrize relay will save nostr event for caching" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
