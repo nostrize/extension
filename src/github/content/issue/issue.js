@@ -1,7 +1,7 @@
 import { html, render } from "htm/preact";
 
 import { logger } from "../../../helpers/logger";
-import { div } from "../../../imgui-dom/src/html";
+import { div, button } from "../../../imgui-dom/src/html";
 import IssueTemplate from "./issue-template";
 
 async function githubIssuePage() {
@@ -84,6 +84,21 @@ async function githubIssuePage() {
 
   if (isGrant) {
     putRewardTemplate({ auto: true });
+
+    const actionsContainer = document.getElementById(
+      "partial-new-comment-form-actions",
+    );
+
+    const commentAndNostrButton = button({
+      type: "submit",
+      color: "white",
+      backgroundColor: "#8250df",
+      text: "Comment & Nostr",
+    });
+
+    actionsContainer
+      .querySelector("div:nth-of-type(3)")
+      .appendChild(commentAndNostrButton);
   }
 }
 
