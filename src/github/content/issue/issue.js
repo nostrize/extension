@@ -1,10 +1,13 @@
-import { html, render } from "htm/preact";
+import htm from "htm";
+import vhtml from "vhtml";
 
 import { logger } from "../../../helpers/logger";
 import { div, button } from "../../../imgui-dom/src/html";
 import IssueTemplate from "./issue-template";
 
 async function githubIssuePage() {
+  const html = htm.bind(vhtml);
+
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
   if (!settings.github.issues) {
@@ -33,39 +36,6 @@ async function githubIssuePage() {
     `User: ${user}, Repo: ${repo}, Issue Id: ${issueId}, Is Grant: ${isGrant}`,
   );
 
-  const createEmojiContainer = () =>
-    html`<div class="n-emoji-container">
-      <ul>
-        <li>
-          <span class="emoji">
-            <a
-              class="no-underline"
-              href="javascript:void(0)"
-              onClick=${() => putRewardTemplate({ auto: false })}
-              >🏅</a
-            >
-          </span>
-          <span class="tooltiptext">Put a reward template</span>
-        </li>
-      </ul>
-    </div> `;
-
-  const toolbarItemContainer = document.body.querySelectorAll(
-    'div[data-target="action-bar.itemContainer"]',
-  )[1];
-
-  const toolbarContainer = div({
-    id: "n-toolbar-container",
-    classList: "ActionBar-item",
-  });
-
-  toolbarItemContainer.insertBefore(
-    toolbarContainer,
-    toolbarItemContainer.firstChild,
-  );
-
-  render(createEmojiContainer(), toolbarContainer);
-
   const putRewardTemplate = ({ auto }) => {
     const commentBox = document.querySelector('textarea[name="comment[body]"]');
 
@@ -81,6 +51,43 @@ async function githubIssuePage() {
     // TODO: It's not enough to make it enabled, validation system doesn't recognize comment box has been filled
     commentButton.disabled = false;
   };
+
+  const createEmojiContainer = () =>
+    html`<div id="n-emoji-container">
+      <ul>
+        <li>
+          <span class="emoji">
+            <a
+              class="no-underline"
+              href="javascript:void(0)"
+              onClick=${() => putRewardTemplate({ auto: false })}
+              >🏅</a
+            >
+          </span>
+          <span class="tooltiptext">Put a reward template</span>
+        </li>
+      </ul>
+    </div> `;
+
+  const isEmojiContainerExist = document.getElementById("n-emoji-container");
+
+  if (!isEmojiContainerExist) {
+    const toolbarItemContainer = document.body.querySelectorAll(
+      'div[data-target="action-bar.itemContainer"]',
+    )[1];
+
+    const toolbarContainer = div({
+      id: "n-toolbar-container",
+      classList: "ActionBar-item",
+    });
+
+    toolbarItemContainer.insertBefore(
+      toolbarContainer,
+      toolbarItemContainer.firstChild,
+    );
+
+    toolbarContainer.innerHTML = createEmojiContainer();
+  }
 
   if (isGrant) {
     putRewardTemplate({ auto: true });

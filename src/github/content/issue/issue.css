@@ -3,7 +3,7 @@ div#n-toolbar-container {
 }
 
 /* hide reward tooltiptext by default */
-div.n-emoji-container span.tooltiptext {
+div#n-emoji-container span.tooltiptext {
   visibility: hidden;
 }
 
@@ -24,7 +24,7 @@ span.emoji {
 }
 
 /* Show text when the emoji is hovered */
-div.n-emoji-container span.emoji + span.tooltiptext {
+div#n-emoji-container span.emoji + span.tooltiptext {
   visibility: visible;
 
   width: 120px;
@@ -41,6 +41,6 @@ div.n-emoji-container span.emoji + span.tooltiptext {
   z-index: 1;
 }
 
-div.n-emoji-container ul {
+div#n-emoji-container ul {
   list-style-type: none;
 }

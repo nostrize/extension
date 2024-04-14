@@ -51,9 +51,6 @@ const getPageFromUrl = (url) => {
 
 const log = logger({ log: false, namespace: "[nostrize][background]" });
 
-// Keeping previousUrl helps to decide when we need to inject the scripts and css
-let previousUrl = undefined;
-
 // dynamicly load content scripts and css
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   const url = tab.url;
@@ -72,16 +69,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     return;
   }
 
-  if (previousUrl === url) {
-    return;
-  }
-
   log("url", url);
   log("tabId", tabId);
   log("changeInfo", changeInfo);
   log("tab", tab);
-
-  previousUrl = url;
 
   if (page === "issues") {
     // Inject JavaScript file
