@@ -10,10 +10,6 @@ async function githubIssuePage() {
 
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
-  if (!settings.github.issues) {
-    return;
-  }
-
   const log = logger(settings.debug);
 
   const pathParts = window.location.pathname

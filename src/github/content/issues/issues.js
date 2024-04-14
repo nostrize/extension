@@ -6,10 +6,6 @@ import { logger } from "../../../helpers/logger";
 async function githubIssuesPage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
-  if (!settings.github.issues) {
-    return;
-  }
-
   const log = logger(settings.debug);
   // const tap = tapper(settings.debug);
 

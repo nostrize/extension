@@ -3,13 +3,10 @@ import * as R from "ramda";
 import { logger } from "./helpers/logger";
 
 const defaultSettings = {
-  github: {
-    issues: true,
-  },
   debug: {
     log: true,
     border: true,
-    namespace: "[nosterize]",
+    namespace: "[N]",
   },
 };
 
@@ -44,6 +41,8 @@ const getPageFromUrl = (url) => {
     return "issues";
   } else if (url.match(/https:\/\/github\.com\/.*\/.*\/issues\/.+/)) {
     return "issue";
+  } else if (url.match(/https:\/\/github\.com\/([^/]+)\/?$/)) {
+    return "profile";
   } else {
     return "";
   }
@@ -98,5 +97,17 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       target: { tabId },
       files: ["issue.css"],
     });
+  } else if (page === "profile") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["profile.js"],
+    });
+
+    // Inject CSS file
+    // chrome.scripting.insertCSS({
+    //   target: { tabId },
+    //   files: ["profile.css"],
+    // });
   }
 });
