@@ -1,14 +1,10 @@
-import { html, render } from "htm/preact";
-
-import { div } from "../../../imgui-dom/src/html";
+import { div, link, span } from "../../../imgui-dom/src/html";
 import { logger } from "../../../helpers/logger";
 
 async function githubIssuesPage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
   const log = logger(settings.debug);
-  // const tap = tapper(settings.debug);
-
   const pathParts = window.location.pathname
     .split("/")
     .filter((part) => part.length > 0);
@@ -26,32 +22,44 @@ async function githubIssuesPage() {
     `https://github.com/${user}/${repo}/issues/${issueId}?n-grant-an-issue=1`;
 
   const createEmojiContainer = (issueId) =>
-    html`<div class="n-emoji-container">
-      <ul>
-        <li>
-          <span class="emoji">
-            <a class="no-underline" href="${createIssueHref(issueId)}">🏅</a>
-          </span>
-          <span class="tooltiptext">Give a reward for this issue</span>
-        </li>
-      </ul>
-    </div> `;
+    div({
+      classList: ["n-emoji-container"],
+      children: [
+        div({
+          classList: ["n-emoji"],
+          children: [
+            div({
+              classList: ["n-tooltip-container n-reward-emoji"],
+              children: [
+                link({
+                  classList: ["no-underline"],
+                  href: createIssueHref(issueId),
+                  text: "🏅",
+                }),
+                span({
+                  classList: ["n-tooltiptext"],
+                  text: "Give a reward for this issue",
+                }),
+              ],
+              style: ["display", "inline-block"],
+            }),
+          ],
+        }),
+      ],
+    });
 
   // iterate over issue links (eg: id=issue_2_link)
   document
     .querySelectorAll('a[id^="issue_"][id$="_link"]')
     .forEach(function (a) {
       const issueId = a.id.split("issue_")[1].split("_")[0];
-      log(`issue ${issueId}`);
 
       const parentContainer = a.parentElement;
+      parentContainer.classList.add("n-issue-container");
+
       const emojiContainer = createEmojiContainer(issueId);
-      const issueContainer = div({ classList: "n-issue-container" });
-      parentContainer.insertBefore(issueContainer, parentContainer.firstChild);
-
-      render(emojiContainer, issueContainer);
-
-      issueContainer.insertBefore(a, issueContainer.firstChild);
+      parentContainer.prepend(emojiContainer);
+      parentContainer.prepend(a);
     });
 }
 
