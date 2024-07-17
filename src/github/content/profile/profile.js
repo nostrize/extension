@@ -1,6 +1,4 @@
-import NDK from "@nostr-dev-kit/ndk";
-
-import { logger } from "../../../helpers/logger";
+import { logger } from "../../../helpers/logger.js";
 
 async function githubProfilePage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
@@ -13,7 +11,7 @@ async function githubProfilePage() {
 
   // Assuming the URL pattern is https://github.com/{user}
   if (pathParts.length !== 1) {
-    throw new Error("Unexpected content script issue, or github URL mismatch");
+    return;
   }
 
   const log = logger(settings.debug);
@@ -21,22 +19,6 @@ async function githubProfilePage() {
   const user = pathParts[0];
 
   log("user", user);
-  log("Profile page");
-
-  // TODO: Get NIP-05
-  const pubKey = await window.nostr.getPublicKey();
-  const relays = await window.nostr.getRelays();
-
-  const ndk = new NDK({
-    explicitRelayUrls: relays,
-  });
-
-  // Now connect to specified relays
-  await ndk.connect();
-
-  const r = await ndk.fetchEvent({ kinds: [0], authors: [pubKey] });
-
-  log("results", r);
 }
 
 githubProfilePage();
