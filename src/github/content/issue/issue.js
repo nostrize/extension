@@ -1,5 +1,4 @@
 import { logger } from "../../../helpers/logger.js";
-import { createEmojiContainer } from "../helpers/dom.js";
 import { button, div, hr, link, span } from "../../../imgui-dom/src/html.js";
 // import { fetchUserLud16 } from "../../../helpers/relays";
 import IssueTemplate from "./issue-template.js";
@@ -53,24 +52,36 @@ async function githubIssuePage() {
     }
   };
 
-  const createEmojies = () =>
-    createEmojiContainer([
-      div({
-        classList: "n-tooltip-container n-reward-emoji",
-        children: [
-          link({
-            classList: "no-underline Button",
-            href: "javascript:void(0)",
-            onclick: () => putRewardTemplate({ auto: false }),
-            text: "🏅",
-          }),
-          span({
-            classList: "n-tooltiptext",
-            text: "Put a reward template",
-          }),
-        ],
-      }),
-    ]);
+  const createEmojiButton = () =>
+    div({
+      children: [
+        div({
+          classList: "n-tooltip-container n-reward-emoji",
+          children: [
+            link({
+              classList: "no-underline Button",
+              href: "javascript:void(0)",
+              onclick: () => putRewardTemplate({ auto: false }),
+              text: "🏅",
+            }),
+            span({
+              classList: "n-tooltiptext",
+              text: "Put a reward template",
+            }),
+          ],
+          style: [
+            ["display", "inline-block"],
+            ["right", "4px"],
+          ],
+        }),
+      ],
+      style: [
+        ["height", "32px"],
+        ["width", "32px"],
+        ["background-color", "#8250df"],
+        ["border-radius", "6px"],
+      ],
+    });
 
   const createPublishToNostrButton = () =>
     div({
@@ -106,7 +117,7 @@ async function githubIssuePage() {
     const toolbarContainer = div({
       id: "n-toolbar-container",
       classList: "ActionBar-item",
-      children: [createEmojies()],
+      children: [createEmojiButton()],
     });
 
     toolbarItemContainer.append(

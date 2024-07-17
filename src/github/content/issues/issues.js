@@ -1,5 +1,4 @@
 import { div, link, span } from "../../../imgui-dom/src/html.js";
-import { createEmojiContainer } from "../helpers/dom.js";
 import { logger } from "../../../helpers/logger.js";
 
 async function githubIssuesPage() {
@@ -22,24 +21,32 @@ async function githubIssuesPage() {
   const createIssueHref = (issueId) =>
     `https://github.com/${user}/${repo}/issues/${issueId}?n-grant-an-issue=1`;
 
-  const createEmojies = (issueId) =>
-    createEmojiContainer([
-      div({
-        classList: "n-tooltip-container n-reward-emoji",
-        children: [
-          link({
-            classList: "no-underline",
-            href: createIssueHref(issueId),
-            text: "🏅",
-          }),
-          span({
-            classList: "n-tooltiptext",
-            text: "Give a reward for this issue",
-          }),
-        ],
-        style: ["display", "inline-block"],
-      }),
-    ]);
+  const createEmojiButton = (issueId) =>
+    div({
+      classList: "n-emoji-container",
+      children: [
+        div({
+          classList: "n-emoji",
+          children: [
+            div({
+              classList: "n-tooltip-container n-reward-emoji",
+              children: [
+                link({
+                  classList: "no-underline",
+                  href: createIssueHref(issueId),
+                  text: "🏅",
+                }),
+                span({
+                  classList: "n-tooltiptext",
+                  text: "Give a reward for this issue",
+                }),
+              ],
+              style: ["display", "inline-block"],
+            }),
+          ],
+        }),
+      ],
+    });
 
   // iterate over issue links (eg: id=issue_2_link)
   document
@@ -52,7 +59,7 @@ async function githubIssuesPage() {
       if (!parentContainer.classList.contains("n-issue-container")) {
         parentContainer.classList.add("n-issue-container");
 
-        const emojiContainer = createEmojies(issueId);
+        const emojiContainer = createEmojiButton(issueId);
         parentContainer.prepend(emojiContainer);
         parentContainer.prepend(a);
       }
