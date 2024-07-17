@@ -50,3 +50,18 @@ span.n-tooltiptext::after {
   border-style: solid;
   border-color: transparent transparent black transparent;
 }
+
+div.n-reward-emoji {
+  display: inline-block;
+  right: 4px;
+}
+
+div.n-emoji {
+  height: 32px;
+  width: 32px;
+}
+
+div.n-emoji:hover {
+  background-color: #8250df;
+  border-radius: 6px;
+}

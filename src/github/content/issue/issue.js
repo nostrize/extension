@@ -69,7 +69,6 @@ async function githubIssuePage() {
             text: "Put a reward template",
           }),
         ],
-        style: ["display", "inline-block"],
       }),
     ]);
 
