@@ -3,6 +3,20 @@ import { button, div, hr, link, span } from "../../../imgui-dom/src/html.js";
 // import { fetchUserLud16 } from "../../../helpers/relays";
 import IssueTemplate from "./issue-template.js";
 
+function querySelectorOr(selector1, selector2) {
+  let element = document.querySelector(selector1);
+
+  if (!element) {
+    element = document.querySelector(selector2);
+  }
+
+  if (!element) {
+    throw new Error("querySelectorOr has failed");
+  }
+
+  return element;
+}
+
 async function githubIssuePage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
@@ -30,25 +44,25 @@ async function githubIssuePage() {
   );
 
   const putRewardTemplate = ({ auto }) => {
-    const commentBox = document.querySelector('textarea[name="comment[body]"]');
+    const commentBox = querySelectorOr(
+      'textarea[name="comment[body]"]',
+      'textarea[name="issue[body]"]',
+    );
+
+    const sendButton = querySelectorOr(
+      "#partial-new-comment-form-actions button.btn.btn-primary",
+      "#new_issue button.btn-primary.btn.ml-2",
+    );
 
     // Don't append the template if it is isGrant & comment box is not empty
     if (!(auto && commentBox.value)) {
-      document.querySelector(
-        "#partial-new-comment-form-actions button.btn.btn-primary",
-      ).style.display = "none";
+      sendButton.style.display = "none";
       commentBox.value += IssueTemplate;
       commentBox.style.height = `${commentBox.scrollHeight}px`;
     }
 
-    const actionsContainer = document.getElementById(
-      "partial-new-comment-form-actions",
-    );
-
     if (!document.getElementById("n-publish-to-nostr")) {
-      actionsContainer
-        .querySelector("div:nth-of-type(3)")
-        .append(createPublishToNostrButton());
+      sendButton.parentNode.append(createPublishToNostrButton());
     }
   };
 
@@ -110,8 +124,9 @@ async function githubIssuePage() {
   const isEmojiContainerExist = document.getElementById("n-toolbar-container");
 
   if (!isEmojiContainerExist) {
-    const toolbarItemContainer = document.querySelector(
+    const toolbarItemContainer = querySelectorOr(
       "#new_comment_form action-bar > div",
+      "#new_issue action-bar > div",
     );
 
     const toolbarContainer = div({
