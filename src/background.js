@@ -1,6 +1,4 @@
-import * as R from "ramda";
-
-import { logger } from "./helpers/logger";
+import { logger } from "./helpers/logger.js";
 
 const defaultSettings = {
   debug: {
@@ -10,27 +8,8 @@ const defaultSettings = {
   },
 };
 
-const customMerge = R.mergeWithKey((key, left, defaults) => {
-  if (R.is(Object, left) && R.is(Object, defaults)) {
-    // If both are objects, merge them deeply with preference for the left
-    return R.mergeDeepLeft(left, defaults);
-  } else if (left === undefined && defaults !== undefined) {
-    return defaults;
-  } else if (left !== undefined && defaults === undefined) {
-    return left;
-  }
-
-  return defaults;
-});
-
 async function initializeSettings() {
-  const result = await chrome.storage.sync.get(["settings"]);
-
-  const settings = result.settings
-    ? customMerge(result.settings, defaultSettings)
-    : defaultSettings;
-
-  await chrome.storage.sync.set({ settings });
+  await chrome.storage.sync.set({ defaultSettings });
 }
 
 // Run the initialization function when the extension is installed/updated
@@ -86,6 +65,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       files: ["issues.css"],
     });
   } else if (page === "issue") {
+    // Nostr dependency
+    // chrome.scripting.executeScript({
+    //   target: { tabId },
+    //   files: ["issue-injected.js"],
+    // });
+
     // Inject JavaScript file
     chrome.scripting.executeScript({
       target: { tabId },

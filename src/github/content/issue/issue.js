@@ -1,13 +1,10 @@
-import htm from "htm";
-import vhtml from "vhtml";
-
-import { logger } from "../../../helpers/logger";
-import { div, button } from "../../../imgui-dom/src/html";
-import IssueTemplate from "./issue-template";
+import { logger } from "../../../helpers/logger.js";
+import { createEmojiContainer } from "../helpers/dom.js";
+import { button, div, hr, link, span } from "../../../imgui-dom/src/html.js";
+// import { fetchUserLud16 } from "../../../helpers/relays";
+import IssueTemplate from "./issue-template.js";
 
 async function githubIssuePage() {
-  const html = htm.bind(vhtml);
-
   const { settings } = await chrome.storage.sync.get(["settings"]);
 
   const log = logger(settings.debug);
@@ -18,13 +15,14 @@ async function githubIssuePage() {
 
   // Assuming the URL pattern is https://github.com/{user}/{repo}/issues/{issueid}
   if (pathParts.length !== 4 || pathParts[2] !== "issues") {
-    throw new Error("Unexpected content script issue, or github URL mismatch");
+    return;
   }
 
   const user = pathParts[0];
   const repo = pathParts[1];
   const issueId = pathParts[3];
 
+  // This will be there when user has clicked on the "Give a grant" button in issues page
   const isGrant =
     new URLSearchParams(window.location.search).get("n-grant-an-issue") === "1";
 
@@ -37,71 +35,89 @@ async function githubIssuePage() {
 
     // Don't append the template if it is isGrant & comment box is not empty
     if (!(auto && commentBox.value)) {
+      document.querySelector(
+        "#partial-new-comment-form-actions button.btn.btn-primary",
+      ).style.display = "none";
       commentBox.value += IssueTemplate;
+      commentBox.style.height = `${commentBox.scrollHeight}px`;
     }
-
-    const commentButton = document.querySelector(
-      'div#partial-new-comment-form-actions button[type="submit"].btn-primary',
-    );
-
-    // TODO: It's not enough to make it enabled, validation system doesn't recognize comment box has been filled
-    commentButton.disabled = false;
-  };
-
-  const createEmojiContainer = () =>
-    html`<div id="n-emoji-container">
-      <ul>
-        <li>
-          <span class="emoji">
-            <a
-              class="no-underline"
-              href="javascript:void(0)"
-              onClick=${() => putRewardTemplate({ auto: false })}
-              >🏅</a
-            >
-          </span>
-          <span class="tooltiptext">Put a reward template</span>
-        </li>
-      </ul>
-    </div> `;
-
-  const isEmojiContainerExist = document.getElementById("n-emoji-container");
-
-  if (!isEmojiContainerExist) {
-    const toolbarItemContainer = document.body.querySelectorAll(
-      'div[data-target="action-bar.itemContainer"]',
-    )[1];
-
-    const toolbarContainer = div({
-      id: "n-toolbar-container",
-      classList: "ActionBar-item",
-    });
-
-    toolbarItemContainer.insertBefore(
-      toolbarContainer,
-      toolbarItemContainer.firstChild,
-    );
-
-    toolbarContainer.innerHTML = createEmojiContainer();
-  }
-
-  if (isGrant) {
-    putRewardTemplate({ auto: true });
 
     const actionsContainer = document.getElementById(
       "partial-new-comment-form-actions",
     );
 
-    const commentAndNostrButton = button({
-      type: "submit",
-      color: "white",
-      backgroundColor: "#8250df",
-      text: "Comment & Nostr",
+    if (!document.getElementById("n-publish-to-nostr")) {
+      actionsContainer
+        .querySelector("div:nth-of-type(3)")
+        .append(createPublishToNostrButton());
+    }
+  };
+
+  const createEmojies = () =>
+    createEmojiContainer([
+      div({
+        classList: "n-tooltip-container n-reward-emoji",
+        children: [
+          link({
+            classList: "no-underline Button",
+            href: "javascript:void(0)",
+            onclick: () => putRewardTemplate({ auto: false }),
+            text: "🏅",
+          }),
+          span({
+            classList: "n-tooltiptext",
+            text: "Put a reward template",
+          }),
+        ],
+        style: ["display", "inline-block"],
+      }),
+    ]);
+
+  const createPublishToNostrButton = () =>
+    div({
+      classList: "n-tooltip-container",
+      children: [
+        button({
+          type: "submit",
+          id: "n-publish-to-nostr",
+          classList: "btn-primary btn",
+          onclick: async (event) => {
+            var result = await window.nostrize();
+
+            if (!result) {
+              event.preventDefault();
+            }
+          },
+          text: "Nostrize & Comment",
+        }),
+        span({
+          classList: "n-tooltiptext",
+          text: "Publish to Nostrize & Comment to GitHub",
+        }),
+      ],
     });
 
-    actionsContainer
-      .querySelector("div:nth-of-type(3)")
-      .appendChild(commentAndNostrButton);
+  const isEmojiContainerExist = document.getElementById("n-toolbar-container");
+
+  if (!isEmojiContainerExist) {
+    const toolbarItemContainer = document.querySelector(
+      "#new_comment_form action-bar > div",
+    );
+
+    const toolbarContainer = div({
+      id: "n-toolbar-container",
+      classList: "ActionBar-item",
+      children: [createEmojies()],
+    });
+
+    toolbarItemContainer.append(
+      hr({ classList: "ActionBar-item ActionBar-divider" }),
+    );
+    toolbarItemContainer.append(toolbarContainer);
+
+    if (isGrant) {
+      putRewardTemplate({ auto: true });
+    }
   }
 }
 

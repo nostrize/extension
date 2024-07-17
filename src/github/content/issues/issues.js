@@ -1,5 +1,6 @@
-import { div, link, span } from "../../../imgui-dom/src/html";
-import { logger } from "../../../helpers/logger";
+import { div, link, span } from "../../../imgui-dom/src/html.js";
+import { createEmojiContainer } from "../helpers/dom.js";
+import { logger } from "../../../helpers/logger.js";
 
 async function githubIssuesPage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
@@ -11,7 +12,7 @@ async function githubIssuesPage() {
 
   // Assuming the URL pattern is https://github.com/{user}/{repo}/issues
   if (pathParts.length !== 3 || pathParts[2] !== "issues") {
-    throw new Error("Unexpected content script issues, or github URL mismatch");
+    return;
   }
 
   const user = pathParts[0];
@@ -21,32 +22,24 @@ async function githubIssuesPage() {
   const createIssueHref = (issueId) =>
     `https://github.com/${user}/${repo}/issues/${issueId}?n-grant-an-issue=1`;
 
-  const createEmojiContainer = (issueId) =>
-    div({
-      classList: ["n-emoji-container"],
-      children: [
-        div({
-          classList: ["n-emoji"],
-          children: [
-            div({
-              classList: ["n-tooltip-container n-reward-emoji"],
-              children: [
-                link({
-                  classList: ["no-underline"],
-                  href: createIssueHref(issueId),
-                  text: "🏅",
-                }),
-                span({
-                  classList: ["n-tooltiptext"],
-                  text: "Give a reward for this issue",
-                }),
-              ],
-              style: ["display", "inline-block"],
-            }),
-          ],
-        }),
-      ],
-    });
+  const createEmojies = (issueId) =>
+    createEmojiContainer([
+      div({
+        classList: "n-tooltip-container n-reward-emoji",
+        children: [
+          link({
+            classList: "no-underline",
+            href: createIssueHref(issueId),
+            text: "🏅",
+          }),
+          span({
+            classList: "n-tooltiptext",
+            text: "Give a reward for this issue",
+          }),
+        ],
+        style: ["display", "inline-block"],
+      }),
+    ]);
 
   // iterate over issue links (eg: id=issue_2_link)
   document
@@ -55,11 +48,14 @@ async function githubIssuesPage() {
       const issueId = a.id.split("issue_")[1].split("_")[0];
 
       const parentContainer = a.parentElement;
-      parentContainer.classList.add("n-issue-container");
 
-      const emojiContainer = createEmojiContainer(issueId);
-      parentContainer.prepend(emojiContainer);
-      parentContainer.prepend(a);
+      if (!parentContainer.classList.contains("n-issue-container")) {
+        parentContainer.classList.add("n-issue-container");
+
+        const emojiContainer = createEmojies(issueId);
+        parentContainer.prepend(emojiContainer);
+        parentContainer.prepend(a);
+      }
     });
 }
 

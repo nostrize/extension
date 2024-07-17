@@ -1,3 +1,5 @@
+import NDK from "@nostr-dev-kit/ndk";
+
 import { logger } from "../../../helpers/logger";
 
 async function githubProfilePage() {
@@ -22,6 +24,19 @@ async function githubProfilePage() {
   log("Profile page");
 
   // TODO: Get NIP-05
+  const pubKey = await window.nostr.getPublicKey();
+  const relays = await window.nostr.getRelays();
+
+  const ndk = new NDK({
+    explicitRelayUrls: relays,
+  });
+
+  // Now connect to specified relays
+  await ndk.connect();
+
+  const r = await ndk.fetchEvent({ kinds: [0], authors: [pubKey] });
+
+  log("results", r);
 }
 
 githubProfilePage();
