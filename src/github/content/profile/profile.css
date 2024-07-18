@@ -1,15 +1,9 @@
-div.ActionBar-item-container {
-  overflow: visible; /* override github overflow hidden */
-}
-
-div#n-toolbar-container {
+#n-zap-button {
   display: inline-block;
-}
-
-button#n-publish-to-nostr {
-  color: white;
-  background-color: #8250df;
-  margin-left: 4px;
+  height: 32px;
+  width: 32px;
+  background-color: rgb(130, 80, 223);
+  border-radius: 6px;
 }
 
 /* hide tooltiptext by default */
@@ -24,7 +18,7 @@ span.n-tooltiptext {
   border-radius: 6px;
   padding: 5px 0;
   z-index: 1;
-  top: 150%;
+  bottom: 120%;
   left: 50%;
   margin-left: -60px;
 }
@@ -41,10 +35,10 @@ div.n-tooltip-container:hover span.n-tooltiptext {
 span.n-tooltiptext::after {
   content: "";
   position: absolute;
-  bottom: 100%;
+  top: 100%;
   left: 50%;
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: transparent transparent black transparent;
+  border-color: black transparent transparent transparent;
 }

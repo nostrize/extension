@@ -10,4 +10,4 @@ cp manifest.json dist/manifest.json
 # copy github specific extension files
 cp src/github/content/issues/issues.css dist/
 cp src/github/content/issue/issue.css dist/
-# cp src/github/content/issue/profile.css dist/
+cp src/github/content/profile/profile.css dist/

@@ -65,12 +65,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       files: ["issues.css"],
     });
   } else if (page === "issue") {
-    // Nostr dependency
-    // chrome.scripting.executeScript({
-    //   target: { tabId },
-    //   files: ["issue-injected.js"],
-    // });
-
     // Inject JavaScript file
     chrome.scripting.executeScript({
       target: { tabId },
@@ -90,9 +84,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     });
 
     // Inject CSS file
-    // chrome.scripting.insertCSS({
-    //   target: { tabId },
-    //   files: ["profile.css"],
-    // });
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["profile.css"],
+    });
   }
 });
