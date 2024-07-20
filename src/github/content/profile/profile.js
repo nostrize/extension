@@ -1,6 +1,9 @@
+import { LightningAddress } from "@getalby/lightning-tools";
+
 import { logger } from "../../../helpers/logger.js";
-import { fetchLud16AndLud06 } from "./helper.js";
+import { fetchLud16, generateInvoice } from "./helper.js";
 import { div, link, span } from "../../../imgui-dom/src/html.js";
+import { toString as generateQRCodeString } from "qrcode/lib/browser.js";
 
 function prepend(parent, element) {
   var childElements = [...parent.children];
@@ -62,16 +65,16 @@ async function githubProfilePage() {
       const subscriptionId =
         "SubsIdNostrize" + Math.round(Math.random() * 10000);
 
-      const [lud16, lud06] = await fetchLud16AndLud06({
+      const lud16 = await fetchLud16({
         log,
         npub,
         relayUrl: "wss://relay.damus.io",
         subscriptionId,
       });
 
-      log(lud16, lud06);
+      log(lud16);
 
-      if (!lud16 && !lud06) {
+      if (!lud16) {
         log("couldnt fetch lud16 or lud06");
 
         return;
@@ -90,8 +93,34 @@ async function githubProfilePage() {
               link({
                 classList: "no-underline Button",
                 href: "javascript:void(0)",
-                onclick: () => log("clicked zap to", lud16 || lud06),
+                onclick: async () => {
+                  const invoice = await generateInvoice({
+                    log,
+                    lightningAddress: new LightningAddress(lud16),
+                    sats: 10,
+                  });
+
+                  const svg = await generateQRCodeString(
+                    invoice.paymentRequest,
+                    {
+                      type: "svg",
+                    },
+                  );
+
+                  vcardContainer.append(
+                    div({
+                      id: "n-qr-code-container",
+                    }),
+                  );
+
+                  const qrCodeContainer = document.getElementById(
+                    "n-qr-code-container",
+                  );
+
+                  qrCodeContainer.innerHTML = svg;
+                },
                 text: "⚡",
+                style: [["right", "4px"]],
               }),
               span({
                 classList: "n-tooltiptext",

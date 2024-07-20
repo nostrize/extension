@@ -1,9 +1,14 @@
-export async function fetchLud16AndLud06({
-  relayUrl,
-  log,
-  subscriptionId,
-  npub,
-}) {
+export async function generateInvoice({ lightningAddress, sats, log }) {
+  await lightningAddress.fetch();
+
+  log("lnurlpData", lightningAddress.lnurlpData);
+
+  const invoice = await lightningAddress.requestInvoice({ satoshi: sats });
+
+  return invoice;
+}
+
+export async function fetchLud16({ relayUrl, log, subscriptionId, npub }) {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(relayUrl);
 
@@ -61,7 +66,7 @@ export async function fetchLud16AndLud06({
 
         log(`lud16: ${lud16}`);
 
-        return resolve([lud16, contentJson.lud06]);
+        return resolve(lud16);
       } else {
         log(`unexpected nostr event type received: ${nostrType}`);
 
