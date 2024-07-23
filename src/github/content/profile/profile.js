@@ -7,7 +7,8 @@ import { getOrInsertCache } from "../../../helpers/local-cache.js";
 import {
   fetchNpubFromNip05,
   getZapEndpoint,
-  zapButtonOnClick,
+  generateInvoiceButtonClick,
+  createSatsOptionButton,
 } from "./helper.js";
 import { fetchOneEvent } from "../../../helpers/relays.js";
 import * as html from "../../../imgui-dom/src/html.js";
@@ -50,7 +51,7 @@ async function githubProfilePage() {
 
   // TODO: use SimplePool, do we need multiple relays?
   const relayFactory = singletonFactory({
-    factoryAsyncFn: async () => {
+    buildFn: async () => {
       const relay = new Relay(relayUrl);
 
       await relay.connect();
@@ -80,8 +81,6 @@ async function githubProfilePage() {
     text: `⚡ Zap ${user} ⚡`,
     onclick: async () => {
       zapModal.style.display = "block";
-
-      await zapButtonClickEventHandler();
     },
   });
 
@@ -92,6 +91,25 @@ async function githubProfilePage() {
     value: 21,
     min: milliSatsToSats(lnurlData.minSendable),
     max: milliSatsToSats(lnurlData.maxSendable),
+    placeholder: "Amount in sats",
+  });
+
+  const commentInput = html.input({
+    type: "text",
+    id: "n-modal-comment",
+    classList: "n-modal-input",
+    placeholder: "Zapped with Nostrize",
+  });
+
+  const generateInvoiceButton = html.button({
+    id: "n-generate-invoice-btn",
+    classList: "n-generate-invoice-btn",
+    text: "Generate Invoice",
+    onclick: async (e) => {
+      e.target.textContent = "Generating...";
+
+      await generateInvoiceButtonClickHandler();
+    },
   });
 
   const qrCodeContainer = html.div({
@@ -105,6 +123,36 @@ async function githubProfilePage() {
     text: "",
   });
 
+  const copyInvoiceButtonHandler = (e) => {
+    window.focus();
+
+    const invoice = document.getElementById("n-invoice-hidden").text;
+
+    navigator.clipboard.writeText(invoice).then(() => {
+      // Change button text to "Copied" and set it to green
+      e.target.textContent = "Copied";
+      e.target.classList.add("copied");
+
+      // Change it back to "Copy invoice" after 3 seconds
+      setTimeout(() => {
+        e.target.textContent = "Copy invoice";
+        e.target.classList.remove("copied");
+      }, 3000);
+    });
+  };
+
+  const satOptionButton = createSatsOptionButton(html.button);
+
+  const closeModal = () => {
+    zapModal.style.display = "none";
+
+    document.getElementById("n-generate-invoice-btn").textContent =
+      "Generate Invoice";
+    document.getElementById("n-modal-step-1").style.display = "block";
+    document.getElementById("n-modal-step-2").style.display = "none";
+    document.getElementById("n-modal-step-3").style.display = "none";
+  };
+
   const zapModal = html.div({
     id: "n-modal",
     classList: "n-modal",
@@ -116,16 +164,44 @@ async function githubProfilePage() {
           html.span({
             classList: "n-modal-close",
             text: "×",
-            onclick: () => (zapModal.style.display = "none"),
+            onclick: closeModal,
           }),
           html.div({
-            id: "n-modal-hide-after-pay",
+            id: "n-modal-step-1",
             children: [
               html.h2({
                 classList: "n-modal-title",
                 text: "Zap with a lightning wallet",
               }),
-              zapSatsAmountInput,
+              html.div({
+                children: [21, 69, 100, 500].map(satOptionButton),
+                classList: "n-sats-option-row",
+              }),
+              html.div({
+                children: [2100, 5000, 10000, 100000].map(satOptionButton),
+                classList: "n-sats-option-row",
+              }),
+              html.div({
+                classList: "n-sats-option-row",
+                children: [zapSatsAmountInput, html.span({ text: "sats" })],
+              }),
+              commentInput,
+              html.div({
+                style: [
+                  ["display", "flex"],
+                  ["justify-content", "center"],
+                  ["aligh-items", "center"],
+                ],
+                children: [generateInvoiceButton],
+              }),
+            ],
+          }),
+          html.div({
+            id: "n-modal-step-2",
+            children: [
+              html.span({
+                text: `Scan QR code to zap ${user} ${zapSatsAmountInput.value} sats`,
+              }),
               qrCodeContainer,
               html.input({ type: "hidden", id: "n-invoice-hidden" }),
               html.div({
@@ -136,47 +212,27 @@ async function githubProfilePage() {
                     id: "n-modal-copy-btn",
                     classList: "n-modal-copy-btn",
                     text: "Copy invoice",
-                    onclick: (e) => {
-                      window.focus();
-
-                      const invoice =
-                        document.getElementById("n-invoice-hidden").text;
-
-                      navigator.clipboard.writeText(invoice).then(() => {
-                        // Change button text to "Copied" and set it to green
-                        e.target.textContent = "Copied";
-                        e.target.classList.add("copied");
-
-                        // Change it back to "Copy invoice" after 3 seconds
-                        setTimeout(() => {
-                          e.target.textContent = "Copy invoice";
-                          e.target.classList.remove("copied");
-                        }, 3000);
-                      });
-                    },
+                    onclick: copyInvoiceButtonHandler,
                   }),
                 ],
               }),
             ],
           }),
-          paidMessagePlaceholder,
+          html.div({
+            id: "n-modal-step-3",
+            children: [paidMessagePlaceholder],
+          }),
         ],
       }),
     ],
   });
 
-  gui.prepend(
-    document.querySelector("main"),
-    html.div({
-      classList: "n-button-container",
-      children: [zapModalOpen, zapModal],
-    }),
-  );
-
-  const zapButtonClickEventHandler = () =>
-    zapButtonOnClick({
+  const generateInvoiceButtonClickHandler = () =>
+    generateInvoiceButtonClick({
       sats: zapSatsAmountInput.value,
-      comment: "Zapped from Nostrize",
+      comment: commentInput.value
+        ? commentInput.value
+        : commentInput.placeholder,
       html,
       fetchOneEvent,
       finalizeEvent,
@@ -195,17 +251,25 @@ async function githubProfilePage() {
       zapEndpoint,
     });
 
+  gui.prepend(
+    document.querySelector("main"),
+    html.div({
+      classList: "n-button-container",
+      children: [zapModalOpen, zapModal],
+    }),
+  );
+
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = function (event) {
     if (event.target == zapModal) {
-      zapModal.style.display = "none";
+      closeModal();
     }
   };
 
   // Listen for keydown events to close the modal when ESC is pressed
   window.addEventListener("keydown", function (event) {
     if (event.key === "Escape" || event.key === "Esc") {
-      zapModal.style.display = "none";
+      closeModal();
     }
   });
 }

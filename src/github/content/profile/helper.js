@@ -4,6 +4,16 @@ import {
   satsToMilliSats,
 } from "../../../helpers/utils.js";
 
+export const createSatsOptionButton = (button) => (sats) => {
+  return button({
+    text: sats.toString(),
+    classList: "n-sats-option-btn",
+    onclick: () => {
+      document.getElementById("n-modal-amount").value = sats;
+    },
+  });
+};
+
 export async function getZapEndpoint({ metadataEvent, log }) {
   try {
     let { lud16 } = JSON.parse(metadataEvent.content);
@@ -61,7 +71,7 @@ export async function fetchNpubFromNip05({ user, log }) {
   return npub;
 }
 
-export async function zapButtonOnClick({
+export async function generateInvoiceButtonClick({
   sats,
   comment,
   fetchOneEvent,
@@ -80,12 +90,8 @@ export async function zapButtonOnClick({
 }) {
   const milliSats = satsToMilliSats({ sats });
 
-  log(comment);
-
   // will be used for querying
   const randomEventIndex = generateRandomHexString(64);
-
-  log("randomEventIndex", randomEventIndex);
 
   const eventTemplate = await makeZapRequest({
     profile: metadataEvent.pubkey,
@@ -109,21 +115,19 @@ export async function zapButtonOnClick({
     JSON.stringify(zapRequestEvent),
   )}&comment=${encodeURIComponent(comment)}`;
 
-  log("lnurl", url);
-
   const res = await fetch(url);
   const { pr: invoice } = await res.json();
 
   document.getElementById("n-invoice-hidden").text = invoice;
-
-  log("invoice", invoice);
 
   const svg = await qrCode(invoice, {
     type: "svg",
   });
 
   qrCodeContainer.innerHTML = svg;
-  document.getElementById("n-modal-copy-container").style.display = "flex";
+
+  document.getElementById("n-modal-step-1").style.display = "none";
+  document.getElementById("n-modal-step-2").style.display = "flex";
 
   const zapReceiptEvent = await fetchOneEvent({
     relayFactory,
@@ -139,7 +143,8 @@ export async function zapButtonOnClick({
 
   log("zapReceiptEvent", zapReceiptEvent);
 
-  document.getElementById("n-modal-hide-after-pay").innerHTML = "";
-
   paidMessagePlaceholder.textContent = `⚡ You just zapped ${user} ${sats} sats ⚡`;
+
+  document.getElementById("n-modal-step-2").style.display = "none";
+  document.getElementById("n-modal-step-3").style.display = "flex";
 }

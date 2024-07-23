@@ -1,4 +1,4 @@
-export function singletonFactory({ factoryAsyncFn }) {
+export function singletonFactory({ buildFn }) {
   let obj;
 
   return {
@@ -7,7 +7,7 @@ export function singletonFactory({ factoryAsyncFn }) {
         return obj;
       }
 
-      obj = await factoryAsyncFn();
+      obj = await buildFn();
 
       return obj;
     },

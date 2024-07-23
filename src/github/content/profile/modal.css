@@ -61,6 +61,8 @@ main {
 
 /* Title */
 .n-modal-title {
+  display: flex;
+  justify-content: center;
   font-size: 24px;
   margin-bottom: 20px;
 }
@@ -68,8 +70,8 @@ main {
 /* Numeric input */
 .n-modal-input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
+  padding: 5px;
+  margin: 5px;
   font-size: 18px;
 }
 
@@ -92,9 +94,8 @@ main {
 }
 
 .n-modal-copy-container {
-  display: none;
+  display: flex;
   justify-content: center;
-  margin-top: 10px;
 }
 
 .n-modal-copy-btn {
@@ -109,4 +110,51 @@ main {
 
 .n-modal-copy-btn.copied {
   background-color: green;
+}
+
+/* Sats option buttons */
+.n-sats-option-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.n-sats-option-btn {
+  padding: 10px 15px;
+  width: 90px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #eee;
+  color: #333;
+}
+
+.n-sats-option-btn:hover {
+  background-color: #ddd;
+}
+
+/* Generate Invoice button */
+.n-generate-invoice-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+}
+
+#n-modal-step-1,
+#n-modal-step-2,
+#n-modal-step-3 {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#n-modal-step-1 {
+  display: block;
 }
