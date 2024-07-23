@@ -1,85 +1,171 @@
-export async function generateInvoice({ lightningAddress, sats, log }) {
-  await lightningAddress.fetch();
+import {
+  Either,
+  not,
+  isBetween,
+  generateRandomHexString,
+} from "../../../helpers/utils.js";
 
-  log("lnurlpData", lightningAddress.lnurlpData);
+export async function getZapEndpoint({ metadataEvent, log }) {
+  try {
+    let { lud16 } = JSON.parse(metadataEvent.content);
 
-  const invoice = await lightningAddress.requestInvoice({ satoshi: sats });
+    if (lud16) {
+      const [name, domain] = lud16.split("@");
 
-  return invoice;
+      const lnurl = new URL(
+        `/.well-known/lnurlp/${name}`,
+        `https://${domain}`,
+      ).toString();
+
+      const res = await fetch(lnurl);
+      const body = await res.json();
+
+      log(`fetch ${lnurl}`, body);
+
+      if (body.allowsNostr && body.nostrPubkey) {
+        return Either.right(body);
+      } else {
+        return Either.left("allowsNostr or nostrPubkey is not present");
+      }
+    } else {
+      return Either.left("Could not find lud16 from kind0 event");
+    }
+  } catch (err) {
+    return Either.left(err.toString());
+  }
 }
 
-export async function fetchLud16({ relayUrl, log, subscriptionId, npub }) {
-  return new Promise((resolve, reject) => {
-    const ws = new WebSocket(relayUrl);
+export async function fetchNpubFromNip05({ user, log }) {
+  const fetchUrl = `https://${user}.github.io/github-connect/.well-known/nostr.json?user=${user}`;
 
-    ws.onopen = () => {
-      log("channel has opened");
+  let response;
 
-      // fetch the latest profile of a user
-      ws.send(
-        JSON.stringify([
-          "REQ",
-          subscriptionId,
-          { authors: [npub], kinds: [0], limit: 1 },
-        ]),
-      );
-    };
+  try {
+    response = await fetch(fetchUrl);
+  } catch (error) {
+    log("nip05 fetch error", error);
 
-    ws.onmessage = (event) => {
-      log("event received", event);
+    return;
+  }
 
-      if (!event.data) {
-        return reject("event.data is empty");
-      }
+  if (!response.ok) {
+    log(response.status);
 
-      const nostrEvent = JSON.parse(event.data);
+    return;
+  }
 
-      if (!Array.isArray(nostrEvent)) {
-        log("expected array but received", nostrEvent);
+  const json = await response.json();
+  const npub = json["names"][user];
 
-        return reject("expected array but received");
-      }
+  log("npub", npub);
 
-      const nostrType = nostrEvent[0];
-      const sId = nostrEvent[1];
+  return npub;
+}
 
-      if (sId !== subscriptionId) {
-        log(
-          `Subscription ids dont match Expected: ${subscriptionId}, got: ${sId}`,
-        );
+export async function zapButtonOnClick({
+  amountSats,
+  html,
+  fetchOneEvent,
+  finalizeEvent,
+  gui,
+  lnurlData,
+  log,
+  makeZapRequest,
+  metadataEvent,
+  qrCode,
+  recipient,
+  relayFactory,
+  relayUrl,
+  user,
+  vcardContainer,
+  zapEndpoint,
+  zapButton,
+}) {
+  zapButton.textContent = "⚡";
 
-        return reject("Subscription ids dont match");
-      }
+  const amountMilli = amountSats * 1000; // convert sats to millisats
 
-      if (nostrType === "EOSE") {
-        ws.close(1000);
-      } else if (nostrType === "CLOSED") {
-        return;
-      } else if (nostrType === "EVENT") {
-        const e = nostrEvent[2];
-        const rawContent = e.content;
-        const contentJson = JSON.parse(rawContent);
+  if (
+    not(
+      isBetween({
+        amount: amountMilli,
+        min: lnurlData.minSendable,
+        max: lnurlData.maxSendable,
+      }),
+    )
+  ) {
+    log(
+      `amount ${amountSats} is not between ${lnurlData.minSendable / 1000} and ${lnurlData.maxSendable / 1000}`,
+    );
 
-        log("content", contentJson);
+    return;
+  }
 
-        const lud16 = contentJson.lud16;
+  const comment = "nostrize tip - 8";
 
-        log(`lud16: ${lud16}`);
+  log(comment);
 
-        return resolve(lud16);
-      } else {
-        log(`unexpected nostr event type received: ${nostrType}`);
+  // will be used for querying
+  const randomEventIndex = generateRandomHexString(64);
 
-        return reject("unexpected nostr event");
-      }
-    };
+  log("randomEventIndex", randomEventIndex);
 
-    ws.onclose = () => {
-      console.log("Disconnected from relay");
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
+  const eventTemplate = await makeZapRequest({
+    profile: metadataEvent.pubkey,
+    event: randomEventIndex,
+    amount: amountMilli,
+    comment,
+    relays: [relayUrl],
   });
+
+  // can't access to window.nostr inside the content script, need to use events
+  // for now fall back to anon zaps
+  // actually no use the private key directly from .env for now
+  // TODO: get it from window.nostr or from settings
+  const zapRequestEvent = window.nostr
+    ? await window.nostr.signEvent(eventTemplate)
+    : finalizeEvent(eventTemplate, process.env.npriv);
+
+  log("zapRequestEvent", zapRequestEvent);
+
+  const url = `${zapEndpoint}?amount=${amountMilli}&nostr=${encodeURIComponent(
+    JSON.stringify(zapRequestEvent),
+  )}&comment=${encodeURIComponent(comment)}`;
+
+  log("lnurl", url);
+
+  const res = await fetch(url);
+  const { pr: invoice } = await res.json();
+
+  log("invoice", invoice);
+
+  const svg = await qrCode(invoice, {
+    type: "svg",
+  });
+
+  const qrCodeContainer = gui.getOrCreateById({
+    id: "n-qr-container",
+    createFn: (id) => html.div({ id }),
+  });
+
+  qrCodeContainer.innerHTML = svg;
+  vcardContainer.append(qrCodeContainer);
+
+  const zapReceiptEvent = await fetchOneEvent({
+    relayFactory,
+    filter: {
+      authors: [recipient],
+      kinds: [9735],
+      since: eventTemplate.created_at - 10 * 1000,
+      "#p": [zapRequestEvent.pubkey],
+      "#e": [randomEventIndex],
+      limit: 1,
+    },
+  });
+
+  log("zapReceiptEvent", zapReceiptEvent);
+
+  qrCodeContainer.innerHTML = "";
+
+  zapButton.textContent = `⚡ You just zapped ${user} ${amountSats / 1000} sats ⚡`;
 }

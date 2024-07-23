@@ -1,23 +1,21 @@
-import { LightningAddress } from "@getalby/lightning-tools";
+import { finalizeEvent, Relay } from "nostr-tools";
+import { makeZapRequest } from "nostr-tools/nip57";
+import { toString as qrCode } from "qrcode/lib/browser.js";
 
 import { logger } from "../../../helpers/logger.js";
-import { fetchLud16, generateInvoice } from "./helper.js";
-import { div, link, span } from "../../../imgui-dom/src/html.js";
-import { toString as generateQRCodeString } from "qrcode/lib/browser.js";
+import { getOrInsertCache } from "../../../helpers/local-cache.js";
+import {
+  fetchNpubFromNip05,
+  getZapEndpoint,
+  zapButtonOnClick,
+} from "./helper.js";
+import { fetchOneEvent } from "../../../helpers/relays.js";
+import { link, div, span, input } from "../../../imgui-dom/src/html.js";
+import { prepend, getOrCreateById } from "../../../imgui-dom/src/gui.js";
+import { singletonFactory, Either } from "../../../helpers/utils.js";
 
-function prepend(parent, element) {
-  var childElements = [...parent.children];
-
-  for (let i = 0; i < childElements.length; i++) {
-    console.log(childElements[i].nodeName);
-  }
-
-  parent.append(element);
-
-  for (let i = 0; i < childElements.length; i++) {
-    parent.append(childElements[i]);
-  }
-}
+const html = { link, div, span, input };
+const gui = { prepend, getOrCreateById };
 
 async function githubProfilePage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
@@ -36,108 +34,98 @@ async function githubProfilePage() {
   const log = logger(settings.debug);
 
   const user = pathParts[0];
+  const npub = await getOrInsertCache(`user_npub:${user}`, () =>
+    fetchNpubFromNip05({ user, log }),
+  );
 
-  log("user", user);
+  if (!npub) {
+    log(`could not fetch user ${user}`);
 
-  const fetchUrl = `https://${user}.github.io/github-connect/.well-known/nostr.json?user=${user}`;
-
-  let response;
-
-  try {
-    response = await fetch(fetchUrl);
-  } catch (error) {
-    log("nip05 fetch error", error);
+    return;
   }
 
-  if (response.ok) {
-    const json = await response.json();
-    const npub = json["names"][user];
+  // TODO: get it from settings
+  const relayUrl = "wss://relay.damus.io";
 
-    log("npub", npub);
+  // TODO: use SimplePool, do we need multiple relays?
+  const relayFactory = singletonFactory({
+    factoryAsyncFn: async () => {
+      const relay = new Relay(relayUrl);
 
-    if (!npub) {
-      log(`could not fetch user ${user}`);
+      await relay.connect();
 
-      return;
-    }
+      return relay;
+    },
+  });
 
-    try {
-      const subscriptionId =
-        "SubsIdNostrize" + Math.round(Math.random() * 10000);
+  const metadataEvent = await getOrInsertCache(`npub_kid0:${npub}`, () =>
+    fetchOneEvent({
+      relayFactory,
+      filter: { authors: [npub], kinds: [0], limit: 1 },
+    }),
+  );
 
-      const lud16 = await fetchLud16({
-        log,
-        npub,
-        relayUrl: "wss://relay.damus.io",
-        subscriptionId,
-      });
+  log("metadataEvent", metadataEvent);
 
-      log(lud16);
+  const lnurlData = await getOrInsertCache(metadataEvent.id, () =>
+    Either.getOrElseThrow(() => getZapEndpoint({ metadataEvent, log })),
+  );
 
-      if (!lud16) {
-        log("couldnt fetch lud16 or lud06");
+  const zapEndpoint = lnurlData.callback;
+  const recipient = lnurlData.nostrPubkey;
+  const vcardContainer = document.querySelector("div.vcard-names-container");
 
-        return;
-      }
+  const zapButton = html.link({
+    classList: "no-underline Button",
+    href: "javascript:void(0)",
+    text: "⚡",
+    style: [["right", "4px"]],
+  });
 
-      const vcardContainer = document.querySelector(
-        "div.vcard-names-container",
-      );
+  const amountSatsInput = html.input({ type: "number", value: 21 });
 
-      const zapButton = div({
-        id: "n-zap-button",
+  const zapButtonClickEventHandler = () =>
+    zapButtonOnClick({
+      amountSats: amountSatsInput.value,
+      html,
+      fetchOneEvent,
+      finalizeEvent,
+      gui,
+      lnurlData,
+      log,
+      makeZapRequest,
+      metadataEvent,
+      qrCode,
+      recipient,
+      relayFactory,
+      relayUrl,
+      user,
+      vcardContainer,
+      zapEndpoint,
+      zapButton,
+    });
+
+  zapButton.onclick = zapButtonClickEventHandler;
+
+  let zapButtonContainer = html.div({
+    id: "n-zap-button",
+    children: [
+      amountSatsInput,
+      html.span({ text: "sats" }),
+      html.div({
+        classList: "n-tooltip-container n-zap-emoji",
         children: [
-          div({
-            classList: "n-tooltip-container n-zap-emoji",
-            children: [
-              link({
-                classList: "no-underline Button",
-                href: "javascript:void(0)",
-                onclick: async () => {
-                  const invoice = await generateInvoice({
-                    log,
-                    lightningAddress: new LightningAddress(lud16),
-                    sats: 10,
-                  });
-
-                  const svg = await generateQRCodeString(
-                    invoice.paymentRequest,
-                    {
-                      type: "svg",
-                    },
-                  );
-
-                  vcardContainer.append(
-                    div({
-                      id: "n-qr-code-container",
-                    }),
-                  );
-
-                  const qrCodeContainer = document.getElementById(
-                    "n-qr-code-container",
-                  );
-
-                  qrCodeContainer.innerHTML = svg;
-                },
-                text: "⚡",
-                style: [["right", "4px"]],
-              }),
-              span({
-                classList: "n-tooltiptext",
-                text: "Zap this user",
-              }),
-            ],
+          zapButton,
+          html.span({
+            classList: "n-tooltiptext",
+            text: "Zap this user",
           }),
         ],
-      });
+      }),
+    ],
+  });
 
-      prepend(vcardContainer, zapButton);
-    } catch (error) {
-      log("fetch profile error", error);
-    }
-  } else {
-    log(response.status);
-  }
+  gui.prepend(vcardContainer, zapButtonContainer);
 }
 
-githubProfilePage();
+githubProfilePage().catch((error) => console.log(error));

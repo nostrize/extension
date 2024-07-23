@@ -30,6 +30,8 @@
   "homepage": "https://github.com/nostrize/extension#readme",
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
+    "dotenv": "^16.4.5",
+    "dotenv-webpack": "^8.1.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
@@ -38,7 +40,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@getalby/lightning-tools": "^5.0.3",
     "nostr-tools": "^2.7.1",
     "qrcode": "^1.5.3"
   }
