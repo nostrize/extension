@@ -11,3 +11,4 @@ cp manifest.json dist/manifest.json
 cp src/github/content/issues/issues.css dist/
 cp src/github/content/issue/issue.css dist/
 cp src/github/content/profile/profile.css dist/
+cp src/github/content/profile/modal.css dist/

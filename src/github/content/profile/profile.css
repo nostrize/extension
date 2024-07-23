@@ -1,9 +1,7 @@
-#n-zap-button {
-  display: inline-block;
-  height: 32px;
-  width: 32px;
+#n-modal-open-btn {
+  color: white;
   background-color: rgb(130, 80, 223);
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
 /* hide tooltiptext by default */

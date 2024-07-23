@@ -10,12 +10,13 @@ import {
   zapButtonOnClick,
 } from "./helper.js";
 import { fetchOneEvent } from "../../../helpers/relays.js";
-import { link, div, span, input } from "../../../imgui-dom/src/html.js";
-import { prepend, getOrCreateById } from "../../../imgui-dom/src/gui.js";
-import { singletonFactory, Either } from "../../../helpers/utils.js";
-
-const html = { link, div, span, input };
-const gui = { prepend, getOrCreateById };
+import * as html from "../../../imgui-dom/src/html.js";
+import * as gui from "../../../imgui-dom/src/gui.js";
+import {
+  singletonFactory,
+  Either,
+  milliSatsToSats,
+} from "../../../helpers/utils.js";
 
 async function githubProfilePage() {
   const { settings } = await chrome.storage.sync.get(["settings"]);
@@ -73,20 +74,109 @@ async function githubProfilePage() {
 
   const zapEndpoint = lnurlData.callback;
   const recipient = lnurlData.nostrPubkey;
-  const vcardContainer = document.querySelector("div.vcard-names-container");
 
-  const zapButton = html.link({
-    classList: "no-underline Button",
-    href: "javascript:void(0)",
-    text: "⚡",
-    style: [["right", "4px"]],
+  const zapModalOpen = html.button({
+    id: "n-modal-open-btn",
+    text: `⚡ Zap ${user} ⚡`,
+    onclick: async () => {
+      zapModal.style.display = "block";
+
+      await zapButtonClickEventHandler();
+    },
   });
 
-  const amountSatsInput = html.input({ type: "number", value: 21 });
+  const zapSatsAmountInput = html.input({
+    type: "number",
+    id: "n-modal-amount",
+    classList: "n-modal-input",
+    value: 21,
+    min: milliSatsToSats(lnurlData.minSendable),
+    max: milliSatsToSats(lnurlData.maxSendable),
+  });
+
+  const qrCodeContainer = html.div({
+    id: "n-modal-qr",
+    classList: "n-modal-qr",
+  });
+
+  const paidMessagePlaceholder = html.div({
+    id: "n-modal-paid-msg",
+    classList: "n-modal-paid-msg",
+    text: "",
+  });
+
+  const zapModal = html.div({
+    id: "n-modal",
+    classList: "n-modal",
+    children: [
+      html.div({
+        id: "n-modal-content",
+        classList: "n-modal-content",
+        children: [
+          html.span({
+            classList: "n-modal-close",
+            text: "×",
+            onclick: () => (zapModal.style.display = "none"),
+          }),
+          html.div({
+            id: "n-modal-hide-after-pay",
+            children: [
+              html.h2({
+                classList: "n-modal-title",
+                text: "Zap with a lightning wallet",
+              }),
+              zapSatsAmountInput,
+              qrCodeContainer,
+              html.input({ type: "hidden", id: "n-invoice-hidden" }),
+              html.div({
+                id: "n-modal-copy-container",
+                classList: "n-modal-copy-container",
+                children: [
+                  html.button({
+                    id: "n-modal-copy-btn",
+                    classList: "n-modal-copy-btn",
+                    text: "Copy invoice",
+                    onclick: (e) => {
+                      window.focus();
+
+                      const invoice =
+                        document.getElementById("n-invoice-hidden").text;
+
+                      navigator.clipboard.writeText(invoice).then(() => {
+                        // Change button text to "Copied" and set it to green
+                        e.target.textContent = "Copied";
+                        e.target.classList.add("copied");
+
+                        // Change it back to "Copy invoice" after 3 seconds
+                        setTimeout(() => {
+                          e.target.textContent = "Copy invoice";
+                          e.target.classList.remove("copied");
+                        }, 3000);
+                      });
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          paidMessagePlaceholder,
+        ],
+      }),
+    ],
+  });
+
+  gui.prepend(
+    document.querySelector("main"),
+    html.div({
+      classList: "n-button-container",
+      children: [zapModalOpen, zapModal],
+    }),
+  );
 
   const zapButtonClickEventHandler = () =>
     zapButtonOnClick({
-      amountSats: amountSatsInput.value,
+      sats: zapSatsAmountInput.value,
+      comment: "Zapped from Nostrize",
       html,
       fetchOneEvent,
       finalizeEvent,
@@ -95,37 +185,29 @@ async function githubProfilePage() {
       log,
       makeZapRequest,
       metadataEvent,
+      paidMessagePlaceholder,
       qrCode,
+      qrCodeContainer,
       recipient,
       relayFactory,
       relayUrl,
       user,
-      vcardContainer,
       zapEndpoint,
-      zapButton,
     });
 
-  zapButton.onclick = zapButtonClickEventHandler;
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function (event) {
+    if (event.target == zapModal) {
+      zapModal.style.display = "none";
+    }
+  };
 
-  let zapButtonContainer = html.div({
-    id: "n-zap-button",
-    children: [
-      amountSatsInput,
-      html.span({ text: "sats" }),
-      html.div({
-        classList: "n-tooltip-container n-zap-emoji",
-        children: [
-          zapButton,
-          html.span({
-            classList: "n-tooltiptext",
-            text: "Zap this user",
-          }),
-        ],
-      }),
-    ],
+  // Listen for keydown events to close the modal when ESC is pressed
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" || event.key === "Esc") {
+      zapModal.style.display = "none";
+    }
   });
-
-  gui.prepend(vcardContainer, zapButtonContainer);
 }
 
 githubProfilePage().catch((error) => console.log(error));

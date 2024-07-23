@@ -1,0 +1,112 @@
+/* Main container styling */
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full height to vertically center the button if desired */
+}
+
+/* Button container styling */
+.n-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Full width of the main element */
+  padding: 5px;
+}
+
+/* Modal container, hidden by default */
+.n-modal {
+  display: none;
+  position: fixed;
+  z-index: 5;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Modal content */
+.n-modal-content {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  position: relative;
+  border-radius: 10px;
+}
+
+/* Close button */
+.n-modal-close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.n-modal-close:hover,
+.n-modal-close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Title */
+.n-modal-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Numeric input */
+.n-modal-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+/* QR code container */
+.n-modal-qr {
+  width: 100%;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+/* Payment message */
+.n-modal-paid-msg {
+  font-size: 18px;
+  color: green;
+  text-align: center;
+}
+
+.n-modal-copy-container {
+  display: none;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.n-modal-copy-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+}
+
+.n-modal-copy-btn.copied {
+  background-color: green;
+}

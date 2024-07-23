@@ -1,8 +1,7 @@
 import {
   Either,
-  not,
-  isBetween,
   generateRandomHexString,
+  satsToMilliSats,
 } from "../../../helpers/utils.js";
 
 export async function getZapEndpoint({ metadataEvent, log }) {
@@ -63,45 +62,23 @@ export async function fetchNpubFromNip05({ user, log }) {
 }
 
 export async function zapButtonOnClick({
-  amountSats,
-  html,
+  sats,
+  comment,
   fetchOneEvent,
   finalizeEvent,
-  gui,
-  lnurlData,
   log,
   makeZapRequest,
   metadataEvent,
+  paidMessagePlaceholder,
   qrCode,
+  qrCodeContainer,
   recipient,
   relayFactory,
   relayUrl,
   user,
-  vcardContainer,
   zapEndpoint,
-  zapButton,
 }) {
-  zapButton.textContent = "⚡";
-
-  const amountMilli = amountSats * 1000; // convert sats to millisats
-
-  if (
-    not(
-      isBetween({
-        amount: amountMilli,
-        min: lnurlData.minSendable,
-        max: lnurlData.maxSendable,
-      }),
-    )
-  ) {
-    log(
-      `amount ${amountSats} is not between ${lnurlData.minSendable / 1000} and ${lnurlData.maxSendable / 1000}`,
-    );
-
-    return;
-  }
-
-  const comment = "nostrize tip - 8";
+  const milliSats = satsToMilliSats({ sats });
 
   log(comment);
 
@@ -113,7 +90,7 @@ export async function zapButtonOnClick({
   const eventTemplate = await makeZapRequest({
     profile: metadataEvent.pubkey,
     event: randomEventIndex,
-    amount: amountMilli,
+    amount: milliSats,
     comment,
     relays: [relayUrl],
   });
@@ -128,7 +105,7 @@ export async function zapButtonOnClick({
 
   log("zapRequestEvent", zapRequestEvent);
 
-  const url = `${zapEndpoint}?amount=${amountMilli}&nostr=${encodeURIComponent(
+  const url = `${zapEndpoint}?amount=${milliSats}&nostr=${encodeURIComponent(
     JSON.stringify(zapRequestEvent),
   )}&comment=${encodeURIComponent(comment)}`;
 
@@ -137,19 +114,16 @@ export async function zapButtonOnClick({
   const res = await fetch(url);
   const { pr: invoice } = await res.json();
 
+  document.getElementById("n-invoice-hidden").text = invoice;
+
   log("invoice", invoice);
 
   const svg = await qrCode(invoice, {
     type: "svg",
   });
 
-  const qrCodeContainer = gui.getOrCreateById({
-    id: "n-qr-container",
-    createFn: (id) => html.div({ id }),
-  });
-
   qrCodeContainer.innerHTML = svg;
-  vcardContainer.append(qrCodeContainer);
+  document.getElementById("n-modal-copy-container").style.display = "flex";
 
   const zapReceiptEvent = await fetchOneEvent({
     relayFactory,
@@ -165,7 +139,7 @@ export async function zapButtonOnClick({
 
   log("zapReceiptEvent", zapReceiptEvent);
 
-  qrCodeContainer.innerHTML = "";
+  document.getElementById("n-modal-hide-after-pay").innerHTML = "";
 
-  zapButton.textContent = `⚡ You just zapped ${user} ${amountSats / 1000} sats ⚡`;
+  paidMessagePlaceholder.textContent = `⚡ You just zapped ${user} ${sats} sats ⚡`;
 }

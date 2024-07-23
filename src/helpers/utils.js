@@ -48,14 +48,6 @@ export const Either = {
   },
 };
 
-export function not(b) {
-  return !b;
-}
-
-export function isBetween({ amount, min, max }) {
-  return amount > min && amount < max;
-}
-
 export function generateRandomHexString(length) {
   const byteLength = Math.ceil(length / 2);
   const randomBytes = new Uint8Array(byteLength);
@@ -64,4 +56,18 @@ export function generateRandomHexString(length) {
   return Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, "0"))
     .join("")
     .slice(0, length);
+}
+
+export function satsToMilliSats({ sats }) {
+  return sats * 1000;
+}
+
+export function milliSatsToSats({ milliSats, floor = true }) {
+  const sats = milliSats / 1000;
+
+  if (floor) {
+    return Math.floor(sats);
+  }
+
+  return sats;
 }

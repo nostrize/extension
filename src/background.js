@@ -86,7 +86,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     // Inject CSS file
     chrome.scripting.insertCSS({
       target: { tabId },
-      files: ["profile.css"],
+      files: ["profile.css", "modal.css"],
     });
   }
 });
