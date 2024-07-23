@@ -104,7 +104,7 @@ main {
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  background-color: #007bff;
+  background-color: rgba(130, 80, 223);
   color: white;
 }
 
@@ -127,12 +127,12 @@ main {
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  background-color: #eee;
+  background-color: rgba(130, 80, 223, 0.5);
   color: #333;
 }
 
 .n-sats-option-btn:hover {
-  background-color: #ddd;
+  background-color: rgba(130, 80, 223);
 }
 
 /* Generate Invoice button */
@@ -142,7 +142,7 @@ main {
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  background-color: #007bff;
+  background-color: rgb(130, 80, 223);
   color: white;
 }
 

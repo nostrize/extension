@@ -76,6 +76,10 @@ async function githubProfilePage() {
   const zapEndpoint = lnurlData.callback;
   const recipient = lnurlData.nostrPubkey;
 
+  if (gui.gebid("n-modal-open-btn")) {
+    return;
+  }
+
   const zapModalOpen = html.button({
     id: "n-modal-open-btn",
     text: `⚡ Zap ${user} ⚡`,
@@ -92,6 +96,7 @@ async function githubProfilePage() {
     min: milliSatsToSats(lnurlData.minSendable),
     max: milliSatsToSats(lnurlData.maxSendable),
     placeholder: "Amount in sats",
+    onchange: (e) => (gui.gebid("n-invoice-hidden").value = e.target.value),
   });
 
   const commentInput = html.input({
@@ -107,6 +112,9 @@ async function githubProfilePage() {
     text: "Generate Invoice",
     onclick: async (e) => {
       e.target.textContent = "Generating...";
+
+      gui.gebid("n-modal-step-2-desc").textContent =
+        `Scan QR code to zap ${user} ${zapSatsAmountInput.value} sats`;
 
       await generateInvoiceButtonClickHandler();
     },
@@ -171,7 +179,7 @@ async function githubProfilePage() {
             children: [
               html.h2({
                 classList: "n-modal-title",
-                text: "Zap with a lightning wallet",
+                text: `Zap ${user} using a lightning wallet`,
               }),
               html.div({
                 children: [21, 69, 100, 500].map(satOptionButton),
@@ -200,7 +208,7 @@ async function githubProfilePage() {
             id: "n-modal-step-2",
             children: [
               html.span({
-                text: `Scan QR code to zap ${user} ${zapSatsAmountInput.value} sats`,
+                id: "n-modal-step-2-desc",
               }),
               qrCodeContainer,
               html.input({ type: "hidden", id: "n-invoice-hidden" }),
