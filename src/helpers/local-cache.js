@@ -9,6 +9,10 @@ export async function getOrInsertCache(key, insertCallback) {
     // If it does not exist, call the fetch callback to get the value
     const value = await insertCallback();
 
+    if (!value) {
+      return;
+    }
+
     // Store the value in local storage
     localStorage.setItem(key, JSON.stringify(value));
 
