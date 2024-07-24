@@ -59,7 +59,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         name: Dev Release
-        files: dist
+        files: dist/*
         token: ${{ secrets.GITHUB_TOKEN }}
         tag_name: ${{ steps.tag_version.outputs.new_tag }}
         make_latest: true
