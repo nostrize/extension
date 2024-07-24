@@ -1,5 +1,5 @@
 import { logger } from "../../../helpers/logger.js";
-import { button, div, hr, link, span } from "../../../imgui-dom/src/html.js";
+import { button, div, hr, link, span } from "../../../imgui-dom/html.js";
 // import { fetchUserLud16 } from "../../../helpers/relays";
 import IssueTemplate from "./issue-template.js";
 

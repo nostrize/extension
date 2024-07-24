@@ -1,3 +1,0 @@
-[submodule "src/imgui-dom"]
-	path = src/imgui-dom
-	url = https://github.com/dhalsim/imgui-dom.git
