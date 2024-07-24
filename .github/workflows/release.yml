@@ -1,4 +1,4 @@
-name: Create Release Zip
+name: Create a release
 
 on:
   push:
@@ -15,15 +15,10 @@ jobs:
         node-version-file: '.nvmrc'
     - run: npm i
     - run: npm run build
-    - name: Create a Release
-      uses: elgohr/Github-Release-Action@v5
+    - run: npm run release
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        title: Dev Release
-        workdir: dist
-        
-
+        GH_TOKEN: ${{ github.token }}
+    
 permissions:
   packages: write
   contents: write
