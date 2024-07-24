@@ -1,5 +1,5 @@
 import { logger } from "../../../helpers/logger.js";
-import { button, div, hr, link, span } from "../../../imgui-dom/html.js";
+import { button, div, hr, link, span } from "../../../imgui-dom-2/html.js";
 import IssueTemplate from "./issue-template.js";
 
 function querySelectorOr(selector1, selector2) {

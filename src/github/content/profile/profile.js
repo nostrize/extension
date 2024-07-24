@@ -11,8 +11,8 @@ import {
   createSatsOptionButton,
 } from "./helper.js";
 import { fetchOneEvent } from "../../../helpers/relays.js";
-import * as html from "../../../imgui-dom/html.js";
-import * as gui from "../../../imgui-dom/gui.js";
+import * as html from "../../../imgui-dom-2/html.js";
+import * as gui from "../../../imgui-dom-2/gui.js";
 import {
   singletonFactory,
   Either,
