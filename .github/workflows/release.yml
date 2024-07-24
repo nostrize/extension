@@ -15,6 +15,38 @@ jobs:
         node-version-file: '.nvmrc'
     - run: npm i
     - run: npm run build
+
+    - name: Determine next version
+      id: tag_version
+      run: |
+        # Fetch all tags
+        git fetch --tags
+        
+        # Get the latest tag
+        LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+        # If there are no tags, start at v0.0.1
+        if [ -z "$LATEST_TAG" ]; then
+          NEW_TAG="v0.0.1"
+        else
+          # Increment the version
+          IFS='.' read -r -a PARTS <<< "${LATEST_TAG#v}"
+          PATCH=${PARTS[2]}
+          MINOR=${PARTS[1]}
+          MAJOR=${PARTS[0]}
+          
+          PATCH=$((PATCH + 1))
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+        fi
+        
+        echo "New tag: $NEW_TAG"
+        echo "::set-output name=new_tag::$NEW_TAG"
+
+    - name: Create Git Tag
+      run: |
+        NEW_TAG=${{ steps.tag_version.outputs.new_tag }}
+        git tag $NEW_TAG
+        git push origin $NEW_TAG
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
