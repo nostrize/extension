@@ -50,6 +50,12 @@ jobs:
         NEW_TAG=${{ steps.tag_version.outputs.new_tag }}
         git tag $NEW_TAG
         git push origin $NEW_TAG
+
+    - name: Checkout repository again to fetch new tags
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
