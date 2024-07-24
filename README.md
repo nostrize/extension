@@ -51,6 +51,9 @@ The first platform that you can use Nostrize is GitHub. It was chosen as the ini
 
 With Nostrize on GitHub, you can:
 
-* Donate to any user or organization
-* Fund issues to incentivize solutions
-* Receive payments for your pull requests that address and resolve issues
+* Seamlessly connect your Nostr and GitHub accounts with a [simple step](https://github.com/nostrize/github-connect) – no waiting list required.
+* Support any user or organization through donations.
+  * Receive tips directly without any commission or fees.
+* Fund issues to incentivize solutions.
+  * Earn payments for your pull requests that address and resolve issues.
+* And more features are coming...
