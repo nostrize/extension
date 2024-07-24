@@ -23,7 +23,7 @@ jobs:
         git fetch --tags
         
         # Get the latest tag
-        LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+        LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
 
         # If there are no tags, start at v0.0.1
         if [ -z "$LATEST_TAG" ]; then
