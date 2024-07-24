@@ -1,4 +1,4 @@
-import { div, link, span } from "../../../imgui-dom-2/html.js";
+import { div, link, span } from "../../../imgui-dom/html.js";
 import { logger } from "../../../helpers/logger.js";
 
 async function githubIssuesPage() {
