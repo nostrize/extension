@@ -10,60 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Determine next version
-      id: tag_version
-      run: |
-        # Fetch all tags
-        git fetch --tags
-        
-        # Get the latest tag
-        LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "")
-
-        # Debug output
-        echo "Latest tag: $LATEST_TAG"
-
-        # If there are no tags, start at v0.0.1
-        if [ -z "$LATEST_TAG" ]; then
-          NEW_TAG="v0.0.1"
-        else
-          # Increment the version
-          IFS='.' read -r -a PARTS <<< "${LATEST_TAG#v}"
-          PATCH=${PARTS[2]}
-          MINOR=${PARTS[1]}
-          MAJOR=${PARTS[0]}
-          
-          PATCH=$((PATCH + 1))
-          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
-        fi
-        
-        echo "New tag: $NEW_TAG"
-        echo "::set-output name=new_tag::$NEW_TAG"
-
-    - name: Create Git Tag
-      run: |
-        NEW_TAG=${{ steps.tag_version.outputs.new_tag }}
-        git tag $NEW_TAG
-        git push origin $NEW_TAG
-
-    - name: Checkout repository again to fetch new tags
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     - uses: actions/setup-node@v4
       with:
         node-version-file: '.nvmrc'
     - run: npm i
     - run: npm run build
-        
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        name: Dev Release
-        files: dist/*
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag_name: ${{ steps.tag_version.outputs.new_tag }}
-        make_latest: true
-        
+    - run: npm run release
+    
 permissions:
   packages: write
   contents: write
