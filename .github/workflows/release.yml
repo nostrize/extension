@@ -62,6 +62,7 @@ jobs:
         name: Dev Release
         files: dist
         token: ${{ secrets.GITHUB_TOKEN }}
+        tag_name: ${{ steps.tag_version.outputs.new_tag }}
         make_latest: true
         
 permissions:
