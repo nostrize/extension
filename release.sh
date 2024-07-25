@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Fetch all tags
 git fetch --tags
 
@@ -23,5 +25,12 @@ else
 fi
 
 echo "New tag: $NEW_TAG"
+
+# Navigate to the directory containing the dist folder
+cd /path/to/your/project
+
+# Create a zip file containing only js, css, and json files from the dist folder
 zip -r release.zip . -i "dist/*.js" "dist/*.css" "dist/*.json"
-gh release create "$NEW_TAG" ./release.zip -t "dev release"
+
+# Create a new GitHub release
+gh release create "$NEW_TAG" ./release.zip -t "dev release" -n "Automated release based on latest commit" -R owner/repo
