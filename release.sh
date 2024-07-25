@@ -33,4 +33,4 @@ cd /path/to/your/project
 zip -r release.zip . -i "dist/*.js" "dist/*.css" "dist/*.json"
 
 # Create a new GitHub release
-gh release create "$NEW_TAG" ./release.zip -t "dev release" -n "Automated release based on latest commit" -R owner/repo
+gh release create "$NEW_TAG" ./release.zip -t "dev release" -n "Automated release based on latest commit"
