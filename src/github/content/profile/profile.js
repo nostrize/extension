@@ -1,9 +1,12 @@
-import { finalizeEvent, Relay } from "nostr-tools";
+import { finalizeEvent, generateSecretKey, Relay } from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
 import { logger } from "../../../helpers/logger.js";
-import { getOrInsertCache } from "../../../helpers/local-cache.js";
+import {
+  getLocalSettings,
+  getOrInsertCache,
+} from "../../../helpers/local-cache.js";
 import {
   fetchNpubFromNip05,
   getZapEndpoint,
@@ -20,7 +23,7 @@ import {
 } from "../../../helpers/utils.js";
 
 async function githubProfilePage() {
-  const { settings } = await chrome.storage.sync.get(["settings"]);
+  const settings = await getLocalSettings();
 
   settings.debug.namespace = "[N][Profile]";
 
@@ -34,8 +37,8 @@ async function githubProfilePage() {
   }
 
   const log = logger(settings.debug);
-
   const user = pathParts[0];
+
   const npub = await getOrInsertCache(`user_npub:${user}`, () =>
     fetchNpubFromNip05({ user, log }),
   );
@@ -255,6 +258,7 @@ async function githubProfilePage() {
       recipient,
       relayFactory,
       relayUrl,
+      secret: generateSecretKey(),
       user,
       zapEndpoint,
     });

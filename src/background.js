@@ -1,20 +1,5 @@
 import { logger } from "./helpers/logger.js";
 
-const defaultSettings = {
-  debug: {
-    log: true,
-    border: true,
-    namespace: "[N]",
-  },
-};
-
-async function initializeSettings() {
-  await chrome.storage.sync.set({ defaultSettings });
-}
-
-// Run the initialization function when the extension is installed/updated
-chrome.runtime.onInstalled.addListener(initializeSettings);
-
 const getPageFromUrl = (url) => {
   if (url.match(/https:\/\/github\.com\/.*\/.*\/issues$/)) {
     return "issues";

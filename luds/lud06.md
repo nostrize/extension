@@ -1,0 +1,121 @@
+LUD-06: `payRequest` base spec.
+===============================
+
+`author: fiatjaf` `author: akumaigorodski` `discussion: https://t.me/lnurl/139` `discussion: https://github.com/fiatjaf/lnurl-rfc/issues/9`
+
+---
+
+The idea here is that a wallet can scan a static QR code or click on a static LNURL address and get back details about a payment that is expected. The details may include much more extensive metadata than a normal Lightning invoice. And the amounts may be fixed or within a range.
+
+Then, once the user accepts the terms (and choose an amount, if that is not fixed), the wallet will call the service and get a Lightning invoice specific for that payment, containing a hash of the metadata as its [`h` tag (`description_hash`)](https://github.com/lightningnetwork/lightning-rfc/blob/master/11-payment-encoding.md#requirements-3) and proceed to pay the invoice if it matches the expected amount and hash.
+
+## Pay to static QR/NFC/link
+
+### Wallet to service interaction flow:
+
+1. User scans a LNURL QR code or pastes/shares an `lightning:LNURL..` link with `LN WALLET` and `LN WALLET` decodes LNURL.
+2. `LN WALLET` makes a GET request to `LN SERVICE` using the decoded LNURL.
+3. `LN WALLET` gets JSON response from `LN SERVICE` of form:
+
+    ```Typescript
+    {
+        "callback": string, // The URL from LN SERVICE which will accept the pay request parameters
+        "maxSendable": number, // Max millisatoshi amount LN SERVICE is willing to receive
+        "minSendable": number, // Min millisatoshi amount LN SERVICE is willing to receive, can not be less than 1 or more than `maxSendable`
+        "metadata": string, // Metadata json which must be presented as raw string here, this is required to pass signature verification at a later step
+        "tag": "payRequest" // Type of LNURL
+    }
+    ```
+    or
+
+    ```JSON
+    {"status": "ERROR", "reason": "error details..."}
+    ```
+
+    `metadata` json array must contain one `text/plain` entry, all other types of entries are optional.
+    `metadata` json array must contain either one `image/png;base64` entry or one `image/jpeg;base64` entry or neither.
+
+    The `metadata` json array is only allowed to contain arrays. The first item of an array inside the `metadata` array is always a string representing the metadata type while any item that follows can be of any JSON type. Implementors MUST NOT assume it will always be a string.
+
+    ```Typescript
+    [
+        [
+            "text/plain", // mandatory,
+            string // short description displayed when paying and in transaction log
+        ],
+        [
+            "text/long-desc", // optional
+            string // longer description of the payment, MAY contain newlines
+        ],
+        [
+            "image/png;base64", // optional
+            string // base64 string, optional 512x512px PNG thumbnail which will represent this lnurl in a list or grid. Up to 136536 characters (100Kb of image data in base-64 encoding)
+        ],
+        [
+            "image/jpeg;base64", // optional
+            string // base64 string, 512x512px JPG thumbnail which will represent this lnurl in a list or grid. Up to 136536 characters (100Kb of image data in base-64 encoding)
+        ],
+        // future entries:
+        [
+            string,
+            any
+        ]
+    ]
+    ```
+
+    and be sent as a string:
+
+    ```JSON
+    "[[\"text/plain\", \"lorem ipsum blah blah\"]]"
+    ```
+
+3. `LN WALLET` displays a payment dialog where user can specify an exact sum to be sent which would be bounded by:
+
+    ```
+    max can send = min(maxSendable, local estimation of how much can be sent from wallet)
+    min can send = max(minSendable, local minimal value allowed by wallet)
+    ```
+    Additionally, a payment dialog must include:
+    - Domain name extracted from `LNURL` query string.
+    - A way to view the metadata sent of `text/plain` format.
+
+    And it may include:
+    - An image element with the contents of `image/png` or `image/jpeg`.
+
+4. `LN WALLET` makes a GET request using
+
+    ```
+    <callback><?|&>amount=<milliSatoshi>
+    ```
+
+    `amount` being the amount specified by the user in millisatoshis.
+
+5. `LN Service` takes the GET request and returns JSON response of form:
+
+    ```Typescript
+    {
+        pr: string, // bech32-serialized lightning invoice
+        routes: [] // an empty array
+    }
+    ```
+
+    or
+
+    ```JSON
+    {"status":"ERROR", "reason":"error details..."}
+    ```
+
+6. `LN WALLET` Verifies that `h` tag in provided invoice is a hash of `metadata` string converted to byte array in UTF-8 encoding.
+7. `LN WALLET` Verifies that amount in provided invoice equals the amount previously specified by user.
+10. `LN WALLET` pays the invoice, no additional user confirmation is required at this point.
+
+## Notes on metadata for server-side LNURL-PAY
+
+### When client makes a first call:
+
+Construct a metadata object, turn it into json, then include it into parent json as a string.
+
+### When client makes a second call
+
+1. Make a hash as follows: `sha256(utf8ByteArray(unescaped_metadata_string))`.
+2. Generate a payment request using an obtained hash.

@@ -85,6 +85,7 @@ export async function generateInvoiceButtonClick({
   recipient,
   relayFactory,
   relayUrl,
+  secret,
   user,
   zapEndpoint,
 }) {
@@ -101,13 +102,9 @@ export async function generateInvoiceButtonClick({
     relays: [relayUrl],
   });
 
-  // can't access to window.nostr inside the content script, need to use events
-  // for now fall back to anon zaps
-  // actually no use the private key directly from .env for now
-  // TODO: get it from window.nostr or from settings
-  const zapRequestEvent = window.nostr
-    ? await window.nostr.signEvent(eventTemplate)
-    : finalizeEvent(eventTemplate, process.env.npriv);
+  // sign zap event anonymously for now
+  // experiment with NIP-46
+  const zapRequestEvent = finalizeEvent(eventTemplate, secret);
 
   log("zapRequestEvent", zapRequestEvent);
 

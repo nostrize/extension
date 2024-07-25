@@ -1,3 +1,23 @@
+const defaultSettings = {
+  debug: {
+    log: true,
+    border: true,
+    namespace: "[N]",
+  },
+};
+
+export async function getLocalSettings() {
+  const { settings } = await chrome.storage.sync.get(["settings"]);
+
+  if (!settings) {
+    await chrome.storage.sync.set({ settings: defaultSettings });
+
+    return defaultSettings;
+  }
+
+  return settings;
+}
+
 export async function getOrInsertCache(key, insertCallback) {
   // Check if the key exists in local storage
   const cachedValue = localStorage.getItem(key);

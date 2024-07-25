@@ -1,3 +1,4 @@
+import { getLocalSettings } from "../../../helpers/local-cache.js";
 import { logger } from "../../../helpers/logger.js";
 import { button, div, hr, link, span } from "../../../imgui-dom/html.js";
 import IssueTemplate from "./issue-template.js";
@@ -17,7 +18,7 @@ function querySelectorOr(selector1, selector2) {
 }
 
 async function githubIssuePage() {
-  const { settings } = await chrome.storage.sync.get(["settings"]);
+  const settings = await getLocalSettings();
 
   const log = logger(settings.debug);
 

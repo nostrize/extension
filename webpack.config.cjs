@@ -1,5 +1,4 @@
 const path = require("path");
-const Dotenv = require("dotenv-webpack");
 
 module.exports = {
   mode: "development",
@@ -9,11 +8,11 @@ module.exports = {
     issue: "./src/github/content/issue/issue.js",
     issues: "./src/github/content/issues/issues.js",
     profile: "./src/github/content/profile/profile.js",
+    inject: "./src/github/content/inject.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
   },
   module: {},
-  plugins: [new Dotenv()],
 };
