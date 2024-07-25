@@ -9,6 +9,7 @@ echo "Latest tag: $LATEST_TAG"
 
 # If there are no tags, start at v0.0.1
 if [ -z "$LATEST_TAG" ]; then
+  echo "Empty tag"
   NEW_TAG="v0.0.1"
 else
   # Increment the version
