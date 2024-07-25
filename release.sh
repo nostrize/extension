@@ -13,7 +13,7 @@ if [ -z "$LATEST_TAG" ]; then
   NEW_TAG="v0.0.1"
 else
   # Increment the version
-  IFS='.' read -r -a PARTS <<< "${LATEST_TAG#v}"
+  IFS='.' read -r -a PARTS <<< "$(echo ${LATEST_TAG#v})"
   PATCH=${PARTS[2]}
   MINOR=${PARTS[1]}
   MAJOR=${PARTS[0]}
@@ -23,7 +23,5 @@ else
 fi
 
 echo "New tag: $NEW_TAG"
-echo "::set-output name=new_tag::$NEW_TAG"
-
 zip -r release.zip . -i "dist/*.js" "dist/*.css" "dist/*.json"
 gh release create "$NEW_TAG" ./release.zip -t "dev release"
