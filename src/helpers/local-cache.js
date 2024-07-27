@@ -4,6 +4,10 @@ const defaultSettings = {
     border: true,
     namespace: "[N]",
   },
+  nostrSettings: {
+    useNostrAnon: true,
+    nostrRelayUrl: "wss://relay.damus.io",
+  },
 };
 
 export async function getLocalSettings() {
@@ -30,7 +34,7 @@ export async function getOrInsertCache(key, insertCallback) {
     const value = await insertCallback();
 
     if (!value) {
-      return;
+      throw new Error("Failed to insert value into cache");
     }
 
     // Store the value in local storage

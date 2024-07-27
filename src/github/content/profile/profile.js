@@ -1,4 +1,9 @@
-import { finalizeEvent, generateSecretKey, Relay } from "nostr-tools";
+import {
+  finalizeEvent,
+  generateSecretKey,
+  Relay,
+  getPublicKey,
+} from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
@@ -8,7 +13,8 @@ import {
   getOrInsertCache,
 } from "../../../helpers/local-cache.js";
 import {
-  fetchNpubFromNip05,
+  fetchFromNip05,
+  fetchBunkerPointer,
   getZapEndpoint,
   generateInvoiceButtonClick,
   createSatsOptionButton,
@@ -38,24 +44,17 @@ async function githubProfilePage() {
 
   const log = logger(settings.debug);
   const user = pathParts[0];
+  const fetchUrl = `https://${user}.github.io/github-connect/.well-known/nostr.json`;
 
-  const npub = await getOrInsertCache(`user_npub:${user}`, () =>
-    fetchNpubFromNip05({ user, log }),
+  const { pubkey } = await getOrInsertCache(`user_pubkey:${user}`, () =>
+    Either.getOrElseThrow({
+      eitherFn: () => fetchFromNip05({ user, fetchUrl }),
+    }),
   );
 
-  if (!npub) {
-    log(`could not fetch user ${user}`);
-
-    return;
-  }
-
-  // TODO: get it from settings
-  const relayUrl = "wss://relay.damus.io";
-
-  // TODO: use SimplePool, do we need multiple relays?
   const relayFactory = singletonFactory({
     buildFn: async () => {
-      const relay = new Relay(relayUrl);
+      const relay = new Relay(settings.nostrSettings.nostrRelayUrl);
 
       await relay.connect();
 
@@ -63,17 +62,44 @@ async function githubProfilePage() {
     },
   });
 
-  const metadataEvent = await getOrInsertCache(`npub_kid0:${npub}`, () =>
+  const createKeyPair = () => {
+    const secret = generateSecretKey();
+    const pubkey = getPublicKey(secret);
+
+    return { secret, pubkey };
+  };
+
+  // Bunker Flow
+  // STEP 1: create local key pair
+  const localNostrKeys = createKeyPair();
+
+  // STEP 2: Client gets the remote user pubkey via NIP-05
+  const bunkerPointer = await getOrInsertCache(
+    `user_bunker_pointer:${user}`,
+    () =>
+      Either.getOrElseThrow({
+        eitherFn: () => fetchBunkerPointer({ user, log }),
+      }),
+  );
+
+  log("bunkerPointer", bunkerPointer);
+
+  // STEP 3: Clients use the local keypair to send requests to the remote signer by p-tagging and encrypting to the remote user pubkey.
+
+  const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
     fetchOneEvent({
+      log,
       relayFactory,
-      filter: { authors: [npub], kinds: [0], limit: 1 },
+      filter: { authors: [pubkey], kinds: [0], limit: 1 },
     }),
   );
 
   log("metadataEvent", metadataEvent);
 
   const lnurlData = await getOrInsertCache(metadataEvent.id, () =>
-    Either.getOrElseThrow(() => getZapEndpoint({ metadataEvent, log })),
+    Either.getOrElseThrow({
+      eitherFn: () => getZapEndpoint({ metadataEvent, log }),
+    }),
   );
 
   const zapEndpoint = lnurlData.callback;
@@ -102,11 +128,19 @@ async function githubProfilePage() {
     onchange: (e) => (gui.gebid("n-invoice-hidden").value = e.target.value),
   });
 
+  const getComment = () => {
+    if (!settings.nostrSettings.useNostrAnon) {
+      throw new Error("not implemented");
+    }
+
+    return `Zapped with Nostrize by Anon`;
+  };
+
   const commentInput = html.input({
     type: "text",
     id: "n-modal-comment",
     classList: "n-modal-input",
-    placeholder: "Zapped with Nostrize",
+    placeholder: getComment(),
   });
 
   const generateInvoiceButton = html.button({
@@ -182,7 +216,7 @@ async function githubProfilePage() {
             children: [
               html.h2({
                 classList: "n-modal-title",
-                text: `Zap ${user} using a lightning wallet`,
+                text: `Zap ${user} using a lightning wallet ${settings.nostrSettings.useNostrAnon ? "anonymously" : ""}`,
               }),
               html.div({
                 children: [21, 69, 100, 500].map(satOptionButton),
@@ -257,8 +291,8 @@ async function githubProfilePage() {
       qrCodeContainer,
       recipient,
       relayFactory,
-      relayUrl,
-      secret: generateSecretKey(),
+      nostrSettings: settings.nostrSettings,
+      nip46: { localNostrKeys },
       user,
       zapEndpoint,
     });

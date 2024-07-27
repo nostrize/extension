@@ -44,31 +44,65 @@ export async function getZapEndpoint({ metadataEvent, log }) {
   }
 }
 
-export async function fetchNpubFromNip05({ user, log }) {
-  const fetchUrl = `https://${user}.github.io/github-connect/.well-known/nostr.json?user=${user}`;
+export async function fetchBunkerPointer({ user, log }) {
+  const fetchBunkerNip05 = `https://${user}.github.io/github-connect/.well-known/nip46.txt`;
 
   let response;
 
   try {
-    response = await fetch(fetchUrl);
+    response = await fetch(fetchBunkerNip05);
   } catch (error) {
-    log("nip05 fetch error", error);
-
-    return;
+    return Either.left(`nip46.txt fetch error: ${error}`);
   }
 
   if (!response.ok) {
-    log(response.status);
-
-    return;
+    return Either.left(
+      `nip46.txt fetch response error with status: ${response.status}`,
+    );
   }
 
-  const json = await response.json();
-  const npub = json["names"][user];
+  const bunkerNip05 = await response.text();
+  const [bunkerUser, bunkerDomain] = bunkerNip05.split("@");
+  const fetchBunkerUrl = `https://${bunkerDomain}/.well-known/nostr.json?user=${bunkerUser}`;
 
-  log("npub", npub);
+  log("bunker url", fetchBunkerUrl);
 
-  return npub;
+  const bunkerPointer = await Either.getOrElseThrow({
+    eitherFn: () => fetchFromNip05({ user: "_", fetchUrl: fetchBunkerUrl }),
+  });
+
+  if (!bunkerPointer.relays.length) {
+    return Either.left(`bunker relays.length is 0`);
+  }
+
+  return Either.right(bunkerPointer);
+}
+
+export async function fetchFromNip05({ user, fetchUrl }) {
+  try {
+    const response = await fetch(fetchUrl);
+
+    if (!response.ok) {
+      return Either.left(
+        `nip05 fetch response error with status: ${response.status}`,
+      );
+    }
+
+    const json = await response.json();
+    const pubkey = json["names"][user];
+
+    if (!pubkey) {
+      return Either.left(
+        `could not find pubkey for user ${user} in nostr.json`,
+      );
+    }
+
+    const relays = json["nip46"][pubkey] || [];
+
+    return Either.right({ pubkey, relays });
+  } catch (error) {
+    return Either.left(`nip05 fetch error ${error}`);
+  }
 }
 
 export async function generateInvoiceButtonClick({
@@ -84,8 +118,8 @@ export async function generateInvoiceButtonClick({
   qrCodeContainer,
   recipient,
   relayFactory,
-  relayUrl,
-  secret,
+  nostrSettings,
+  nip46,
   user,
   zapEndpoint,
 }) {
@@ -99,12 +133,18 @@ export async function generateInvoiceButtonClick({
     event: randomEventIndex,
     amount: milliSats,
     comment,
-    relays: [relayUrl],
+    relays: [nostrSettings.nostrRelayUrl],
   });
 
   // sign zap event anonymously for now
-  // experiment with NIP-46
-  const zapRequestEvent = finalizeEvent(eventTemplate, secret);
+  // TODO: experiment with NIP-46
+  const zapRequestEvent = nostrSettings.useNostrAnon
+    ? finalizeEvent(eventTemplate, nip46.localNostrKeys.secret)
+    : null;
+
+  if (!zapRequestEvent) {
+    throw new Error("not implemented");
+  }
 
   log("zapRequestEvent", zapRequestEvent);
 
@@ -128,11 +168,11 @@ export async function generateInvoiceButtonClick({
 
   const zapReceiptEvent = await fetchOneEvent({
     relayFactory,
+    log,
     filter: {
       authors: [recipient],
       kinds: [9735],
-      since: eventTemplate.created_at - 10 * 1000,
-      "#p": [zapRequestEvent.pubkey],
+      "#p": [metadataEvent.pubkey],
       "#e": [randomEventIndex],
       limit: 1,
     },

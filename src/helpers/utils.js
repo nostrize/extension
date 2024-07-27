@@ -15,11 +15,14 @@ export function singletonFactory({ buildFn }) {
 }
 
 export const Either = {
-  left: (error) => ({ type: "left", error }),
-  right: (value) => ({ type: "right", value }),
+  _leftSymbol: Symbol("nostrize either left"),
+  _rightSymbol: Symbol("nostrize either right"),
 
-  isLeft: (either) => either.type === "left",
-  isRight: (either) => either.type === "right",
+  left: (error) => ({ type: Either._leftSymbol, error }),
+  right: (value) => ({ type: Either._rightSymbol, value }),
+
+  isLeft: (either) => either.type === Either._leftSymbol,
+  isRight: (either) => either.type === Either._rightSymbol,
 
   getLeft: (either) => {
     if (Either.isLeft(either)) {
@@ -37,8 +40,8 @@ export const Either = {
     throw new Error("Tried to getRight from a Left");
   },
 
-  getOrElseThrow: async (asyncFn) => {
-    const either = await asyncFn();
+  getOrElseThrow: async ({ eitherFn }) => {
+    const either = await eitherFn();
 
     if (Either.isLeft(either)) {
       throw new Error(Either.getLeft(either));

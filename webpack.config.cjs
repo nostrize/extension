@@ -8,7 +8,6 @@ module.exports = {
     issue: "./src/github/content/issue/issue.js",
     issues: "./src/github/content/issues/issues.js",
     profile: "./src/github/content/profile/profile.js",
-    inject: "./src/github/content/inject.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
