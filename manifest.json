@@ -14,5 +14,8 @@
   ],
   "host_permissions": [
     "*://github.com/*"
-  ]
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
 }

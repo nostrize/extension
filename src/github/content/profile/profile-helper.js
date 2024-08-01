@@ -44,40 +44,6 @@ export async function getZapEndpoint({ metadataEvent, log }) {
   }
 }
 
-export async function fetchBunkerPointer({ user, log }) {
-  const fetchBunkerNip05 = `https://${user}.github.io/github-connect/.well-known/nip46.txt`;
-
-  let response;
-
-  try {
-    response = await fetch(fetchBunkerNip05);
-  } catch (error) {
-    return Either.left(`nip46.txt fetch error: ${error}`);
-  }
-
-  if (!response.ok) {
-    return Either.left(
-      `nip46.txt fetch response error with status: ${response.status}`,
-    );
-  }
-
-  const bunkerNip05 = await response.text();
-  const [bunkerUser, bunkerDomain] = bunkerNip05.split("@");
-  const fetchBunkerUrl = `https://${bunkerDomain}/.well-known/nostr.json?user=${bunkerUser}`;
-
-  log("bunker url", fetchBunkerUrl);
-
-  const bunkerPointer = await Either.getOrElseThrow({
-    eitherFn: () => fetchFromNip05({ user: "_", fetchUrl: fetchBunkerUrl }),
-  });
-
-  if (!bunkerPointer.relays.length) {
-    return Either.left(`bunker relays.length is 0`);
-  }
-
-  return Either.right(bunkerPointer);
-}
-
 export async function fetchFromNip05({ user, fetchUrl }) {
   try {
     const response = await fetch(fetchUrl);

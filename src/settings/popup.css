@@ -1,0 +1,32 @@
+/* Accordion styles */
+.accordion-section {
+  border-bottom: 1px solid #ddd;
+}
+
+.accordion-section-title {
+  display: block;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.accordion-section-title:hover {
+  background: #f0f0f0;
+}
+
+.accordion-section-content {
+  display: none;
+  padding: 15px;
+}
+
+.accordion-section-content p {
+  margin: 10px 0;
+}
+
+/* Show the accordion content when active */
+.accordion-section.active .accordion-section-content {
+  display: block;
+}

@@ -24,6 +24,17 @@ export const Either = {
   isLeft: (either) => either.type === Either._leftSymbol,
   isRight: (either) => either.type === Either._rightSymbol,
 
+  toObject: (either) => ({
+    type: either.type.toString(),
+    error: Either.isLeft(either) ? either.error : undefined,
+    value: Either.isRight(either) ? either.value : undefined,
+  }),
+
+  fromObject: ({ type, error, value }) =>
+    type === Either._leftSymbol.toString()
+      ? Either.left(error)
+      : Either.right(value),
+
   getLeft: (either) => {
     if (Either.isLeft(either)) {
       return either.error;
@@ -48,6 +59,16 @@ export const Either = {
     }
 
     return Either.getRight(either);
+  },
+
+  getOrElseReject: (either) => {
+    return new Promise((resolve, reject) => {
+      if (Either.isLeft(either)) {
+        return reject(Either.getLeft(either));
+      }
+
+      return resolve(Either.getRight(either));
+    });
   },
 };
 

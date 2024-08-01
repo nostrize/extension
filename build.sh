@@ -12,3 +12,7 @@ cp src/github/content/issues/issues.css dist/
 cp src/github/content/issue/issue.css dist/
 cp src/github/content/profile/profile.css dist/
 cp src/github/content/profile/modal.css dist/
+
+# settings popup
+cp src/settings/popup.html dist/
+cp src/settings/popup.css dist/

@@ -1,9 +1,4 @@
-import {
-  finalizeEvent,
-  generateSecretKey,
-  Relay,
-  getPublicKey,
-} from "nostr-tools";
+import { finalizeEvent, Relay } from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
@@ -14,12 +9,12 @@ import {
 } from "../../../helpers/local-cache.js";
 import {
   fetchFromNip05,
-  fetchBunkerPointer,
   getZapEndpoint,
   generateInvoiceButtonClick,
   createSatsOptionButton,
-} from "./helper.js";
+} from "./profile-helper.js";
 import { fetchOneEvent } from "../../../helpers/relays.js";
+import { createKeyPair } from "../../../helpers/crypto.js";
 import * as html from "../../../imgui-dom/html.js";
 import * as gui from "../../../imgui-dom/gui.js";
 import {
@@ -62,29 +57,7 @@ async function githubProfilePage() {
     },
   });
 
-  const createKeyPair = () => {
-    const secret = generateSecretKey();
-    const pubkey = getPublicKey(secret);
-
-    return { secret, pubkey };
-  };
-
-  // Bunker Flow
-  // STEP 1: create local key pair
   const localNostrKeys = createKeyPair();
-
-  // STEP 2: Client gets the remote user pubkey via NIP-05
-  const bunkerPointer = await getOrInsertCache(
-    `user_bunker_pointer:${user}`,
-    () =>
-      Either.getOrElseThrow({
-        eitherFn: () => fetchBunkerPointer({ user, log }),
-      }),
-  );
-
-  log("bunkerPointer", bunkerPointer);
-
-  // STEP 3: Clients use the local keypair to send requests to the remote signer by p-tagging and encrypting to the remote user pubkey.
 
   const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
     fetchOneEvent({

@@ -1,21 +1,6 @@
-import { logger } from "./helpers/logger.js";
+import { logger } from "../helpers/logger.js";
 
-const getPageFromUrl = (url) => {
-  if (url.match(/https:\/\/github\.com\/.*\/.*\/issues$/)) {
-    return "issues";
-  } else if (url.match(/https:\/\/github\.com\/.*\/.*\/issues\/.+/)) {
-    return "issue";
-  } else if (url.match(/https:\/\/github\.com\/([^/]+)\/?$/)) {
-    return "profile";
-  } else {
-    return "";
-  }
-};
-
-const log = logger({ log: false, namespace: "[nostrize][background]" });
-
-// dynamicly load content scripts and css
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+export const pageLoaderListener = (tabId, changeInfo, tab) => {
   const url = tab.url;
   const page = getPageFromUrl(tab.url);
 
@@ -74,4 +59,18 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       files: ["profile.css", "modal.css"],
     });
   }
-});
+};
+
+const getPageFromUrl = (url) => {
+  if (url.match(/https:\/\/github\.com\/.*\/.*\/issues$/)) {
+    return "issues";
+  } else if (url.match(/https:\/\/github\.com\/.*\/.*\/issues\/.+/)) {
+    return "issue";
+  } else if (url.match(/https:\/\/github\.com\/([^/]+)\/?$/)) {
+    return "profile";
+  } else {
+    return "";
+  }
+};
+
+const log = logger({ log: false, namespace: "[nostrize][page-loader]" });
