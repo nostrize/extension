@@ -8,6 +8,9 @@
     "eslint:recommended",
     "plugin:prettier/recommended"
   ],
+  "rules": {
+    "no-unused-vars": ["error", { "varsIgnorePattern": "^_" }]
+  },
   "ignorePatterns": ["/dist/**"],
   "globals": {
     "chrome": "readonly"
