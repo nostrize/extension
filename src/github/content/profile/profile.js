@@ -26,8 +26,6 @@ import {
 async function githubProfilePage() {
   const settings = await getLocalSettings();
 
-  settings.debug.namespace = "[N][Profile]";
-
   const pathParts = window.location.pathname
     .split("/")
     .filter((part) => part.length > 0);
@@ -37,8 +35,9 @@ async function githubProfilePage() {
     return;
   }
 
-  const log = logger(settings.debug);
+  const log = logger({ ...settings.debug, namespace: "[N][Profile]" });
   const user = pathParts[0];
+
   const fetchUrl = `https://${user}.github.io/github-connect/.well-known/nostr.json`;
 
   const { pubkey } = await getOrInsertCache(`user_pubkey:${user}`, () =>
