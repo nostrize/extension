@@ -1,7 +1,7 @@
 import { Relay } from "nostr-tools";
 import { getZapEndpoint } from "nostr-tools/nip57";
 
-import { fetchFromNip05 } from "../github/content/profile/profile-helper.js";
+import { fetchFromNip05 } from "../github/profile/profile-helper.js";
 import { getOrInsertCache } from "../helpers/local-cache.js";
 import { Either, singletonFactory } from "../helpers/utils.js";
 import { createKeyPair } from "../helpers/crypto.js";

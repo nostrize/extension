@@ -22,55 +22,75 @@ export const pageLoaderListener = (tabId, changeInfo, tab) => {
   log("changeInfo", changeInfo);
   log("tab", tab);
 
-  if (page === "issues") {
-    // Inject JavaScript file
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ["issues.js"],
-    });
-
-    // Inject CSS file
-    chrome.scripting.insertCSS({
-      target: { tabId },
-      files: ["issues.css"],
-    });
-  } else if (page === "issue") {
-    // Inject JavaScript file
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ["issue.js"],
-    });
-
-    // Inject CSS file
-    chrome.scripting.insertCSS({
-      target: { tabId },
-      files: ["issue.css"],
-    });
-  } else if (page === "profile") {
-    // Inject JavaScript file
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ["profile.js"],
-    });
-
-    // Inject CSS file
-    chrome.scripting.insertCSS({
-      target: { tabId },
-      files: ["profile.css", "modal.css"],
-    });
+  if (page.startsWith("github/")) {
+    injectGithubScripts({ page, tabId });
+  } else if (page.startsWith("youtube/")) {
+    injectYoutubeScripts({ page, tabId });
   }
 };
 
 const getPageFromUrl = (url) => {
   if (url.match(/https:\/\/github\.com\/.*\/.*\/issues$/)) {
-    return "issues";
+    return "github/issues";
   } else if (url.match(/https:\/\/github\.com\/.*\/.*\/issues\/.+/)) {
-    return "issue";
+    return "github/issue";
   } else if (url.match(/https:\/\/github\.com\/([^/]+)\/?$/)) {
-    return "profile";
+    return "github/profile";
+  } else if (url.match(/^https:\/\/www\.youtube\.com\/@[a-zA-Z0-9_-]+z/)) {
+    return "youtube/channel";
   } else {
     return "";
   }
 };
+
+function injectYoutubeScripts({ page, tabId }) {
+  if (page === "youtube/channel") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["youtube-channel.js"],
+    });
+  }
+}
+
+function injectGithubScripts({ page, tabId }) {
+  if (page === "github/issues") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["github-issues.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["github-issues.css"],
+    });
+  } else if (page === "github/issue") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["github-issue.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["github-issue.css"],
+    });
+  } else if (page === "github/profile") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["github-profile.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["github-profile.css", "github-profile-modal.css"],
+    });
+  }
+}
 
 const log = logger({ log: false, namespace: "[nostrize][page-loader]" });

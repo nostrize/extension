@@ -1,7 +1,7 @@
 import { Relay, verifyEvent } from "nostr-tools";
 import { encrypt } from "nostr-tools/nip04";
 
-import { fetchFromNip05 } from "../github/content/profile/profile-helper.js";
+import { fetchFromNip05 } from "../github/profile/profile-helper.js";
 import { Either, generateRandomHexString } from "../helpers/utils.js";
 
 export const fetchBunkerPointerListeners =

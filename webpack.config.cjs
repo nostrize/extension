@@ -6,9 +6,10 @@ module.exports = {
   devtool: "source-map",
   entry: {
     background: "./src/service-workers/background.js",
-    issue: "./src/github/content/issue/issue.js",
-    issues: "./src/github/content/issues/issues.js",
-    profile: "./src/github/content/profile/profile.js",
+    "github-issue": "./src/github/issue/issue.js",
+    "github-issues": "./src/github/issues/issues.js",
+    "github-profile": "./src/github/profile/profile.js",
+    "youtube-channel": "./src/youtube/channel/channel.js",
     popup: "./src/settings/popup.js",
   },
   output: {

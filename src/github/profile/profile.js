@@ -2,26 +2,26 @@ import { finalizeEvent, Relay } from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
-import { logger } from "../../../helpers/logger.js";
+import { logger } from "../../helpers/logger.js";
 import {
   getLocalSettings,
   getOrInsertCache,
-} from "../../../helpers/local-cache.js";
+} from "../../helpers/local-cache.js";
 import {
   fetchFromNip05,
   getZapEndpoint,
   generateInvoiceButtonClick,
   createSatsOptionButton,
 } from "./profile-helper.js";
-import { fetchOneEvent } from "../../../helpers/relays.js";
-import { createKeyPair } from "../../../helpers/crypto.js";
-import * as html from "../../../imgui-dom/html.js";
-import * as gui from "../../../imgui-dom/gui.js";
+import { fetchOneEvent } from "../../helpers/relays.js";
+import { createKeyPair } from "../../helpers/crypto.js";
+import * as html from "../../imgui-dom/html.js";
+import * as gui from "../../imgui-dom/gui.js";
 import {
   singletonFactory,
   Either,
   milliSatsToSats,
-} from "../../../helpers/utils.js";
+} from "../../helpers/utils.js";
 
 async function githubProfilePage() {
   const settings = await getLocalSettings();

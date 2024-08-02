@@ -2,7 +2,7 @@ import {
   Either,
   generateRandomHexString,
   satsToMilliSats,
-} from "../../../helpers/utils.js";
+} from "../../helpers/utils.js";
 
 export const createSatsOptionButton = (button) => (sats) => {
   return button({
