@@ -347,7 +347,8 @@ export async function fetchFromNip05({ user, fetchUrl }) {
       );
     }
 
-    const relays = json["nip46"][pubkey] || [];
+    const nip46 = json["nip46"];
+    const relays = nip46 ? nip46[pubkey] || [] : [];
 
     return Either.right({ pubkey, relays });
   } catch (error) {

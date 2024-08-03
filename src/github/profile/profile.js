@@ -5,13 +5,16 @@ import {
   getLocalSettings,
   getOrInsertCache,
 } from "../../helpers/local-cache.js";
-import { fetchFromNip05, getZapEndpoint } from "./profile-helper.js";
 import { fetchOneEvent } from "../../helpers/relays.js";
 import { createKeyPair } from "../../helpers/crypto.js";
 import * as html from "../../imgui-dom/html.js";
 import * as gui from "../../imgui-dom/gui.js";
 import { singletonFactory, Either } from "../../helpers/utils.js";
-import { zapModalComponent } from "../../components/zap-modal.js";
+import {
+  fetchFromNip05,
+  getZapEndpoint,
+  zapModalComponent,
+} from "../../components/zap-modal.js";
 
 async function githubProfilePage() {
   const settings = await getLocalSettings();

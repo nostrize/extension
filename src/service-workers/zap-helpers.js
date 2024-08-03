@@ -1,11 +1,10 @@
 import { Relay } from "nostr-tools";
-import { getZapEndpoint } from "nostr-tools/nip57";
 
-import { fetchFromNip05 } from "../github/profile/profile-helper.js";
 import { getOrInsertCache } from "../helpers/local-cache.js";
 import { Either, singletonFactory } from "../helpers/utils.js";
 import { createKeyPair } from "../helpers/crypto.js";
 import { fetchOneEvent } from "../helpers/relays.js";
+import { fetchFromNip05, getZapEndpoint } from "../components/zap-modal.js";
 
 export const zapperListeners = (log) => (message, _, sendResponse) => {
   if (message.action === "fetchBunkerPointer") {
