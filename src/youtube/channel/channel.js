@@ -1,1 +1,3 @@
-console.log("youtube channel page");
+async function youtubeChannelPage() {}
+
+youtubeChannelPage().catch(console.error);

@@ -36,8 +36,12 @@ const getPageFromUrl = (url) => {
     return "github/issue";
   } else if (url.match(/https:\/\/github\.com\/([^/]+)\/?$/)) {
     return "github/profile";
-  } else if (url.match(/^https:\/\/www\.youtube\.com\/@[a-zA-Z0-9_-]+z/)) {
+  } else if (url.match(/^https:\/\/www\.youtube\.com\/@.+/)) {
     return "youtube/channel";
+  } else if (url.match(/^https:\/\/www\.youtube\.com\/channel\/.+/)) {
+    return "youtube/channel";
+  } else if (url.match(/^https:\/\/www\.youtube\.com\/shorts\/.+/)) {
+    return "youtube/shorts";
   } else {
     return "";
   }
@@ -49,6 +53,24 @@ function injectYoutubeScripts({ page, tabId }) {
     chrome.scripting.executeScript({
       target: { tabId },
       files: ["youtube-channel.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["youtube-channel.css"],
+    });
+  } else if (page === "youtube/shorts") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["youtube-shorts.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["youtube-shorts.css", "zap-modal.css"],
     });
   }
 }
@@ -88,9 +110,9 @@ function injectGithubScripts({ page, tabId }) {
     // Inject CSS file
     chrome.scripting.insertCSS({
       target: { tabId },
-      files: ["github-profile.css", "github-profile-modal.css"],
+      files: ["github-profile.css", "zap-modal.css"],
     });
   }
 }
 
-const log = logger({ log: false, namespace: "[nostrize][page-loader]" });
+const log = logger({ log: false, namespace: "[Nostrize][page-loader]" });

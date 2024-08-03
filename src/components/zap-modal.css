@@ -1,20 +1,3 @@
-/* Main container styling */
-main {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Full height to vertically center the button if desired */
-}
-
-/* Button container styling */
-.n-button-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%; /* Full width of the main element */
-  padding: 5px;
-}
-
 /* Modal container, hidden by default */
 .n-modal {
   display: none;

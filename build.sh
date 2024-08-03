@@ -7,15 +7,18 @@ cp manifest.json dist/manifest.json
 
 ./node_modules/.bin/webpack
 
-# copy github specific extension files
+# copy component specific files
+cp src/components/zap-modal.css dist/zap-modal.css
+
+# copy github specific files
 cp src/github/issues/issues.css dist/github-issues.css
 cp src/github/issue/issue.css dist/github-issue.css
 cp src/github/profile/profile.css dist/github-profile.css
-cp src/github/profile/modal.css dist/github-profile-modal.css
 
-# copy youtube specific extension files
+# copy youtube specific files
 cp src/youtube/channel/channel.css dist/youtube-channel.css
+cp src/youtube/shorts/shorts.css dist/youtube-shorts.css
 
-# settings popup
+# copy settings popup files
 cp src/settings/popup.html dist/
 cp src/settings/popup.css dist/

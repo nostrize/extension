@@ -1,13 +1,11 @@
-export function prepend(parent, element) {
-  const elements = [...parent.childNodes];
+export function prepend(parent, ...elements) {
+  const existingElements = [...parent.childNodes];
 
   while (parent.firstChild) {
     parent.removeChild(parent.firstChild);
   }
 
-  parent.append(element);
-
-  elements.forEach((e) => parent.append(e));
+  [...elements, ...existingElements].forEach((e) => parent.append(e));
 }
 
 export function gebid(id) {

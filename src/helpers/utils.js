@@ -95,3 +95,9 @@ export function milliSatsToSats({ milliSats, floor = true }) {
 
   return sats;
 }
+
+export async function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}

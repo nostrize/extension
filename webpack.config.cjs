@@ -10,6 +10,7 @@ module.exports = {
     "github-issues": "./src/github/issues/issues.js",
     "github-profile": "./src/github/profile/profile.js",
     "youtube-channel": "./src/youtube/channel/channel.js",
+    "youtube-shorts": "./src/youtube/shorts/shorts.js",
     popup: "./src/settings/popup.js",
   },
   output: {
