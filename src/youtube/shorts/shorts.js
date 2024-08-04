@@ -42,9 +42,6 @@ async function getPubkeyFrom({ npub, nip05, user }) {
 }
 
 async function youtubeShortsPage() {
-  // need to wait a bit for document to load
-  await delay(1000);
-
   const { settings, nip05, npub, channel, log } = await Either.getOrElseThrow({
     eitherFn: loadParams,
   });
@@ -119,9 +116,17 @@ async function youtubeShortsPage() {
 }
 
 async function loadParams() {
+  let channelNameLink = document.querySelector("ytd-channel-name a");
+
+  while (!channelNameLink) {
+    // need to wait a bit for document to load
+    await delay(500);
+
+    channelNameLink = document.querySelector("ytd-channel-name a");
+  }
+
   // will give /@ChannelName
-  const channelName =
-    document.querySelector("ytd-channel-name a").attributes["href"].value;
+  const channelName = channelNameLink.attributes["href"].value;
 
   const res = await fetch(`https://www.youtube.com${channelName}`);
   const channelHtml = await res.text();
