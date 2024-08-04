@@ -2,25 +2,29 @@
 
 Welcome to Nostrize - the browser extension that empowers any website with the [Nostr](https://github.com/nostr-protocol/nostr) experience. Nostrize seamlessly integrates tipping and crowdsourcing capabilities through Bitcoin, making every interaction permissionless. Join us in a world where supporting content and collaborative projects is effortless. Elevate your browsing with the power of Nostr and Bitcoin, and become part of the [Value4Value](https://value4value.info/) movement today.
 
+# Demo video
+
+https://github.com/user-attachments/assets/a12b9fa1-e351-462c-b706-d186040ffc6e
+
 # Projects
+
+## Youtube
+
+* Easy integration via channel description by adding your npub or nip05 (see our [youtube channel](https://www.youtube.com/@Nostrize) for reference)
+* Receive donations in your videos or shorts
+* And more features are coming...
 
 ## GitHub
 
-The first platform that you can use Nostrize is GitHub. It was chosen as the initial focus because we wanted to fund future Nostrize development using Nostrize itself!
+The first platform that you could use Nostrize was GitHub. It was chosen as the initial focus because we wanted to fund future Nostrize development using Nostrize itself!
 
 With Nostrize on GitHub, you can:
 
 * Seamlessly connect your Nostr and GitHub accounts with a [simple step](https://github.com/nostrize/github-connect) – no waiting list required.
 * Support any user or organization through donations.
   * Receive tips directly without any commission or fees.
-* Fund issues to incentivize solutions.
+* Fund issues to incentivize solutions. (coming soon)
   * Earn payments for your pull requests that address and resolve issues.
-* And more features are coming...
-
-## Youtube
-
-* Easy integration via channel description by adding your npub or nip05 (see our [youtube channel](https://www.youtube.com/@Nostrize) for reference)
-* Receive donations in your shorts videos
 * And more features are coming...
 
 # How to install
