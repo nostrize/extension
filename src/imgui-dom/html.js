@@ -130,7 +130,7 @@ export function style({ text }) {
   return styleElement;
 }
 
-export function link({ classList, href, text, onclick, style = [] }) {
+export function link({ classList, id, href, text, onclick, style = [] }) {
   const linkElement = document.createElement("a");
 
   if (classList) {
@@ -139,6 +139,10 @@ export function link({ classList, href, text, onclick, style = [] }) {
 
   if (onclick) {
     linkElement.onclick = onclick;
+  }
+
+  if (id) {
+    linkElement.id = id;
   }
 
   style.forEach(([name, value]) => (linkElement.style[name] = value));

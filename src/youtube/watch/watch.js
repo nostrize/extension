@@ -18,11 +18,24 @@ import { fetchOneEvent } from "../../helpers/relays.js";
 import { createKeyPair } from "../../helpers/crypto.js";
 
 async function youtubeWatchPage() {
-  const { settings, nip05, npub, channel } = await Either.getOrElseThrow({
-    eitherFn: loadParamsFromChannelPage,
-  });
+  const tipButtonId = "n-yt-watch-tip-button";
 
-  const log = logger({ ...settings.debug, namespace: "[N][Y-Shorts]" });
+  if (gui.gebid(tipButtonId)) {
+    // if the tip button already exists, we don't need to load again
+    return;
+  }
+
+  const paramsEither = await loadParamsFromChannelPage();
+
+  if (Either.isLeft(paramsEither)) {
+    log(paramsEither.error);
+
+    return;
+  }
+
+  const { settings, nip05, npub, channel } = Either.getRight(paramsEither);
+
+  const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
 
   const pubkey = await getPubkeyFrom({ nip05, npub, channel });
 
@@ -69,6 +82,7 @@ async function youtubeWatchPage() {
   gui.prepend(
     document.getElementById("middle-row"),
     html.link({
+      id: tipButtonId,
       classList: "n-shorts-tip-button yt-simple-endpoint style-scope",
       text: "⚡Tip⚡",
       href: "javascript:void(0)",

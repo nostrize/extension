@@ -9,7 +9,7 @@ import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import { getOrInsertCache } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { Either, singletonFactory } from "../../helpers/utils.js";
+import { delay, Either, singletonFactory } from "../../helpers/utils.js";
 import {
   getZapEndpoint,
   zapModalComponent,
@@ -18,11 +18,36 @@ import { fetchOneEvent } from "../../helpers/relays.js";
 import { createKeyPair } from "../../helpers/crypto.js";
 
 async function youtubeShortsPage() {
-  const { settings, nip05, npub, channel } = await Either.getOrElseThrow({
-    eitherFn: loadParamsFromChannelPage,
-  });
+  let tipButtonContainer = document.querySelector(
+    "ytd-channel-name yt-formatted-string",
+  );
 
-  const log = logger({ ...settings.debug, namespace: "[N][Y-Shorts]" });
+  while (!tipButtonContainer) {
+    await delay(500);
+
+    tipButtonContainer = document.querySelector(
+      "ytd-channel-name yt-formatted-string",
+    );
+  }
+
+  const tipButtonId = "n-yt-shorts-tip-button";
+
+  if (gui.gebid(tipButtonId)) {
+    // if the tip button already exists, we don't need to load again
+    return;
+  }
+
+  const paramsEither = await loadParamsFromChannelPage();
+
+  if (Either.isLeft(paramsEither)) {
+    console.log(paramsEither.error);
+
+    return;
+  }
+
+  const { settings, nip05, npub, channel } = Either.getRight(paramsEither);
+
+  const log = logger({ ...settings.debug, namespace: "[N][YT-Shorts]" });
 
   const pubkey = await getPubkeyFrom({ nip05, npub, channel });
 
@@ -67,8 +92,9 @@ async function youtubeShortsPage() {
   });
 
   gui.prepend(
-    document.querySelector("ytd-channel-name yt-formatted-string"),
+    tipButtonContainer,
     html.link({
+      id: tipButtonId,
       classList: "yt-simple-endpoint style-scope n-shorts-tip-button",
       text: "⚡Tip⚡",
       href: "javascript:void(0)",
