@@ -18,6 +18,7 @@ cp src/github/profile/profile.css dist/github-profile.css
 # copy youtube specific files
 cp src/youtube/channel/channel.css dist/youtube-channel.css
 cp src/youtube/shorts/shorts.css dist/youtube-shorts.css
+cp src/youtube/watch/watch.css dist/youtube-watch.css
 
 # copy settings popup files
 cp src/settings/popup.html dist/

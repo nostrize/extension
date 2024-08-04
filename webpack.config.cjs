@@ -11,6 +11,7 @@ module.exports = {
     "github-profile": "./src/github/profile/profile.js",
     "youtube-channel": "./src/youtube/channel/channel.js",
     "youtube-shorts": "./src/youtube/shorts/shorts.js",
+    "youtube-watch": "./src/youtube/watch/watch.js",
     popup: "./src/settings/popup.js",
   },
   output: {

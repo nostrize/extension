@@ -17,7 +17,7 @@ import {
 import { fetchOneEvent } from "../../helpers/relays.js";
 import { createKeyPair } from "../../helpers/crypto.js";
 
-async function youtubeShortsPage() {
+async function youtubeWatchPage() {
   const { settings, nip05, npub, channel } = await Either.getOrElseThrow({
     eitherFn: loadParamsFromChannelPage,
   });
@@ -67,12 +67,13 @@ async function youtubeShortsPage() {
   });
 
   gui.prepend(
-    document.querySelector("ytd-channel-name yt-formatted-string"),
+    document.getElementById("middle-row"),
     html.link({
-      classList: "yt-simple-endpoint style-scope n-shorts-tip-button",
+      classList: "n-shorts-tip-button yt-simple-endpoint style-scope",
       text: "⚡Tip⚡",
       href: "javascript:void(0)",
       onclick: () => (zapModal.style.display = "block"),
+      style: [["color", "white"]],
     }),
   );
 
@@ -93,4 +94,4 @@ async function youtubeShortsPage() {
   });
 }
 
-youtubeShortsPage().catch((e) => console.error(e));
+youtubeWatchPage().catch((e) => console.error(e));

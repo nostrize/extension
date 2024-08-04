@@ -42,6 +42,8 @@ const getPageFromUrl = (url) => {
     return "youtube/channel";
   } else if (url.match(/^https:\/\/www\.youtube\.com\/shorts\/.+/)) {
     return "youtube/shorts";
+  } else if (url.match(/^https:\/\/www\.youtube\.com\/watch\?.+/)) {
+    return "youtube/watch";
   } else {
     return "";
   }
@@ -71,6 +73,18 @@ function injectYoutubeScripts({ page, tabId }) {
     chrome.scripting.insertCSS({
       target: { tabId },
       files: ["youtube-shorts.css", "zap-modal.css"],
+    });
+  } else if (page === "youtube/watch") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["youtube-watch.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["youtube-watch.css", "zap-modal.css"],
     });
   }
 }
