@@ -39,9 +39,7 @@ export async function loadParamsFromChannelPage({ channelName }) {
   if (canLoad) {
     const channel = channelName.substring(2);
 
-    const settings = await getLocalSettings();
-
-    return Either.right({ nip05, npub, channel, settings });
+    return Either.right({ nip05, npub, channel });
   }
 
   return Either.left("Channel doesn't have a Nostrize integration");

@@ -6,6 +6,7 @@ import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
   getFromCache,
+  getLocalSettings,
   getOrInsertCache,
   insertToCache,
 } from "../../helpers/local-cache.js";
@@ -20,6 +21,12 @@ import { createKeyPair } from "../../helpers/crypto.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
 async function youtubeShortsPage() {
+  const settings = await getLocalSettings();
+
+  const log = logger({ ...settings.debug, namespace: "[N][YT-Shorts]" });
+
+  await delay(200);
+
   const tipButtonId = "n-yt-shorts-tip-button";
 
   if (gui.gebid(tipButtonId)) {
@@ -61,9 +68,7 @@ async function youtubeShortsPage() {
     insertToCache(channelParamsCacheKey, params);
   }
 
-  const { settings, nip05, npub, channel } = params;
-
-  const log = logger({ ...settings.debug, namespace: "[N][YT-Shorts]" });
+  const { nip05, npub, channel } = params;
 
   const pubkey = await getPubkeyFrom({
     nip05,

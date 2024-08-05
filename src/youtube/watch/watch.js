@@ -9,11 +9,12 @@ import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
   getFromCache,
+  getLocalSettings,
   getOrInsertCache,
   insertToCache,
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { Either, singletonFactory } from "../../helpers/utils.js";
+import { delay, Either, singletonFactory } from "../../helpers/utils.js";
 import {
   getZapEndpoint,
   zapModalComponent,
@@ -23,10 +24,17 @@ import { createKeyPair } from "../../helpers/crypto.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
 async function youtubeWatchPage() {
+  const settings = await getLocalSettings();
+
+  const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
+
+  await delay(200);
+
   const tipButtonId = "n-yt-watch-tip-button";
 
   if (gui.gebid(tipButtonId)) {
-    // if the tip button already exists, we don't need to load again
+    log("zap button already there, don't need to load");
+
     return;
   }
 
@@ -49,9 +57,7 @@ async function youtubeWatchPage() {
     insertToCache(channelParamsCacheKey, params);
   }
 
-  const { settings, nip05, npub, channel } = params;
-
-  const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
+  const { nip05, npub, channel } = params;
 
   const pubkey = await getPubkeyFrom({
     nip05,
@@ -101,6 +107,8 @@ async function youtubeWatchPage() {
   });
 
   if (gui.gebid(tipButtonId)) {
+    log("zap button already there, don't need to load");
+
     return;
   }
 
