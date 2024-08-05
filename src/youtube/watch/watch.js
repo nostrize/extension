@@ -1,9 +1,6 @@
 import { Relay } from "nostr-tools";
 
-import {
-  getPubkeyFrom,
-  loadParamsFromChannelPage,
-} from "../youtube-helpers.js";
+import { loadParamsFromChannelPage } from "../youtube-helpers.js";
 
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
@@ -16,6 +13,7 @@ import {
 } from "../../components/zap-modal.js";
 import { fetchOneEvent } from "../../helpers/relays.js";
 import { createKeyPair } from "../../helpers/crypto.js";
+import { getPubkeyFrom } from "../../helpers/nostr.js";
 
 async function youtubeWatchPage() {
   const tipButtonId = "n-yt-watch-tip-button";
@@ -37,7 +35,12 @@ async function youtubeWatchPage() {
 
   const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
 
-  const pubkey = await getPubkeyFrom({ nip05, npub, channel });
+  const pubkey = await getPubkeyFrom({
+    nip05,
+    npub,
+    username: channel,
+    cachePrefix: "yt",
+  });
 
   const relayFactory = singletonFactory({
     buildFn: async () => {

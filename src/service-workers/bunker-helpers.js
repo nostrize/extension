@@ -2,7 +2,7 @@ import { Relay, verifyEvent } from "nostr-tools";
 import { encrypt } from "nostr-tools/nip04";
 
 import { Either, generateRandomHexString } from "../helpers/utils.js";
-import { fetchFromNip05 } from "../components/zap-modal.js";
+import { fetchFromNip05 } from "../helpers/nostr.js";
 
 export const fetchBunkerPointerListeners =
   (log) => (message, _, sendResponse) => {

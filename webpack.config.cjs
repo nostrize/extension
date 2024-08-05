@@ -12,6 +12,7 @@ module.exports = {
     "youtube-channel": "./src/youtube/channel/channel.js",
     "youtube-shorts": "./src/youtube/shorts/shorts.js",
     "youtube-watch": "./src/youtube/watch/watch.js",
+    "twitter-profile": "./src/twitter/profile/profile.js",
     popup: "./src/settings/popup.js",
   },
   output: {

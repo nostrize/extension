@@ -26,28 +26,80 @@ export const pageLoaderListener = (tabId, changeInfo, tab) => {
     injectGithubScripts({ page, tabId });
   } else if (page.startsWith("youtube/")) {
     injectYoutubeScripts({ page, tabId });
+  } else if (page.startsWith("twitter/")) {
+    injectTwitterScripts({ page, tabId });
   }
 };
 
-const getPageFromUrl = (url) => {
-  if (url.match(/https:\/\/github\.com\/.*\/.*\/issues$/)) {
-    return "github/issues";
-  } else if (url.match(/https:\/\/github\.com\/.*\/.*\/issues\/.+/)) {
-    return "github/issue";
-  } else if (url.match(/https:\/\/github\.com\/([^/]+)\/?$/)) {
-    return "github/profile";
-  } else if (url.match(/^https:\/\/www\.youtube\.com\/@.+/)) {
-    return "youtube/channel";
-  } else if (url.match(/^https:\/\/www\.youtube\.com\/channel\/.+/)) {
-    return "youtube/channel";
-  } else if (url.match(/^https:\/\/www\.youtube\.com\/shorts\/.+/)) {
-    return "youtube/shorts";
-  } else if (url.match(/^https:\/\/www\.youtube\.com\/watch\?.+/)) {
-    return "youtube/watch";
-  } else {
-    return "";
+function getPageFromUrl(url) {
+  const parsedUrl = new URL(url);
+
+  const checkHosts = (...hosts) => {
+    return hosts.some(
+      (host) =>
+        parsedUrl.hostname === host || parsedUrl.hostname === `www.${host}`,
+    );
+  };
+
+  try {
+    const parsedUrl = new URL(url);
+
+    // Check for Twitter/X URLs
+    if (checkHosts("twitter.com", "x.com")) {
+      if (parsedUrl.pathname.match(/^\/[^/]+$/)) {
+        return "twitter/profile";
+      }
+
+      // Check for YouTube URLs
+    } else if (checkHosts("youtube.com")) {
+      if (parsedUrl.pathname.match(/^\/@.+/)) {
+        return "youtube/channel";
+      } else if (parsedUrl.pathname.match(/^\/channel\/.+/)) {
+        return "youtube/channel";
+      } else if (parsedUrl.pathname.match(/^\/shorts\/.+/)) {
+        return "youtube/shorts";
+      } else if (
+        parsedUrl.pathname === "/watch" &&
+        parsedUrl.searchParams.has("v")
+      ) {
+        return "youtube/watch";
+      }
+
+      // Check for GitHub URLs
+    } else if (checkHosts("github.com")) {
+      if (parsedUrl.pathname.match(/^\/[^/]+\/[^/]+\/issues$/)) {
+        return "github/issues";
+      } else if (parsedUrl.pathname.match(/^\/[^/]+\/[^/]+\/issues\/.+/)) {
+        return "github/issue";
+      } else if (parsedUrl.pathname.match(/^\/[^/]+\/?$/)) {
+        return "github/profile";
+      }
+    }
+
+    // Return undefined if none of the above conditions match
+    return;
+  } catch (e) {
+    log("Invalid URL:", e);
+
+    return;
   }
-};
+}
+
+function injectTwitterScripts({ page, tabId }) {
+  if (page === "twitter/profile") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["twitter-profile.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["twitter-profile.css", "zap-modal.css"],
+    });
+  }
+}
 
 function injectYoutubeScripts({ page, tabId }) {
   if (page === "youtube/channel") {

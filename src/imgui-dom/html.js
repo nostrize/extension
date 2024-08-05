@@ -33,7 +33,7 @@ export function input({
   min,
   max,
   placeholder,
-  onchange,
+  inputEventHandler,
 }) {
   const inputElement = document.createElement("input");
 
@@ -51,8 +51,8 @@ export function input({
     inputElement.value = value;
   }
 
-  if (onchange) {
-    inputElement.onchange = onchange;
+  if (inputEventHandler) {
+    inputElement.addEventListener("input", inputEventHandler);
   }
 
   if (type === "number" && min) {
@@ -187,7 +187,7 @@ export const li = createContainerElement("li");
 
 const createTextElement =
   (name) =>
-  ({ text, eventTuples = [], classList, onclick, id }) => {
+  ({ text, innerHTML, eventTuples = [], classList, onclick, id }) => {
     const element = document.createElement(name);
 
     eventTuples.forEach(([eventName, event]) =>
@@ -207,6 +207,10 @@ const createTextElement =
     }
 
     element.textContent = text;
+
+    if (innerHTML) {
+      element.innerHTML = innerHTML;
+    }
 
     return element;
   };

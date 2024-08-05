@@ -1,0 +1,14 @@
+#n-tw-tip-button {
+  color: white;
+  background-color: rgb(130, 80, 223);
+  border: solid 3px white;
+  border-radius: 9px;
+  margin-left: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-family: TwitterChirp, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-stretch: 100%;
+  height: fit-content;
+  padding: 3px;
+}

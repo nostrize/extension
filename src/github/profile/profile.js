@@ -11,10 +11,10 @@ import * as html from "../../imgui-dom/html.js";
 import * as gui from "../../imgui-dom/gui.js";
 import { singletonFactory, Either } from "../../helpers/utils.js";
 import {
-  fetchFromNip05,
   getZapEndpoint,
   zapModalComponent,
 } from "../../components/zap-modal.js";
+import { fetchFromNip05 } from "../../helpers/nostr.js";
 
 async function githubProfilePage() {
   const settings = await getLocalSettings();

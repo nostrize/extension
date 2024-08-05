@@ -2,6 +2,8 @@ import { finalizeEvent } from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
+import * as html from "../imgui-dom/html.js";
+import * as gui from "../imgui-dom/gui.js";
 import {
   Either,
   generateRandomHexString,
@@ -9,9 +11,6 @@ import {
   satsToMilliSats,
 } from "../helpers/utils.js";
 import { fetchOneEvent } from "../helpers/relays.js";
-
-import * as html from "../imgui-dom/html.js";
-import * as gui from "../imgui-dom/gui.js";
 
 export function zapModalComponent({
   user,
@@ -28,11 +27,18 @@ export function zapModalComponent({
     type: "number",
     id: "n-modal-amount",
     classList: "n-modal-input",
-    value: 21,
-    min: milliSatsToSats(lnurlData.minSendable),
-    max: milliSatsToSats(lnurlData.maxSendable),
+    min: milliSatsToSats({ milliSats: lnurlData.minSendable }),
+    max: milliSatsToSats({ milliSats: lnurlData.maxSendable }),
     placeholder: "Amount in sats",
-    onchange: (e) => (gui.gebid("n-invoice-hidden").value = e.target.value),
+    inputEventHandler: (e) => {
+      const value = Number(e.target.value);
+
+      if (value) {
+        e.target.classList.remove("n-input-error");
+      }
+
+      gui.gebid("n-invoice-hidden").value = value;
+    },
   });
 
   const getComment = () => {
@@ -55,10 +61,18 @@ export function zapModalComponent({
     classList: "n-generate-invoice-btn",
     text: "Generate Invoice",
     onclick: async (e) => {
+      const amountInput = gui.gebid("n-modal-amount");
+
+      if (!amountInput.value) {
+        amountInput.classList.add("n-input-error");
+
+        return e.preventDefault();
+      }
+
       e.target.textContent = "Generating...";
 
-      gui.gebid("n-modal-step-2-desc").textContent =
-        `Scan QR code to zap ${user} ${zapSatsAmountInput.value} sats`;
+      gui.gebid("n-modal-step-2-desc").innerHTML =
+        `Scan QR code to zap <span class="n-span-red">${user}</span> ${zapSatsAmountInput.value} sats`;
 
       await generateInvoiceButtonClickHandler();
     },
@@ -123,21 +137,24 @@ export function zapModalComponent({
             children: [
               html.h2({
                 classList: "n-modal-title",
-                text: `Zap ${user} using a lightning wallet ${settings.nostrSettings.useNostrAnon ? "anonymously" : ""}`,
+                innerHTML: `Zap <span class="n-span-red">${user}</span> using a lightning wallet ${settings.nostrSettings.useNostrAnon ? "anonymously" : ""}`,
               }),
               html.div({
                 children: [21, 69, 100, 500].map(satOptionButton),
                 classList: "n-sats-option-row",
               }),
               html.div({
-                children: [2100, 5000, 10000, 100000].map(satOptionButton),
+                children: [2100, 6900, 10000, 20000].map(satOptionButton),
                 classList: "n-sats-option-row",
               }),
               html.div({
                 classList: "n-sats-option-row",
-                children: [zapSatsAmountInput, html.span({ text: "sats" })],
+                children: [zapSatsAmountInput],
               }),
-              commentInput,
+              html.div({
+                classList: "n-sats-option-row",
+                children: [commentInput],
+              }),
               html.div({
                 style: [
                   ["display", "flex"],
@@ -282,7 +299,7 @@ export async function generateInvoiceButtonClick({
 
   log("zapReceiptEvent", zapReceiptEvent);
 
-  paidMessagePlaceholder.textContent = `⚡ You just zapped ${user} ${sats} sats ⚡`;
+  paidMessagePlaceholder.innerHTML = `⚡ You just zapped <span class="n-span-red">${user}</span> ${sats} sats ⚡`;
 
   document.getElementById("n-modal-step-2").style.display = "none";
   document.getElementById("n-modal-step-3").style.display = "flex";
@@ -290,10 +307,20 @@ export async function generateInvoiceButtonClick({
 
 export const createSatsOptionButton = (button) => (sats) => {
   return button({
-    text: sats.toString(),
+    text: `⚡ ${sats}`,
     classList: "n-sats-option-btn",
     onclick: () => {
-      document.getElementById("n-modal-amount").value = sats;
+      const amountInput = gui.gebid("n-modal-amount");
+
+      amountInput.value = sats;
+
+      // Manually trigger the input event
+      const event = new Event("input", {
+        bubbles: true,
+        cancelable: true,
+      });
+
+      amountInput.dispatchEvent(event);
     },
   });
 };
@@ -325,33 +352,5 @@ export async function getZapEndpoint({ metadataEvent, log }) {
     }
   } catch (err) {
     return Either.left(err.toString());
-  }
-}
-
-export async function fetchFromNip05({ user, fetchUrl }) {
-  try {
-    const response = await fetch(fetchUrl);
-
-    if (!response.ok) {
-      return Either.left(
-        `nip05 fetch response error with status: ${response.status}`,
-      );
-    }
-
-    const json = await response.json();
-    const pubkey = json["names"][user];
-
-    if (!pubkey) {
-      return Either.left(
-        `could not find pubkey for user ${user} in nostr.json`,
-      );
-    }
-
-    const nip46 = json["nip46"];
-    const relays = nip46 ? nip46[pubkey] || [] : [];
-
-    return Either.right({ pubkey, relays });
-  } catch (error) {
-    return Either.left(`nip05 fetch error ${error}`);
   }
 }

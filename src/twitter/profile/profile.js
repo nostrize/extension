@@ -1,10 +1,11 @@
 import { Relay } from "nostr-tools";
 
-import { loadParamsFromChannelPage } from "../youtube-helpers.js";
-
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
-import { getOrInsertCache } from "../../helpers/local-cache.js";
+import {
+  getLocalSettings,
+  getOrInsertCache,
+} from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either, singletonFactory } from "../../helpers/utils.js";
 import {
@@ -13,45 +14,44 @@ import {
 } from "../../components/zap-modal.js";
 import { fetchOneEvent } from "../../helpers/relays.js";
 import { createKeyPair } from "../../helpers/crypto.js";
+import { parseDescription } from "../../helpers/dom.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
-async function youtubeShortsPage() {
-  let tipButtonContainer = document.querySelector(
-    "ytd-channel-name yt-formatted-string",
+async function twitterProfilePage() {
+  const settings = await getLocalSettings();
+
+  let accountNameContainer = document.querySelector(
+    "div[data-testid='UserName']",
   );
 
-  while (!tipButtonContainer) {
+  while (accountNameContainer == null) {
     await delay(500);
 
-    tipButtonContainer = document.querySelector(
-      "ytd-channel-name yt-formatted-string",
+    accountNameContainer = document.querySelector(
+      "div[data-testid='UserName']",
     );
   }
 
-  const tipButtonId = "n-yt-shorts-tip-button";
-
-  if (gui.gebid(tipButtonId)) {
-    // if the tip button already exists, we don't need to load again
+  if (gui.gebid("n-tw-tip-button")) {
     return;
   }
 
-  const paramsEither = await loadParamsFromChannelPage();
+  const accountName =
+    accountNameContainer.querySelector("span span").textContent;
 
-  if (Either.isLeft(paramsEither)) {
-    console.log(paramsEither.error);
+  const accountDescription = document.querySelector(
+    "div[data-testid='UserDescription'] span",
+  ).textContent;
 
-    return;
-  }
+  const { nip05, npub } = parseDescription({ content: accountDescription });
 
-  const { settings, nip05, npub, channel } = Either.getRight(paramsEither);
-
-  const log = logger({ ...settings.debug, namespace: "[N][YT-Shorts]" });
+  const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
   const pubkey = await getPubkeyFrom({
     nip05,
     npub,
-    username: channel,
-    cachePrefix: "yt",
+    username: accountName,
+    cachePrefix: "tw",
   });
 
   const relayFactory = singletonFactory({
@@ -83,7 +83,7 @@ async function youtubeShortsPage() {
   const recipient = lnurlData.nostrPubkey;
 
   const { zapModal, closeModal } = zapModalComponent({
-    user: channel,
+    user: accountName,
     metadataEvent,
     lnurlData,
     localNostrKeys,
@@ -94,11 +94,9 @@ async function youtubeShortsPage() {
     zapEndpoint,
   });
 
-  gui.prepend(
-    tipButtonContainer,
+  accountNameContainer.append(
     html.link({
-      id: tipButtonId,
-      classList: "yt-simple-endpoint style-scope n-shorts-tip-button",
+      id: "n-tw-tip-button",
       text: "⚡Tip⚡",
       href: "javascript:void(0)",
       onclick: () => (zapModal.style.display = "block"),
@@ -122,4 +120,4 @@ async function youtubeShortsPage() {
   });
 }
 
-youtubeShortsPage().catch((e) => console.error(e));
+twitterProfilePage().catch((e) => console.error(e));
