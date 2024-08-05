@@ -39,13 +39,22 @@ async function twitterProfilePage() {
   const accountName =
     accountNameContainer.querySelector("span span").textContent;
 
-  const accountDescription = document.querySelector(
-    "div[data-testid='UserDescription'] span",
-  ).textContent;
-
-  const { nip05, npub } = parseDescription({ content: accountDescription });
+  const accountDescription = [
+    ...document.querySelectorAll("div[data-testid='UserDescription'] span"),
+  ]
+    .map((m) => m.textContent)
+    .join("");
 
   const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
+
+  const { nip05, npub } = parseDescription({
+    content: accountDescription,
+    log,
+  });
+
+  if (!npub && !nip05) {
+    return;
+  }
 
   const pubkey = await getPubkeyFrom({
     nip05,
