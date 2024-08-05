@@ -51,7 +51,7 @@ function getPageFromUrl(url) {
       }
 
       // Check for YouTube URLs
-    } else if (checkHosts("youtube.com")) {
+    } else if (checkHosts("youtube.com", "m.youtube.com")) {
       if (parsedUrl.pathname.match(/^\/@.+/)) {
         return "youtube/channel";
       } else if (parsedUrl.pathname.match(/^\/channel\/.+/)) {

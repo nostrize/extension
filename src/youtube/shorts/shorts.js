@@ -4,7 +4,11 @@ import { loadParamsFromChannelPage } from "../youtube-helpers.js";
 
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
-import { getOrInsertCache } from "../../helpers/local-cache.js";
+import {
+  getFromCache,
+  getOrInsertCache,
+  insertToCache,
+} from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either, singletonFactory } from "../../helpers/utils.js";
 import {
@@ -16,18 +20,6 @@ import { createKeyPair } from "../../helpers/crypto.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
 async function youtubeShortsPage() {
-  let tipButtonContainer = document.querySelector(
-    "ytd-channel-name yt-formatted-string",
-  );
-
-  while (!tipButtonContainer) {
-    await delay(500);
-
-    tipButtonContainer = document.querySelector(
-      "ytd-channel-name yt-formatted-string",
-    );
-  }
-
   const tipButtonId = "n-yt-shorts-tip-button";
 
   if (gui.gebid(tipButtonId)) {
@@ -35,15 +27,41 @@ async function youtubeShortsPage() {
     return;
   }
 
-  const paramsEither = await loadParamsFromChannelPage();
+  let tipButtonContainer =
+    document.querySelector("ytd-channel-name yt-formatted-string") ||
+    document.querySelector(".ReelPlayerHeaderRendererEndpoint.cbox");
 
-  if (Either.isLeft(paramsEither)) {
-    console.log(paramsEither.error);
+  while (!tipButtonContainer) {
+    await delay(500);
 
-    return;
+    tipButtonContainer =
+      document.querySelector("ytd-channel-name yt-formatted-string") ||
+      document.querySelector(".ReelPlayerHeaderRendererEndpoint.cbox");
   }
 
-  const { settings, nip05, npub, channel } = Either.getRight(paramsEither);
+  const channelNameLink =
+    document.querySelector("ytd-channel-name a") || tipButtonContainer;
+
+  const channelName = channelNameLink.attributes["href"].value;
+  const channelParamsCacheKey = `yt-channel-${channelName}`;
+
+  let params = getFromCache(channelParamsCacheKey);
+
+  if (!params) {
+    const paramsEither = await loadParamsFromChannelPage({ channelName });
+
+    if (Either.isLeft(paramsEither)) {
+      log(paramsEither.error);
+
+      return;
+    }
+
+    params = Either.getRight(paramsEither);
+
+    insertToCache(channelParamsCacheKey, params);
+  }
+
+  const { settings, nip05, npub, channel } = params;
 
   const log = logger({ ...settings.debug, namespace: "[N][YT-Shorts]" });
 
@@ -93,6 +111,11 @@ async function youtubeShortsPage() {
     settings,
     zapEndpoint,
   });
+
+  if (gui.gebid(tipButtonId)) {
+    // if the tip button already exists, we don't need to load again
+    return;
+  }
 
   gui.prepend(
     tipButtonContainer,

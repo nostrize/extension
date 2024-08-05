@@ -2,20 +2,29 @@ import { getLocalSettings } from "../helpers/local-cache.js";
 import { delay, Either } from "../helpers/utils.js";
 import { parseDescription } from "../helpers/dom.js";
 
-export async function loadParamsFromChannelPage() {
-  let channelNameLink = document.querySelector("ytd-channel-name a");
+export async function getChannelName() {
+  let channelNameLink =
+    document.querySelector("ytd-channel-name a") ||
+    document.querySelector("a.slim-owner-icon-and-title");
 
   while (!channelNameLink) {
     // need to wait a bit for document to load
     await delay(500);
 
-    channelNameLink = document.querySelector("ytd-channel-name a");
+    channelNameLink =
+      document.querySelector("ytd-channel-name a") ||
+      document.querySelector("a.slim-owner-icon-and-title");
   }
 
   // will give /@ChannelName
-  const channelName = channelNameLink.attributes["href"].value;
+  return channelNameLink.attributes["href"].value;
+}
 
-  const res = await fetch(`https://www.youtube.com${channelName}`);
+export async function loadParamsFromChannelPage({ channelName }) {
+  // to suport both m.youtube.com and www.youtube.com
+  const currentHost = window.location.host;
+
+  const res = await fetch(`https://${currentHost}${channelName}`);
   const channelHtml = await res.text();
 
   const parser = new DOMParser();

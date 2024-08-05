@@ -1,7 +1,6 @@
 import { logger } from "../helpers/logger.js";
 import { getLocalSettings } from "../helpers/local-cache.js";
 
-import { keyGeneratorListeners } from "./key-generator.js";
 import { pageLoaderListener } from "./page-loaders.js";
 import { fetchBunkerPointerListeners } from "./bunker-helpers.js";
 import { zapperListeners } from "./zap-helpers.js";
@@ -11,9 +10,6 @@ async function addListeners() {
 
   // dynamicly load content scripts and css
   chrome.tabs.onUpdated.addListener(pageLoaderListener);
-
-  // key derivation listeners
-  chrome.runtime.onMessage.addListener(keyGeneratorListeners);
 
   // bunker related listeners
   const bunkerLogger = logger({ ...settings.debug, namespace: "[N][Bunker]" });

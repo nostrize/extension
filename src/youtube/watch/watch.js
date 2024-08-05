@@ -1,10 +1,17 @@
 import { Relay } from "nostr-tools";
 
-import { loadParamsFromChannelPage } from "../youtube-helpers.js";
+import {
+  getChannelName,
+  loadParamsFromChannelPage,
+} from "../youtube-helpers.js";
 
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
-import { getOrInsertCache } from "../../helpers/local-cache.js";
+import {
+  getFromCache,
+  getOrInsertCache,
+  insertToCache,
+} from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { Either, singletonFactory } from "../../helpers/utils.js";
 import {
@@ -23,15 +30,26 @@ async function youtubeWatchPage() {
     return;
   }
 
-  const paramsEither = await loadParamsFromChannelPage();
+  const channelName = await getChannelName();
+  const channelParamsCacheKey = `yt-channel-${channelName}`;
 
-  if (Either.isLeft(paramsEither)) {
-    log(paramsEither.error);
+  let params = getFromCache(channelParamsCacheKey);
 
-    return;
+  if (!params) {
+    const paramsEither = await loadParamsFromChannelPage({ channelName });
+
+    if (Either.isLeft(paramsEither)) {
+      log(paramsEither.error);
+
+      return;
+    }
+
+    params = Either.getRight(paramsEither);
+
+    insertToCache(channelParamsCacheKey, params);
   }
 
-  const { settings, nip05, npub, channel } = Either.getRight(paramsEither);
+  const { settings, nip05, npub, channel } = params;
 
   const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
 
@@ -82,14 +100,23 @@ async function youtubeWatchPage() {
     zapEndpoint,
   });
 
+  if (gui.gebid(tipButtonId)) {
+    return;
+  }
+
   gui.prepend(
-    document.getElementById("middle-row"),
+    document.getElementById("middle-row") ||
+      document.querySelector("ytm-slim-owner-renderer"),
     html.link({
       id: tipButtonId,
       classList: "n-shorts-tip-button yt-simple-endpoint style-scope",
       text: "⚡Tip⚡",
-      href: "javascript:void(0)",
-      onclick: () => (zapModal.style.display = "block"),
+      href: "javascript:void(0);",
+      onclick: () => {
+        zapModal.style.display = "block";
+
+        return false;
+      },
       style: [["color", "white"]],
     }),
   );

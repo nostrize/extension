@@ -22,6 +22,22 @@ export async function getLocalSettings() {
   return settings;
 }
 
+export function getFromCache(key) {
+  // Check if the key exists in local storage
+  const cachedValue = localStorage.getItem(key);
+
+  if (cachedValue) {
+    // If it exists, return the cached value
+    return JSON.parse(cachedValue);
+  }
+
+  return;
+}
+
+export function insertToCache(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 export async function getOrInsertCache(key, insertCallback) {
   // Check if the key exists in local storage
   const cachedValue = localStorage.getItem(key);
