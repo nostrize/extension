@@ -1,4 +1,3 @@
-import { getLocalSettings } from "../helpers/local-cache.js";
 import { delay, Either } from "../helpers/utils.js";
 import { parseDescription } from "../helpers/dom.js";
 

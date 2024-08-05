@@ -31,7 +31,7 @@ fi
 echo "New tag: $NEW_TAG"
 
 # Create a zip file containing only js, css, and json files from the dist folder
-zip -r release.zip . -i "dist/*.js" "dist/*.css" "dist/*.json"
+zip -r release.zip dist/ -x "*.js.map"
 
 # Create a new GitHub release
 gh release create "$NEW_TAG" ./release.zip -t "dev release" -n "Automated release based on latest commit"
