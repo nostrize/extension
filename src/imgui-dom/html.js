@@ -1,4 +1,4 @@
-export function script({ text, src }) {
+export function script({ text, src, async = false, type = "text/javascript" }) {
   const script = document.createElement("script");
 
   if (text) {
@@ -8,6 +8,9 @@ export function script({ text, src }) {
   if (src) {
     script.setAttribute("src", src);
   }
+
+  script.setAttribute("async", async.toString());
+  script.setAttribute("type", type);
 
   document.head.appendChild(script);
 }

@@ -23,9 +23,12 @@
     "*://twitter.com/*",
     "*://www.twitter.com/*"
   ],
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "web_accessible_resources": [
+    {
+      "resources": ["nostrize-nip07-provider.js"],
+      "matches": ["https://*/*", "http://localhost:*/*", "http://127.0.0.1:*/*", "http://*.localhost/*"]
+    }
+  ],
   "icons": {
     "16": "logo.png",
     "48": "logo.png",
