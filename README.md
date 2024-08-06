@@ -8,10 +8,17 @@ https://github.com/user-attachments/assets/a12b9fa1-e351-462c-b706-d186040ffc6e
 
 # Projects
 
+## X/Twitter
+
+* Do you still need to use X/Twitter because everyone is still there?
+* Good news: you can use nostr via Nostrize on X/Twitter now! 🤯
+* Add your npub or nip05 to your account bio and you are ready to receive zaps
+
 ## Youtube
 
 * Easy integration via channel description by adding your npub or nip05 (see our [youtube channel](https://www.youtube.com/@Nostrize) for reference)
 * Receive donations in your videos or shorts
+* m.youtube.com support
 * And more features are coming...
 
 ## GitHub
