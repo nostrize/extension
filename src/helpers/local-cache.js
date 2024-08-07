@@ -5,17 +5,16 @@ const defaultSettings = {
     namespace: "[N]",
   },
   nostrSettings: {
-    useNostrAnon: false,
-    useNip07Signing: true,
-    nostrRelayUrl: "wss://relay.damus.io",
+    mode: "nip07", // "anon" | "nip07",
+    relays: ["wss://relay.damus.io"],
   },
 };
 
 export async function getLocalSettings() {
-  const { settings } = await chrome.storage.sync.get(["settings"]);
+  const { settings } = await chrome.storage.local.get(["settings"]);
 
   if (!settings) {
-    await chrome.storage.sync.set({ settings: defaultSettings });
+    await chrome.storage.local.set({ settings: defaultSettings });
 
     return defaultSettings;
   }

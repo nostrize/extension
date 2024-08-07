@@ -187,6 +187,7 @@ const createContainerElement =
 export const div = createContainerElement("div");
 export const ul = createContainerElement("ul");
 export const li = createContainerElement("li");
+export const label = createContainerElement("label");
 
 const createTextElement =
   (name) =>

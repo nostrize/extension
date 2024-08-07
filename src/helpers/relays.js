@@ -1,3 +1,6 @@
+import { Relay } from "nostr-tools";
+import { singletonFactory } from "./utils";
+
 export async function fetchOneEvent({ relayFactory, filter, bolt11 }) {
   const relay = await relayFactory.getOrCreate();
 
@@ -31,6 +34,19 @@ export async function fetchOneEvent({ relayFactory, filter, bolt11 }) {
     } catch (error) {
       reject(error);
     }
+  });
+}
+
+export function getRelayFactory({ relays }) {
+  return singletonFactory({
+    buildFn: async () => {
+      // TODO: use SimplePool with all the relays
+      const relay = new Relay(relays[0]);
+
+      await relay.connect();
+
+      return relay;
+    },
   });
 }
 

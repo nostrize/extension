@@ -36,11 +36,9 @@ export async function zapModalComponent({
   });
 
   const getComment = async () => {
-    if (settings.nostrSettings.useNostrAnon) {
-      return `Zapped with Nostrize`;
-    }
-
-    if (settings.nostrSettings.useNip07Signing) {
+    if (settings.nostrSettings.mode === "anon") {
+      return `Zapped with Nostrize anonymously`;
+    } else if (settings.nostrSettings.mode === "nip07") {
       const nip07Pubkey = await getPubkeyFromNip07();
 
       const nip07Kind0 = await getOrInsertCache(`${nip07Pubkey}:kind0`, () =>
@@ -148,7 +146,7 @@ export async function zapModalComponent({
             children: [
               html.h2({
                 classList: "n-modal-title",
-                innerHTML: `Zap <span class="n-span-red">${user}</span> using a lightning wallet ${settings.nostrSettings.useNostrAnon ? "anonymously" : ""}`,
+                innerHTML: `Zap <span class="n-span-red">${user}</span> using a lightning wallet ${settings.nostrSettings.mode === "anon" ? "anonymously" : ""}`,
               }),
               html.div({
                 children: [21, 69, 100, 500].map(satOptionButton),
@@ -301,24 +299,22 @@ export async function generateInvoiceButtonClick({
     profile: metadataEvent.pubkey,
     amount: milliSats,
     comment,
-    relays: [nostrSettings.nostrRelayUrl],
+    relays: nostrSettings.relays,
   });
 
   let zapRequestEvent;
 
-  if (nostrSettings.useNostrAnon) {
+  if (nostrSettings.mode === "anon") {
     const localNostrKeys = createKeyPair();
 
     zapRequestEvent = finalizeEvent(eventTemplate, localNostrKeys.secret);
-  } else if (nostrSettings.useNip07Signing) {
+  } else if (nostrSettings.mode === "nip07") {
     zapRequestEvent = await requestSigningFromNip07({
       from: "nostrize-zap-modal",
       type: "nip07-sign-request",
       eventTemplate,
     });
-  } else if (nostrSettings.useBunker) {
-    throw new Error("Not implemented");
-  } else if (nostrSettings.useWebln) {
+  } else if (nostrSettings.mode === "bunker") {
     throw new Error("Not implemented");
   }
 
@@ -336,8 +332,6 @@ export async function generateInvoiceButtonClick({
   )}&comment=${encodeURIComponent(comment)}`;
 
   const since = Math.floor(Date.now() / 1000);
-
-  console.log(`since seconds: ${since}`);
 
   const res = await fetch(url);
   const { pr: invoice } = await res.json();

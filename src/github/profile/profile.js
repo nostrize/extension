@@ -1,15 +1,14 @@
 import browser from "webextension-polyfill";
-import { Relay } from "nostr-tools";
 
+import * as html from "../../imgui-dom/html.js";
+import * as gui from "../../imgui-dom/gui.js";
 import { logger } from "../../helpers/logger.js";
 import {
   getLocalSettings,
   getOrInsertCache,
 } from "../../helpers/local-cache.js";
-import { fetchOneEvent } from "../../helpers/relays.js";
-import * as html from "../../imgui-dom/html.js";
-import * as gui from "../../imgui-dom/gui.js";
-import { singletonFactory, Either } from "../../helpers/utils.js";
+import { fetchOneEvent, getRelayFactory } from "../../helpers/relays.js";
+import { Either } from "../../helpers/utils.js";
 import { getLnurlData, zapModalComponent } from "../../components/zap-modal.js";
 import { fetchFromNip05 } from "../../helpers/nostr.js";
 
@@ -38,14 +37,8 @@ async function githubProfilePage() {
 
   html.script({ src: browser.runtime.getURL("nostrize-nip07-provider.js") });
 
-  const relayFactory = singletonFactory({
-    buildFn: async () => {
-      const relay = new Relay(settings.nostrSettings.nostrRelayUrl);
-
-      await relay.connect();
-
-      return relay;
-    },
+  const relayFactory = getRelayFactory({
+    relays: settings.nostrSettings.relays,
   });
 
   const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>

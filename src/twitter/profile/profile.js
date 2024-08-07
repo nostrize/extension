@@ -1,6 +1,4 @@
 import browser from "webextension-polyfill";
-import { Relay } from "nostr-tools";
-
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
@@ -8,9 +6,9 @@ import {
   getOrInsertCache,
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { delay, Either, singletonFactory } from "../../helpers/utils.js";
+import { delay, Either } from "../../helpers/utils.js";
 import { getLnurlData, zapModalComponent } from "../../components/zap-modal.js";
-import { fetchOneEvent } from "../../helpers/relays.js";
+import { fetchOneEvent, getRelayFactory } from "../../helpers/relays.js";
 import { parseDescription } from "../../helpers/dom.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
@@ -64,14 +62,8 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
-  const relayFactory = singletonFactory({
-    buildFn: async () => {
-      const relay = new Relay(settings.nostrSettings.nostrRelayUrl);
-
-      await relay.connect();
-
-      return relay;
-    },
+  const relayFactory = getRelayFactory({
+    relays: settings.nostrSettings.relays,
   });
 
   const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
