@@ -1,7 +1,6 @@
 const defaultSettings = {
   debug: {
     log: true,
-    border: true,
     namespace: "[N]",
   },
   nostrSettings: {
@@ -9,6 +8,10 @@ const defaultSettings = {
     relays: ["wss://relay.damus.io"],
   },
 };
+
+export async function saveSettings({ settings }) {
+  await chrome.storage.local.set({ settings });
+}
 
 export async function getLocalSettings() {
   const { settings } = await chrome.storage.local.get(["settings"]);

@@ -1,5 +1,6 @@
 import { Relay } from "nostr-tools";
-import { singletonFactory } from "./utils";
+
+import { singletonFactory } from "./utils.js";
 
 export async function fetchOneEvent({ relayFactory, filter, bolt11 }) {
   const relay = await relayFactory.getOrCreate();

@@ -29,6 +29,11 @@
       "matches": ["https://*/*", "http://localhost:*/*", "http://127.0.0.1:*/*", "http://*.localhost/*"]
     }
   ],
+  "options_page": "nostrize-settings.html",
+  "action": {
+    "default_title": "Nostrize settings",
+    "default_popup": "nostrize-settings.html"
+  },
   "icons": {
     "16": "logo.png",
     "48": "logo.png",

@@ -1,0 +1,116 @@
+body {
+  background-color: rgb(130, 80, 223, 0.1);
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column; /* Stack sections vertically */
+  justify-content: flex-start; /* Align sections at the top of the page */
+  align-items: center; /* Center sections horizontally */
+  min-height: 100vh; /* Ensure body takes at least full viewport height */
+  padding: 20px;
+  box-sizing: border-box;
+  min-width: 500px;
+  font-size: medium;
+}
+
+h2 {
+  color: black;
+}
+
+.section {
+  background-color: rgb(130, 80, 223, 0.1);
+  padding: 10px;
+  margin-bottom: 20px;
+  min-width: 400px;
+  max-width: 400px;
+  width: 100%; /* Make sure it doesn't exceed max-width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+label {
+  color: black;
+  display: flex;
+  align-items: center;
+}
+
+.input-container {
+  margin-top: 10px;
+}
+
+.input-container label {
+  display: block;
+}
+
+.input-container input {
+  width: 100%;
+  max-width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.input-container select {
+  width: 100%;
+  max-width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.help-icon {
+  cursor: help;
+  margin-left: 5px;
+}
+
+.relay-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.relay-item input {
+  flex-grow: 1;
+  max-width: 100%;
+  padding: 5px;
+}
+
+.relay-item button {
+  margin-left: 10px;
+}
+
+button {
+  background-color: black;
+  color: white;
+  padding: 5px;
+  cursor: pointer;
+}
+
+#import-nip07, .remove-relay {
+  margin-top: 5px;
+}
+
+#namespace {
+  max-width: 96%;
+}
+
+.help-icon {
+  cursor: help;
+  margin-left: 5px;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: black;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 10;
+  max-width: 200px;
+}
+
+label:hover .tooltip {
+  display: block;
+}

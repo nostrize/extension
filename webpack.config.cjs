@@ -13,7 +13,7 @@ module.exports = {
     "youtube-watch": "./src/youtube/watch/watch.js",
     "twitter-profile": "./src/twitter/profile/profile.js",
     "nostrize-nip07-provider": "./src/components/nip07-provider.js",
-    popup: "./src/settings/popup.js",
+    "nostrize-settings": "./src/settings/settings.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
