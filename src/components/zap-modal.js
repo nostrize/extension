@@ -4,22 +4,16 @@ import { toString as qrCode } from "qrcode/lib/browser.js";
 
 import * as html from "../imgui-dom/html.js";
 import * as gui from "../imgui-dom/gui.js";
-import {
-  Either,
-  generateRandomHexString,
-  milliSatsToSats,
-  satsToMilliSats,
-} from "../helpers/utils.js";
+import { Either, milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
 import { fetchOneEvent } from "../helpers/relays.js";
+import { createKeyPair } from "../helpers/crypto.js";
+import { getOrInsertCache } from "../helpers/local-cache.js";
 
-export function zapModalComponent({
+export async function zapModalComponent({
   user,
   metadataEvent,
   lnurlData,
-  recipient,
   relayFactory,
-  localNostrKeys,
-  zapEndpoint,
   settings,
   log,
 }) {
@@ -41,19 +35,36 @@ export function zapModalComponent({
     },
   });
 
-  const getComment = () => {
-    if (!settings.nostrSettings.useNostrAnon) {
-      throw new Error("not implemented");
+  const getComment = async () => {
+    if (settings.nostrSettings.useNostrAnon) {
+      return `Zapped with Nostrize`;
     }
 
-    return `Zapped with Nostrize by Anon`;
+    if (settings.nostrSettings.useNip07Signing) {
+      const nip07Pubkey = await getPubkeyFromNip07();
+
+      const nip07Kind0 = await getOrInsertCache(`${nip07Pubkey}:kind0`, () =>
+        fetchOneEvent({
+          relayFactory,
+          filter: { authors: [nip07Pubkey], kinds: [0], limit: 1 },
+        }),
+      );
+
+      let { display_name, name } = JSON.parse(nip07Kind0.content);
+
+      const nip07Name = display_name || name;
+
+      return `Zapped with Nostrize by ${nip07Name}`;
+    }
+
+    throw new Error("Not implemented");
   };
 
   const commentInput = html.input({
     type: "text",
     id: "n-modal-comment",
     classList: "n-modal-input",
-    placeholder: getComment(),
+    placeholder: await getComment(),
   });
 
   const generateInvoiceButton = html.button({
@@ -202,64 +213,114 @@ export function zapModalComponent({
       comment: commentInput.value
         ? commentInput.value
         : commentInput.placeholder,
-      html,
-      fetchOneEvent,
-      finalizeEvent,
-      gui,
       lnurlData,
       log,
-      makeZapRequest,
       metadataEvent,
       paidMessagePlaceholder,
       qrCode,
       qrCodeContainer,
-      recipient,
       relayFactory,
       nostrSettings: settings.nostrSettings,
-      nip46: { localNostrKeys },
       user,
-      zapEndpoint,
     });
 
   return { zapModal, closeModal };
 }
 
+async function getPubkeyFromNip07() {
+  window.postMessage({
+    from: "nostrize-zap-modal",
+    type: "nip07-pubkey-request",
+  });
+
+  return new Promise((resolve) => {
+    window.addEventListener("message", function (event) {
+      if (event.source !== window) {
+        return;
+      }
+
+      const { from, type, pubkey } = event.data;
+
+      if (
+        !(
+          from === "nostrize-nip07-provider" &&
+          type === "nip07-pubkey-request" &&
+          !!pubkey
+        )
+      ) {
+        return;
+      }
+
+      return resolve(pubkey);
+    });
+  });
+}
+
+async function requestSigningFromNip07(messageParams) {
+  window.postMessage(messageParams);
+
+  return new Promise((resolve) => {
+    window.addEventListener("message", function (event) {
+      if (event.source !== window) {
+        return;
+      }
+
+      const { from, type, signedEvent } = event.data;
+
+      if (
+        !(
+          from === "nostrize-nip07-provider" &&
+          type === "nip07-sign-request" &&
+          !!signedEvent
+        )
+      ) {
+        return;
+      }
+
+      return resolve(signedEvent);
+    });
+  });
+}
+
 export async function generateInvoiceButtonClick({
   sats,
   comment,
-  fetchOneEvent,
-  finalizeEvent,
   log,
-  makeZapRequest,
+  lnurlData,
   metadataEvent,
   paidMessagePlaceholder,
   qrCode,
   qrCodeContainer,
-  recipient,
   relayFactory,
   nostrSettings,
-  nip46,
   user,
-  zapEndpoint,
 }) {
   const milliSats = satsToMilliSats({ sats });
 
-  // will be used for querying
-  const randomEventIndex = generateRandomHexString(64);
-
   const eventTemplate = await makeZapRequest({
     profile: metadataEvent.pubkey,
-    event: randomEventIndex,
     amount: milliSats,
     comment,
     relays: [nostrSettings.nostrRelayUrl],
   });
 
-  // sign zap event anonymously for now
-  // TODO: experiment with NIP-46
-  const zapRequestEvent = nostrSettings.useNostrAnon
-    ? finalizeEvent(eventTemplate, nip46.localNostrKeys.secret)
-    : null;
+  let zapRequestEvent;
+
+  if (nostrSettings.useNostrAnon) {
+    const localNostrKeys = createKeyPair();
+
+    zapRequestEvent = finalizeEvent(eventTemplate, localNostrKeys.secret);
+  } else if (nostrSettings.useNip07Signing) {
+    zapRequestEvent = await requestSigningFromNip07({
+      from: "nostrize-zap-modal",
+      type: "nip07-sign-request",
+      eventTemplate,
+    });
+  } else if (nostrSettings.useBunker) {
+    throw new Error("Not implemented");
+  } else if (nostrSettings.useWebln) {
+    throw new Error("Not implemented");
+  }
 
   if (!zapRequestEvent) {
     throw new Error("not implemented");
@@ -267,9 +328,16 @@ export async function generateInvoiceButtonClick({
 
   log("zapRequestEvent", zapRequestEvent);
 
+  const zapEndpoint = lnurlData.callback;
+  const recipient = lnurlData.nostrPubkey;
+
   const url = `${zapEndpoint}?amount=${milliSats}&nostr=${encodeURIComponent(
     JSON.stringify(zapRequestEvent),
   )}&comment=${encodeURIComponent(comment)}`;
+
+  const since = Math.floor(Date.now() / 1000);
+
+  console.log(`since seconds: ${since}`);
 
   const res = await fetch(url);
   const { pr: invoice } = await res.json();
@@ -287,12 +355,12 @@ export async function generateInvoiceButtonClick({
 
   const zapReceiptEvent = await fetchOneEvent({
     relayFactory,
-    log,
+    bolt11: invoice,
     filter: {
       authors: [recipient],
       kinds: [9735],
       "#p": [metadataEvent.pubkey],
-      "#e": [randomEventIndex],
+      since,
       limit: 1,
     },
   });
@@ -325,7 +393,7 @@ export const createSatsOptionButton = (button) => (sats) => {
   });
 };
 
-export async function getZapEndpoint({ metadataEvent, log }) {
+export async function getLnurlData({ metadataEvent, log }) {
   try {
     let { lud16 } = JSON.parse(metadataEvent.content);
 

@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import { Relay } from "nostr-tools";
 
 import { loadParamsFromChannelPage } from "../youtube-helpers.js";
@@ -12,12 +13,8 @@ import {
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either, singletonFactory } from "../../helpers/utils.js";
-import {
-  getZapEndpoint,
-  zapModalComponent,
-} from "../../components/zap-modal.js";
+import { getLnurlData, zapModalComponent } from "../../components/zap-modal.js";
 import { fetchOneEvent } from "../../helpers/relays.js";
-import { createKeyPair } from "../../helpers/crypto.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
 async function youtubeShortsPage() {
@@ -33,6 +30,8 @@ async function youtubeShortsPage() {
     // if the tip button already exists, we don't need to load again
     return;
   }
+
+  html.script({ src: browser.runtime.getURL("nostrize-nip07-provider.js") });
 
   let tipButtonContainer =
     document.querySelector("ytd-channel-name yt-formatted-string") ||
@@ -89,7 +88,6 @@ async function youtubeShortsPage() {
 
   const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
     fetchOneEvent({
-      log,
       relayFactory,
       filter: { authors: [pubkey], kinds: [0], limit: 1 },
     }),
@@ -97,57 +95,51 @@ async function youtubeShortsPage() {
 
   const lnurlData = await getOrInsertCache(metadataEvent.id, () =>
     Either.getOrElseThrow({
-      eitherFn: () => getZapEndpoint({ metadataEvent, log }),
+      eitherFn: () => getLnurlData({ metadataEvent, log }),
     }),
   );
-
-  const localNostrKeys = createKeyPair();
-  const zapEndpoint = lnurlData.callback;
-  const recipient = lnurlData.nostrPubkey;
-
-  const { zapModal, closeModal } = zapModalComponent({
-    user: channel,
-    metadataEvent,
-    lnurlData,
-    localNostrKeys,
-    log,
-    recipient,
-    relayFactory,
-    settings,
-    zapEndpoint,
-  });
 
   if (gui.gebid(tipButtonId)) {
     // if the tip button already exists, we don't need to load again
     return;
   }
 
-  gui.prepend(
-    tipButtonContainer,
-    html.link({
-      id: tipButtonId,
-      classList: "yt-simple-endpoint style-scope n-shorts-tip-button",
-      text: "⚡Tip⚡",
-      href: "javascript:void(0)",
-      onclick: () => (zapModal.style.display = "block"),
-    }),
-  );
+  const tipButton = html.link({
+    id: tipButtonId,
+    classList: "yt-simple-endpoint style-scope n-shorts-tip-button",
+    text: "⚡Tip⚡",
+    href: "javascript:void(0)",
+    onclick: async () => {
+      const { zapModal, closeModal } = await zapModalComponent({
+        user: channel,
+        metadataEvent,
+        lnurlData,
+        log,
+        relayFactory,
+        settings,
+      });
 
-  document.body.append(zapModal);
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function (event) {
+        if (event.target == zapModal) {
+          closeModal();
+        }
+      };
 
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function (event) {
-    if (event.target == zapModal) {
-      closeModal();
-    }
-  };
+      // Listen for keydown events to close the modal when ESC is pressed
+      window.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" || event.key === "Esc") {
+          closeModal();
+        }
+      });
 
-  // Listen for keydown events to close the modal when ESC is pressed
-  window.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" || event.key === "Esc") {
-      closeModal();
-    }
+      document.body.append(zapModal);
+
+      zapModal.style.display = "block";
+    },
   });
+
+  gui.prepend(tipButtonContainer, tipButton);
 }
 
 youtubeShortsPage().catch((e) => console.error(e));

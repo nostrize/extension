@@ -5,7 +5,8 @@ const defaultSettings = {
     namespace: "[N]",
   },
   nostrSettings: {
-    useNostrAnon: true,
+    useNostrAnon: false,
+    useNip07Signing: true,
     nostrRelayUrl: "wss://relay.damus.io",
   },
 };

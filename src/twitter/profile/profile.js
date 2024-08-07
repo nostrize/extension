@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import { Relay } from "nostr-tools";
 
 import * as gui from "../../imgui-dom/gui.js";
@@ -8,17 +9,15 @@ import {
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either, singletonFactory } from "../../helpers/utils.js";
-import {
-  getZapEndpoint,
-  zapModalComponent,
-} from "../../components/zap-modal.js";
+import { getLnurlData, zapModalComponent } from "../../components/zap-modal.js";
 import { fetchOneEvent } from "../../helpers/relays.js";
-import { createKeyPair } from "../../helpers/crypto.js";
 import { parseDescription } from "../../helpers/dom.js";
 import { getPubkeyFrom } from "../../helpers/nostr.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
+
+  const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
   let accountNameContainer = document.querySelector(
     "div[data-testid='UserName']",
@@ -33,8 +32,12 @@ async function twitterProfilePage() {
   }
 
   if (gui.gebid("n-tw-tip-button")) {
+    log("zap button already there, don't need to load");
+
     return;
   }
+
+  html.script({ src: browser.runtime.getURL("nostrize-nip07-provider.js") });
 
   const accountName =
     accountNameContainer.querySelector("span span").textContent;
@@ -44,8 +47,6 @@ async function twitterProfilePage() {
   ]
     .map((m) => m.textContent)
     .join("");
-
-  const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
   const { nip05, npub } = parseDescription({
     content: accountDescription,
@@ -75,7 +76,6 @@ async function twitterProfilePage() {
 
   const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
     fetchOneEvent({
-      log,
       relayFactory,
       filter: { authors: [pubkey], kinds: [0], limit: 1 },
     }),
@@ -83,50 +83,45 @@ async function twitterProfilePage() {
 
   const lnurlData = await getOrInsertCache(metadataEvent.id, () =>
     Either.getOrElseThrow({
-      eitherFn: () => getZapEndpoint({ metadataEvent, log }),
+      eitherFn: () => getLnurlData({ metadataEvent, log }),
     }),
   );
 
-  const localNostrKeys = createKeyPair();
-  const zapEndpoint = lnurlData.callback;
-  const recipient = lnurlData.nostrPubkey;
+  const tipButton = html.link({
+    id: "n-tw-tip-button",
+    text: "⚡Tip⚡",
+    href: "javascript:void(0)",
+    onclick: async () => {
+      const { zapModal, closeModal } = await zapModalComponent({
+        user: accountName,
+        metadataEvent,
+        lnurlData,
+        log,
+        relayFactory,
+        settings,
+      });
 
-  const { zapModal, closeModal } = zapModalComponent({
-    user: accountName,
-    metadataEvent,
-    lnurlData,
-    localNostrKeys,
-    log,
-    recipient,
-    relayFactory,
-    settings,
-    zapEndpoint,
+      document.body.append(zapModal);
+
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function (event) {
+        if (event.target == zapModal) {
+          closeModal();
+        }
+      };
+
+      // Listen for keydown events to close the modal when ESC is pressed
+      window.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" || event.key === "Esc") {
+          closeModal();
+        }
+      });
+
+      zapModal.style.display = "block";
+    },
   });
 
-  accountNameContainer.append(
-    html.link({
-      id: "n-tw-tip-button",
-      text: "⚡Tip⚡",
-      href: "javascript:void(0)",
-      onclick: () => (zapModal.style.display = "block"),
-    }),
-  );
-
-  document.body.append(zapModal);
-
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function (event) {
-    if (event.target == zapModal) {
-      closeModal();
-    }
-  };
-
-  // Listen for keydown events to close the modal when ESC is pressed
-  window.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" || event.key === "Esc") {
-      closeModal();
-    }
-  });
+  accountNameContainer.append(tipButton);
 }
 
 twitterProfilePage().catch((e) => console.error(e));

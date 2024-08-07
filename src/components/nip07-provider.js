@@ -3,29 +3,45 @@ window.nostrize = {
   hasNostr: () => console.log(window.nostr),
 };
 
-window.addEventListener("message", (message) => {
+window.addEventListener("message", async (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  const { from, type, eventTemplate } = event.data;
+
   if (
-    !message.data ||
-    message.data.response === null ||
-    message.data.response === undefined ||
-    message.data.ext !== "nostrize"
+    !(
+      from === "nostrize-zap-modal" &&
+      type === "nip07-sign-request" &&
+      !!eventTemplate
+    )
   ) {
     return;
   }
 
-  console.log(
-    "%c[nostrize:%c" +
-      message.data.id +
-      "%c]%c result: %c" +
-      JSON.stringify(
-        message?.data?.response ||
-          message?.data?.response?.error?.message ||
-          {},
-      ),
-    "background-color:#f1b912;font-weight:bold;color:white",
-    "background-color:#f1b912;font-weight:bold;color:#a92727",
-    "background-color:#f1b912;color:white;font-weight:bold",
-    "color:auto",
-    "font-weight:bold;color:#08589d",
+  const signedEvent = await window.nostr.signEvent(eventTemplate);
+
+  // Optionally send a response back
+  window.postMessage(
+    { from: "nostrize-nip07-provider", type, signedEvent },
+    "*",
   );
+});
+
+window.addEventListener("message", async (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  const { from, type } = event.data;
+
+  if (!(from === "nostrize-zap-modal" && type === "nip07-pubkey-request")) {
+    return;
+  }
+
+  const pubkey = await window.nostr.getPublicKey();
+
+  // Optionally send a response back
+  window.postMessage({ from: "nostrize-nip07-provider", type, pubkey }, "*");
 });
