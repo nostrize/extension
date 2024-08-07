@@ -30,6 +30,7 @@ label {
   color: black;
   display: flex;
   align-items: center;
+  position: relative; /* Make label the positioning context for the tooltip */
 }
 
 .input-container {
@@ -57,6 +58,28 @@ label {
 .help-icon {
   cursor: help;
   margin-left: 5px;
+  position: relative; /* Make help icon the positioning context for the tooltip */
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: black;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  bottom: 125%; /* Position the tooltip above the help icon */
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: normal; /* Allow text to wrap */
+  z-index: 10;
+  max-width: 200px; /* Limit the width of the tooltip */
+  text-align: center; /* Center align text inside the tooltip */
+  pointer-events: none; /* Prevent the tooltip from interfering with hover */
+}
+
+label:hover .tooltip {
+  display: block;
 }
 
 .relay-item {
@@ -77,13 +100,14 @@ label {
 }
 
 button {
-  background-color: black;
-  color: white;
+  background-color: rgb(130 80 223 / 75%);
+  color: floralwhite;
   padding: 5px;
   cursor: pointer;
+  font-weight: bold;
 }
 
-#import-nip07, .remove-relay {
+.remove-relay {
   margin-top: 5px;
 }
 
@@ -91,26 +115,14 @@ button {
   max-width: 96%;
 }
 
-.help-icon {
-  cursor: help;
-  margin-left: 5px;
+#reset-settings {
+  background-color: darkred;
 }
 
-.tooltip {
+#save-settings {
+  background-color: green;
+}
+
+#nip07-settings {
   display: none;
-  position: absolute;
-  background-color: black;
-  color: white;
-  padding: 5px;
-  border-radius: 5px;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  z-index: 10;
-  max-width: 200px;
-}
-
-label:hover .tooltip {
-  display: block;
 }

@@ -10,15 +10,15 @@
   <div class="section" id="debug-settings">
     <h2>Debug Settings</h2>
     <label>
-      <input type="checkbox" id="log" checked /> 
+      <input type="checkbox" id="log" /> 
       <span>Enable Logging</span>
     </label>
     <div class="input-container">
       <label for="namespace">Namespace
         <span class="help-icon">❓</span>
-        <span class="tooltip">The namespace used for debugging logs. This helps in identifying logs associated with Nostrize</span>
+        <span class="tooltip">This helps in identifying Nostrize logs.</span>
       </label>
-      <input type="text" id="namespace" placeholder="Namespace" value="[N]" />
+      <input type="text" id="namespace" placeholder="Namespace" />
     </div>
   </div>
 
@@ -27,25 +27,28 @@
     <div class="input-container">
       <label for="mode">Mode
         <span class="help-icon">❓</span>
-        <span class="tooltip">Choose the mode for Nostr settings. 'Anonymous' generates new keys, while 'NIP07' gets the relevant information from browser extensions like alby or nos2x</span>
+        <span class="tooltip">Choose the mode for Nostr. 'Anonymous' generates new keys everytime for event signing, while 'NIP-07' gets your nostr public key and signs events using browser extensions like alby or nos2x</span>
       </label>
+
       <select id="mode">
         <option value="anon">Anonymous</option>
         <option value="nip07">NIP07</option>
       </select>
 
-      <button id="import-nip07" style="display: none;">Import Relays from NIP07</button>
+      <div id="nip07-settings">
+        <label>
+          <input type="checkbox" id="nip07-relays" /> 
+          <span>Use relays from NIP07 extension</span>
+        </label>
+      </div>
+
     </div>
     
     <div class="input-container" id="relays-container">
       <label>Relays</label>
       
       <ul id="relays-list" style="list-style-type: none; padding-left: 0;">
-        <!-- Example relay item -->
-        <li class="relay-item">
-          <input type="text" value="wss://relay.damus.io" />
-          <button class="remove-relay">Remove</button>
-        </li>
+       
       </ul>
       <button id="add-relay">Add Relay</button>
     </div>
@@ -56,6 +59,7 @@
       <h2>Misc</h2>
 
       <button id="reset-settings">Reset settings</button>
+      <button id="save-settings">Save settings</button>
     </div>
   </div>
 

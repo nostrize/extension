@@ -1,8 +1,3 @@
-window.nostrize = {
-  hello: () => console.log("mello"),
-  hasNostr: () => console.log(window.nostr),
-};
-
 window.addEventListener("message", async (event) => {
   if (event.source !== window) {
     return;

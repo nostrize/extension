@@ -1,72 +1,116 @@
-import { getLocalSettings } from "../helpers/local-cache.js";
+import {
+  getLocalSettings,
+  saveLocalSettings,
+  defaultSettings,
+} from "../helpers/local-cache.js";
 
 async function settingsPage() {
   const state = await getLocalSettings();
 
-  // Event listeners to update state
-  document.getElementById("log").addEventListener("change", (e) => {
-    state.debug.log = e.target.checked;
+  // Load state into UI
+  function loadState() {
+    // Load Debug Settings
+    document.getElementById("log").checked = state.debug.log;
+    document.getElementById("namespace").value = state.debug.namespace;
 
-    console.log(state);
-  });
-
-  document.getElementById("namespace").addEventListener("input", (e) => {
-    state.debug.namespace = e.target.value;
-
-    console.log(state);
-  });
-
-  document.getElementById("mode").addEventListener("change", (e) => {
-    state.nostrSettings.mode = e.target.value;
-
-    document.getElementById("import-nip07").style.display =
-      e.target.value === "nip07" ? "block" : "none";
-
-    console.log(state);
-  });
-
-  function updateRelays() {
-    console.log(state);
+    // Load Nostr Settings
+    document.getElementById("mode").value = state.nostrSettings.mode;
+    document.getElementById("log").checked = state.debug.log;
 
     const relaysList = document.getElementById("relays-list");
-    relaysList.innerHTML = "";
+    relaysList.innerHTML = ""; // Clear existing list
 
     state.nostrSettings.relays.forEach((relay, index) => {
-      const relayItem = document.createElement("li");
-      relayItem.className = "relay-item";
-      relayItem.innerHTML = `
-      <input type="text" value="${relay}" />
-      <button class="remove-relay" data-index="${index}">Remove</button>
-    `;
+      const relayItem = createRelayItem(relay, index);
       relaysList.appendChild(relayItem);
     });
 
-    document.querySelectorAll(".remove-relay").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        const index = e.target.getAttribute("data-index");
-        state.nostrSettings.relays.splice(index, 1);
-        updateRelays();
-      });
-    });
-
-    document.querySelectorAll(".relay-item input").forEach((input, index) => {
-      input.addEventListener("input", (e) => {
-        state.nostrSettings.relays[index] = e.target.value;
-      });
-    });
+    toggleNIP07Settings();
   }
 
-  document.getElementById("add-relay").addEventListener("click", () => {
+  // Create a relay item element
+  function createRelayItem(relay, index) {
+    const li = document.createElement("li");
+    li.classList.add("relay-item");
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = relay;
+    input.onchange = (e) =>
+      (state.nostrSettings.relays[index] = e.target.value);
+
+    const button = document.createElement("button");
+    button.textContent = "Remove";
+    button.classList.add("remove-relay");
+    button.onclick = () => removeRelay(index);
+
+    li.appendChild(input);
+    li.appendChild(button);
+
+    return li;
+  }
+
+  function removeRelay(index) {
+    state.nostrSettings.relays.splice(index, 1);
+
+    loadState();
+  }
+
+  function addRelay() {
     state.nostrSettings.relays.push("");
 
-    updateRelays();
-  });
+    loadState();
+  }
 
-  updateRelays();
+  function toggleNIP07Settings() {
+    const nip07Settings = document.getElementById("nip07-settings");
 
-  document.getElementById("import-nip07").addEventListener("click", () => {
-    // TODO: Add your "Import from NIP07" action here
-  });
+    nip07Settings.style.display =
+      state.nostrSettings.mode === "nip07" ? "block" : "none";
+  }
+
+  // Reset settings to default
+  function resetSettings() {
+    state.debug.log = defaultSettings.debug.log;
+    state.debug.namespace = defaultSettings.debug.namespace;
+    state.nostrSettings.mode = defaultSettings.nostrSettings.mode;
+    state.nostrSettings.relays = [...defaultSettings.nostrSettings.relays];
+
+    loadState();
+  }
+
+  async function saveSettings() {
+    state.nostrSettings.relays = [
+      ...new Set(state.nostrSettings.relays),
+    ].filter(String);
+
+    await saveLocalSettings({ settings: state });
+
+    loadState();
+  }
+
+  // Attach event listeners
+  document.getElementById("log").onchange = (e) =>
+    (state.debug.log = e.target.checked);
+
+  document.getElementById("namespace").onchange = (e) =>
+    (state.debug.namespace = e.target.value);
+
+  document.getElementById("mode").onchange = (e) => {
+    state.nostrSettings.mode = e.target.value;
+
+    toggleNIP07Settings();
+  };
+
+  document.getElementById("nip07-relays").onchange = (e) =>
+    (state.nostrSettings.nip07.useRelays = e.target.checked);
+
+  document.getElementById("add-relay").onclick = addRelay;
+  document.getElementById("reset-settings").onclick = resetSettings;
+  document.getElementById("save-settings").onclick = saveSettings;
+
+  // Load the state initially
+  loadState();
 }
 
 settingsPage().catch(console.log);

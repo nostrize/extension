@@ -1,4 +1,4 @@
-const defaultSettings = {
+export const defaultSettings = {
   debug: {
     log: true,
     namespace: "[N]",
@@ -6,10 +6,13 @@ const defaultSettings = {
   nostrSettings: {
     mode: "nip07", // "anon" | "nip07",
     relays: ["wss://relay.damus.io"],
+    nip07: {
+      useRelays: false,
+    },
   },
 };
 
-export async function saveSettings({ settings }) {
+export async function saveLocalSettings({ settings }) {
   await chrome.storage.local.set({ settings });
 }
 
