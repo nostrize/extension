@@ -15,7 +15,8 @@ async function settingsPage() {
 
     // Load Nostr Settings
     document.getElementById("mode").value = state.nostrSettings.mode;
-    document.getElementById("log").checked = state.debug.log;
+    document.getElementById("nip07-relays").checked =
+      state.nostrSettings.nip07.useRelays;
 
     const relaysList = document.getElementById("relays-list");
     relaysList.innerHTML = ""; // Clear existing list
@@ -66,14 +67,21 @@ async function settingsPage() {
     const nip07Settings = document.getElementById("nip07-settings");
 
     nip07Settings.style.display =
-      state.nostrSettings.mode === "nip07" ? "block" : "none";
+      state.nostrSettings.mode === "nip07" ? "flex" : "none";
   }
 
   // Reset settings to default
   function resetSettings() {
+    // Debug settings
     state.debug.log = defaultSettings.debug.log;
     state.debug.namespace = defaultSettings.debug.namespace;
+
+    // Nostr settings
     state.nostrSettings.mode = defaultSettings.nostrSettings.mode;
+
+    state.nostrSettings.nip07.useRelays =
+      defaultSettings.nostrSettings.nip07.useRelays;
+
     state.nostrSettings.relays = [...defaultSettings.nostrSettings.relays];
 
     loadState();
@@ -85,6 +93,11 @@ async function settingsPage() {
     ].filter(String);
 
     await saveLocalSettings({ settings: state });
+
+    const notification = document.getElementById("saved-notification");
+    notification.style.display = "inline";
+
+    setTimeout(() => (notification.style.display = "none"), 2000);
 
     loadState();
   }

@@ -9,21 +9,27 @@
 <body>
   <div class="section" id="debug-settings">
     <h2>Debug Settings</h2>
-    <label>
-      <input type="checkbox" id="log" /> 
-      <span>Enable Logging</span>
-    </label>
+
     <div class="input-container">
+      <label>
+        <input type="checkbox" id="log" /> 
+        <span>Enable Logging</span>
+      </label>
+
+      <div><hr /></div>
+
       <label for="namespace">Namespace
         <span class="help-icon">❓</span>
         <span class="tooltip">This helps in identifying Nostrize logs.</span>
       </label>
+      
       <input type="text" id="namespace" placeholder="Namespace" />
     </div>
   </div>
 
   <div class="section" id="nostr-settings">
     <h2>Nostr Settings</h2>
+    
     <div class="input-container">
       <label for="mode">Mode
         <span class="help-icon">❓</span>
@@ -42,24 +48,27 @@
         </label>
       </div>
 
-    </div>
-    
-    <div class="input-container" id="relays-container">
+      <div><hr /></div>
+
       <label>Relays</label>
       
       <ul id="relays-list" style="list-style-type: none; padding-left: 0;">
        
       </ul>
+      
       <button id="add-relay">Add Relay</button>
     </div>
   </div>
 
   <div class="section" id="misc-container">
-    <div class="input-container" id="misc-container">
-      <h2>Misc</h2>
+    <h2>Misc</h2>
 
-      <button id="reset-settings">Reset settings</button>
-      <button id="save-settings">Save settings</button>
+    <div class="input-container" id="misc-container">
+      <div>
+        <button id="reset-settings">Reset settings</button>
+        <button id="save-settings">Save settings</button>
+        <span id="saved-notification">Saved</span>
+      </div>
     </div>
   </div>
 
