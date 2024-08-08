@@ -17,6 +17,7 @@ echo "Latest tag: $LATEST_TAG"
 if [ -z "$LATEST_TAG" ]; then
   echo "Empty tag"
   NEW_TAG="v0.0.1"
+  CHANGELOG="Initial release."
 else
   # Increment the version
   IFS='.' read -r -a PARTS <<< "$(echo ${LATEST_TAG#v})"
@@ -26,12 +27,18 @@ else
   
   PATCH=$((PATCH + 1))
   NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+  
+  # Generate the changelog from commit messages
+  CHANGELOG=$(git log "$LATEST_TAG"..HEAD --pretty=format:"- %s")
 fi
 
 echo "New tag: $NEW_TAG"
+echo "Changelog:"
+echo "$CHANGELOG"
 
 # Create a zip file containing only js, css, and json files from the dist folder
 zip -r release.zip dist/ -x "*.js.map"
 
-# Create a new GitHub release
-gh release create "$NEW_TAG" ./release.zip -t "dev release" -n "Automated release based on latest commit"
+# Create a new GitHub release with the changelog
+gh release create "$NEW_TAG" ./release.zip -t "dev release" -n "$CHANGELOG"
+
