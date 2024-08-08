@@ -1,4 +1,4 @@
-import { nip19 } from "nostr-tools";
+import { nip19, SimplePool } from "nostr-tools";
 
 import { getOrInsertCache } from "./local-cache.js";
 import { Either } from "./utils.js";
@@ -14,9 +14,9 @@ export async function getPubkeyFrom({ npub, nip05, username, cachePrefix }) {
     return data;
   }
 
-  const { pubkey } = await getOrInsertCache(
-    `${cachePrefix}_user_pubkey:${username}`,
-    () => {
+  const { pubkey } = await getOrInsertCache({
+    key: `${cachePrefix}_user_pubkey:${username}`,
+    insertCallback: () => {
       const [username, domain] = nip05.split("@");
       const fetchUrl = `https://${domain}/.well-known/nostr.json?user=${username}`;
 
@@ -24,7 +24,7 @@ export async function getPubkeyFrom({ npub, nip05, username, cachePrefix }) {
         eitherFn: () => fetchFromNip05({ user: username, fetchUrl }),
       });
     },
-  );
+  });
 
   return pubkey;
 }
@@ -55,4 +55,15 @@ export async function fetchFromNip05({ user, fetchUrl }) {
   } catch (error) {
     return Either.left(`nip05 fetch error ${error}`);
   }
+}
+
+export async function getMetadataEvent({ cacheKey, filter, relays }) {
+  return getOrInsertCache({
+    key: `${cacheKey}:kind0`,
+    insertCallback: () => {
+      const pool = new SimplePool();
+
+      return pool.get(relays, filter);
+    },
+  });
 }

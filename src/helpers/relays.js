@@ -2,40 +2,50 @@ import { Relay } from "nostr-tools";
 
 import { singletonFactory } from "./utils.js";
 
-export async function fetchOneEvent({ relayFactory, filter, bolt11 }) {
-  const relay = await relayFactory.getOrCreate();
+export function getRelays({
+  settings,
+  haveNip07Provider = false,
+  timeout = 4000,
+}) {
+  const shouldGetNip07Relays =
+    haveNip07Provider &&
+    settings.nostrSettings.mode === "nip07" &&
+    settings.nostrSettings.nip07.useRelays;
 
-  return new Promise((resolve, reject) => {
-    try {
-      const sub = relay.subscribe([filter], {
-        onevent(event) {
-          if (bolt11) {
-            const bolt11Tag = getMatchedBolt11Tag({
-              event,
-              bolt11,
-            });
+  const localRelays = settings.nostrSettings.relays;
 
-            if (bolt11Tag) {
-              sub.close();
+  if (shouldGetNip07Relays) {
+    return new Promise((resolve) => {
+      window.postMessage(
+        { type: "nip07-relays-request", from: "nostrize" },
+        "*",
+      );
 
-              resolve(event);
-            }
-          } else {
-            sub.close();
+      setTimeout(() => resolve(localRelays), timeout);
 
-            resolve(event);
-          }
-        },
-        onerror(e) {
-          sub.close();
+      window.addEventListener("message", (event) => {
+        if (event.source !== window) {
+          return;
+        }
 
-          reject(e);
-        },
+        const { from, type, relays } = event.data;
+
+        if (type !== "nip07-relays-request") {
+          return;
+        }
+
+        if (from !== "nostrize-nip07-provider") {
+          return;
+        }
+
+        console.log("relays", relays);
+
+        return resolve([...new Set(relays.concat(localRelays))]);
       });
-    } catch (error) {
-      reject(error);
-    }
-  });
+    });
+  }
+
+  return localRelays;
 }
 
 export function getRelayFactory({ relays }) {
@@ -48,15 +58,5 @@ export function getRelayFactory({ relays }) {
 
       return relay;
     },
-  });
-}
-
-function getMatchedBolt11Tag({ event, bolt11 }) {
-  return event.tags.find((t) => {
-    if (t[0] === "bolt11") {
-      return bolt11 === t[1];
-    }
-
-    return false;
   });
 }

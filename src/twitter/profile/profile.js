@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
@@ -7,44 +8,70 @@ import {
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
-import { getLnurlData, zapModalComponent } from "../../components/zap-modal.js";
-import { fetchOneEvent, getRelayFactory } from "../../helpers/relays.js";
+import { zapModalComponent } from "../../components/zap-modal.js";
 import { parseDescription } from "../../helpers/dom.js";
-import { getPubkeyFrom } from "../../helpers/nostr.js";
+import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
+import { getRelays } from "../../helpers/relays.js";
+import { getLnurlData } from "../../helpers/lnurl.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
 
   const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
-  let accountNameContainer = document.querySelector(
-    "div[data-testid='UserName']",
-  );
+  const accountName = window.location.href.match(/^https:\/\/x\.com\/(.*)$/)[1];
 
-  while (accountNameContainer == null) {
-    await delay(500);
+  log("accountName", accountName);
 
-    accountNameContainer = document.querySelector(
-      "div[data-testid='UserName']",
-    );
-  }
-
-  if (gui.gebid("n-tw-tip-button")) {
-    log("zap button already there, don't need to load");
+  if (["home", "explore", "search?"].some((s) => accountName.startsWith(s))) {
+    log("not a correct account page");
 
     return;
   }
 
-  html.script({ src: browser.runtime.getURL("nostrize-nip07-provider.js") });
+  const existingTipButton = gui.gebid("n-tw-tip-button");
 
-  const accountName =
-    accountNameContainer.querySelector("span span").textContent;
+  if (existingTipButton) {
+    log("zap button already there");
 
-  const accountDescription = [
-    ...document.querySelectorAll("div[data-testid='UserDescription'] span"),
-  ]
+    if (existingTipButton.attributes["data-for-account"] !== accountName) {
+      log("button doesn't belong to account", accountName);
+
+      existingTipButton.parentElement.removeChild(existingTipButton);
+    } else {
+      log("don't need to load");
+
+      return;
+    }
+  }
+
+  let accountDescContainer = document.querySelector(
+    "div[data-testid='UserDescription']",
+  );
+
+  while (!accountDescContainer) {
+    await delay(200);
+
+    accountDescContainer = document.querySelector(
+      "div[data-testid='UserDescription']",
+    );
+  }
+
+  html.script({
+    src: browser.runtime.getURL("nostrize-nip07-provider.js"),
+  });
+
+  const haveNip07Provider = true;
+
+  const accountDescription = [...accountDescContainer.querySelectorAll("span")]
     .map((m) => m.textContent)
     .join("");
+
+  if (!accountDescription) {
+    log("accountDescription is not in the dom");
+
+    return;
+  }
 
   const { nip05, npub } = parseDescription({
     content: accountDescription,
@@ -62,25 +89,31 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
-  const relayFactory = getRelayFactory({
-    relays: settings.nostrSettings.relays,
+  const relays = await getRelays({
+    settings,
+    haveNip07Provider,
+    timeout: 0,
   });
 
-  const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
-    fetchOneEvent({
-      relayFactory,
-      filter: { authors: [pubkey], kinds: [0], limit: 1 },
-    }),
-  );
+  log("relays", relays);
 
-  const lnurlData = await getOrInsertCache(metadataEvent.id, () =>
-    Either.getOrElseThrow({
-      eitherFn: () => getLnurlData({ metadataEvent, log }),
-    }),
-  );
+  const metadataEvent = await getMetadataEvent({
+    cacheKey: pubkey,
+    filter: { authors: [pubkey], kinds: [0], limit: 1 },
+    relays,
+  });
+
+  const lnurlData = await getOrInsertCache({
+    key: metadataEvent.id,
+    insertCallback: () =>
+      Either.getOrElseThrow({
+        eitherFn: () => getLnurlData({ metadataEvent, log }),
+      }),
+  });
 
   const tipButton = html.link({
     id: "n-tw-tip-button",
+    data: [["for-account", accountName]],
     text: "⚡Tip⚡",
     href: "javascript:void(0)",
     onclick: async () => {
@@ -89,7 +122,7 @@ async function twitterProfilePage() {
         metadataEvent,
         lnurlData,
         log,
-        relayFactory,
+        relays,
         settings,
       });
 
@@ -113,7 +146,7 @@ async function twitterProfilePage() {
     },
   });
 
-  accountNameContainer.append(tipButton);
+  document.querySelector("div[data-testid='UserName']").append(tipButton);
 }
 
 twitterProfilePage().catch((e) => console.error(e));

@@ -1,19 +1,18 @@
-import { finalizeEvent } from "nostr-tools";
+import { finalizeEvent, SimplePool } from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
 import * as html from "../imgui-dom/html.js";
 import * as gui from "../imgui-dom/gui.js";
-import { Either, milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
-import { fetchOneEvent } from "../helpers/relays.js";
+import { milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
 import { createKeyPair } from "../helpers/crypto.js";
-import { getOrInsertCache } from "../helpers/local-cache.js";
+import { getMetadataEvent } from "../helpers/nostr.js";
 
 export async function zapModalComponent({
   user,
   metadataEvent,
+  relays,
   lnurlData,
-  relayFactory,
   settings,
   log,
 }) {
@@ -41,12 +40,11 @@ export async function zapModalComponent({
     } else if (settings.nostrSettings.mode === "nip07") {
       const nip07Pubkey = await getPubkeyFromNip07();
 
-      const nip07Kind0 = await getOrInsertCache(`${nip07Pubkey}:kind0`, () =>
-        fetchOneEvent({
-          relayFactory,
-          filter: { authors: [nip07Pubkey], kinds: [0], limit: 1 },
-        }),
-      );
+      const nip07Kind0 = await getMetadataEvent({
+        cacheKey: nip07Pubkey,
+        relays,
+        filter: { authors: [nip07Pubkey], kinds: [0], limit: 1 },
+      });
 
       let { display_name, name } = JSON.parse(nip07Kind0.content);
 
@@ -83,7 +81,21 @@ export async function zapModalComponent({
       gui.gebid("n-modal-step-2-desc").innerHTML =
         `Scan QR code to zap <span class="n-span-red">${user}</span> ${zapSatsAmountInput.value} sats`;
 
-      await generateInvoiceButtonClickHandler();
+      await generateInvoiceClick({
+        sats: zapSatsAmountInput.value,
+        comment: commentInput.value
+          ? commentInput.value
+          : commentInput.placeholder,
+        lnurlData,
+        log,
+        metadataEvent,
+        paidMessagePlaceholder,
+        qrCode,
+        qrCodeContainer,
+        relays,
+        nostrSettings: settings.nostrSettings,
+        user,
+      });
     },
   });
 
@@ -205,23 +217,6 @@ export async function zapModalComponent({
     ],
   });
 
-  const generateInvoiceButtonClickHandler = () =>
-    generateInvoiceButtonClick({
-      sats: zapSatsAmountInput.value,
-      comment: commentInput.value
-        ? commentInput.value
-        : commentInput.placeholder,
-      lnurlData,
-      log,
-      metadataEvent,
-      paidMessagePlaceholder,
-      qrCode,
-      qrCodeContainer,
-      relayFactory,
-      nostrSettings: settings.nostrSettings,
-      user,
-    });
-
   return { zapModal, closeModal };
 }
 
@@ -280,7 +275,7 @@ async function requestSigningFromNip07(messageParams) {
   });
 }
 
-export async function generateInvoiceButtonClick({
+async function generateInvoiceClick({
   sats,
   comment,
   log,
@@ -289,7 +284,7 @@ export async function generateInvoiceButtonClick({
   paidMessagePlaceholder,
   qrCode,
   qrCodeContainer,
-  relayFactory,
+  relays,
   nostrSettings,
   user,
 }) {
@@ -299,7 +294,7 @@ export async function generateInvoiceButtonClick({
     profile: metadataEvent.pubkey,
     amount: milliSats,
     comment,
-    relays: nostrSettings.relays,
+    relays,
   });
 
   let zapRequestEvent;
@@ -347,9 +342,8 @@ export async function generateInvoiceButtonClick({
   document.getElementById("n-modal-step-1").style.display = "none";
   document.getElementById("n-modal-step-2").style.display = "flex";
 
-  const zapReceiptEvent = await fetchOneEvent({
-    relayFactory,
-    bolt11: invoice,
+  const zapReceiptEvent = await getZapReceipt({
+    relays,
     filter: {
       authors: [recipient],
       kinds: [9735],
@@ -357,6 +351,7 @@ export async function generateInvoiceButtonClick({
       since,
       limit: 1,
     },
+    bolt11: invoice,
   });
 
   log("zapReceiptEvent", zapReceiptEvent);
@@ -367,7 +362,7 @@ export async function generateInvoiceButtonClick({
   document.getElementById("n-modal-step-3").style.display = "flex";
 }
 
-export const createSatsOptionButton = (button) => (sats) => {
+const createSatsOptionButton = (button) => (sats) => {
   return button({
     text: `⚡ ${sats}`,
     classList: "n-sats-option-btn",
@@ -387,32 +382,22 @@ export const createSatsOptionButton = (button) => (sats) => {
   });
 };
 
-export async function getLnurlData({ metadataEvent, log }) {
-  try {
-    let { lud16 } = JSON.parse(metadataEvent.content);
+async function getZapReceipt({ relays, filter, bolt11 }) {
+  const pool = new SimplePool();
 
-    if (lud16) {
-      const [name, domain] = lud16.split("@");
+  return new Promise((resolve) => {
+    const subscription = pool.subscribeMany(relays, [filter], {
+      onevent(event) {
+        const found = event.tags.find(
+          (t) => t[0] === "bolt11" && t[1] === bolt11,
+        );
 
-      const lnurl = new URL(
-        `/.well-known/lnurlp/${name}`,
-        `https://${domain}`,
-      ).toString();
+        if (found) {
+          resolve(event);
 
-      const res = await fetch(lnurl);
-      const body = await res.json();
-
-      log(`fetch ${lnurl}`, body);
-
-      if (body.allowsNostr && body.nostrPubkey) {
-        return Either.right(body);
-      } else {
-        return Either.left("allowsNostr or nostrPubkey is not present");
-      }
-    } else {
-      return Either.left("Could not find lud16 from kind0 event");
-    }
-  } catch (err) {
-    return Either.left(err.toString());
-  }
+          subscription.close();
+        }
+      },
+    });
+  });
 }

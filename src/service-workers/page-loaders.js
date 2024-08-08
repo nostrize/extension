@@ -1,19 +1,18 @@
 import { logger } from "../helpers/logger.js";
 
 export const pageLoaderListener = (tabId, changeInfo, tab) => {
+  if (changeInfo.status !== "complete") {
+    return;
+  }
+
+  if (changeInfo.favIconUrl) {
+    return;
+  }
+
   const url = tab.url;
   const page = getPageFromUrl(tab.url);
 
   if (!page) {
-    return;
-  }
-
-  // Ensure the tab is loading, we delete it from our map
-  if (changeInfo.status === "loading") {
-    return;
-  }
-
-  if (changeInfo.status !== "complete" || changeInfo.favIconUrl) {
     return;
   }
 
@@ -32,17 +31,15 @@ export const pageLoaderListener = (tabId, changeInfo, tab) => {
 };
 
 function getPageFromUrl(url) {
-  const parsedUrl = new URL(url);
-
-  const checkHosts = (...hosts) => {
-    return hosts.some(
-      (host) =>
-        parsedUrl.hostname === host || parsedUrl.hostname === `www.${host}`,
-    );
-  };
-
   try {
     const parsedUrl = new URL(url);
+
+    const checkHosts = (...hosts) => {
+      return hosts.some(
+        (host) =>
+          parsedUrl.hostname === host || parsedUrl.hostname === `www.${host}`,
+      );
+    };
 
     // Check for Twitter/X URLs
     if (checkHosts("twitter.com", "x.com")) {

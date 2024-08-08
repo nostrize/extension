@@ -1,4 +1,10 @@
-export function script({ text, src, async = false, type = "text/javascript" }) {
+export function script({
+  text,
+  src,
+  id,
+  async = false,
+  type = "text/javascript",
+}) {
   const script = document.createElement("script");
 
   if (text) {
@@ -7,6 +13,10 @@ export function script({ text, src, async = false, type = "text/javascript" }) {
 
   if (src) {
     script.setAttribute("src", src);
+  }
+
+  if (id) {
+    script.id = id;
   }
 
   script.setAttribute("async", async.toString());
@@ -133,7 +143,15 @@ export function style({ text }) {
   return styleElement;
 }
 
-export function link({ classList, id, href, text, onclick, style = [] }) {
+export function link({
+  classList,
+  id,
+  href,
+  text,
+  onclick,
+  style = [],
+  data = [],
+}) {
   const linkElement = document.createElement("a");
 
   if (classList) {
@@ -149,6 +167,10 @@ export function link({ classList, id, href, text, onclick, style = [] }) {
   }
 
   style.forEach(([name, value]) => (linkElement.style[name] = value));
+
+  data.forEach(
+    ([key, value]) => (linkElement.attributes[`data-${key}`] = value),
+  );
 
   linkElement.setAttribute("href", href);
   linkElement.textContent = text;

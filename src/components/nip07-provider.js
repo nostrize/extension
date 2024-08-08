@@ -17,11 +17,40 @@ window.addEventListener("message", async (event) => {
 
   const signedEvent = await window.nostr.signEvent(eventTemplate);
 
-  // Optionally send a response back
   window.postMessage(
     { from: "nostrize-nip07-provider", type, signedEvent },
     "*",
   );
+});
+
+window.addEventListener("message", async (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  const { type, from } = event.data;
+
+  if (type !== "nip07-relays-request") {
+    return;
+  }
+
+  if (from !== "nostrize") {
+    return;
+  }
+
+  if (!window.nostr) {
+    console.log("nostr was not loaded, sending empty relays");
+
+    return window.postMessage(
+      { from: "nostrize-nip07-provider", type, relays: [] },
+      "*",
+    );
+  }
+
+  const relaysEntries = await window.nostr.getRelays();
+  const relays = Object.keys(relaysEntries);
+
+  window.postMessage({ from: "nostrize-nip07-provider", type, relays }, "*");
 });
 
 window.addEventListener("message", async (event) => {
@@ -37,6 +66,5 @@ window.addEventListener("message", async (event) => {
 
   const pubkey = await window.nostr.getPublicKey();
 
-  // Optionally send a response back
   window.postMessage({ from: "nostrize-nip07-provider", type, pubkey }, "*");
 });

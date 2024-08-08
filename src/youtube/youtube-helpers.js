@@ -1,7 +1,29 @@
 import { delay, Either } from "../helpers/utils.js";
 import { parseDescription } from "../helpers/dom.js";
 
-export async function getChannelName() {
+export async function getChannelNameInShorts() {
+  let tipButtonContainer =
+    document.querySelector("ytd-channel-name yt-formatted-string") ||
+    document.querySelector(".ReelPlayerHeaderRendererEndpoint.cbox");
+
+  while (!tipButtonContainer) {
+    await delay(500);
+
+    tipButtonContainer =
+      document.querySelector("ytd-channel-name yt-formatted-string") ||
+      document.querySelector(".ReelPlayerHeaderRendererEndpoint.cbox");
+  }
+
+  const channelNameLink =
+    document.querySelector("ytd-channel-name a") || tipButtonContainer;
+
+  return {
+    channelName: channelNameLink.attributes["href"].value,
+    tipButtonContainer,
+  };
+}
+
+export async function getChannelNameInWatch() {
   let channelNameLink =
     document.querySelector("ytd-channel-name a") ||
     document.querySelector("a.slim-owner-icon-and-title");

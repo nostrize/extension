@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 
 import {
-  getChannelName,
+  getChannelNameInWatch,
   loadParamsFromChannelPage,
 } from "../youtube-helpers.js";
 
@@ -15,28 +15,41 @@ import {
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
-import { getLnurlData, zapModalComponent } from "../../components/zap-modal.js";
-import { fetchOneEvent, getRelayFactory } from "../../helpers/relays.js";
-import { getPubkeyFrom } from "../../helpers/nostr.js";
+import { zapModalComponent } from "../../components/zap-modal.js";
+import { getRelays } from "../../helpers/relays.js";
+import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
+import { getLnurlData } from "../../helpers/lnurl.js";
 
 async function youtubeWatchPage() {
   const settings = await getLocalSettings();
 
   const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
 
-  await delay(200);
+  await delay(2000);
 
   const tipButtonId = "n-yt-watch-tip-button";
 
-  if (gui.gebid(tipButtonId)) {
-    log("zap button already there, don't need to load");
+  const channelName = await getChannelNameInWatch();
 
-    return;
+  const existingTipButton = gui.gebid(tipButtonId);
+
+  if (existingTipButton) {
+    log("zap button already there");
+
+    if (existingTipButton.attributes["data-for-account"] !== channelName) {
+      log("button doesn't belong to account", channelName);
+
+      existingTipButton.parentElement.removeChild(existingTipButton);
+    } else {
+      log("don't need to load");
+
+      return;
+    }
   }
 
   html.script({ src: browser.runtime.getURL("nostrize-nip07-provider.js") });
 
-  const channelName = await getChannelName();
+  const haveNip07Provider = true;
   const channelParamsCacheKey = `yt-channel-${channelName}`;
 
   let params = getFromCache(channelParamsCacheKey);
@@ -64,31 +77,25 @@ async function youtubeWatchPage() {
     cachePrefix: "yt",
   });
 
-  const relayFactory = getRelayFactory({
-    relays: settings.nostrSettings.relays,
+  const relays = await getRelays({ settings, haveNip07Provider });
+
+  const metadataEvent = await getMetadataEvent({
+    cacheKey: pubkey,
+    filter: { authors: [pubkey], kinds: [0], limit: 1 },
+    relays,
   });
 
-  const metadataEvent = await getOrInsertCache(`${pubkey}:kind0`, () =>
-    fetchOneEvent({
-      relayFactory,
-      filter: { authors: [pubkey], kinds: [0], limit: 1 },
-    }),
-  );
-
-  const lnurlData = await getOrInsertCache(metadataEvent.id, () =>
-    Either.getOrElseThrow({
-      eitherFn: () => getLnurlData({ metadataEvent, log }),
-    }),
-  );
-
-  if (gui.gebid(tipButtonId)) {
-    log("zap button already there, don't need to load");
-
-    return;
-  }
+  const lnurlData = await getOrInsertCache({
+    key: metadataEvent.id,
+    insertCallback: () =>
+      Either.getOrElseThrow({
+        eitherFn: () => getLnurlData({ metadataEvent, log }),
+      }),
+  });
 
   const tipButton = html.link({
     id: tipButtonId,
+    data: [["for-account", channelName]],
     classList: "n-shorts-tip-button yt-simple-endpoint style-scope",
     text: "⚡Tip⚡",
     href: "javascript:void(0);",
@@ -98,7 +105,7 @@ async function youtubeWatchPage() {
         metadataEvent,
         lnurlData,
         log,
-        relayFactory,
+        relays,
         settings,
       });
 
