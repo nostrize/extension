@@ -23,7 +23,11 @@ async function twitterProfilePage() {
 
   log("accountName", accountName);
 
-  if (["home", "explore", "search?"].some((s) => accountName.startsWith(s))) {
+  if (
+    ["home", "explore", "notifications", "search?"].some((s) =>
+      accountName.startsWith(s),
+    )
+  ) {
     log("not a correct account page");
 
     return;
