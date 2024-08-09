@@ -48,6 +48,8 @@ export async function getOrInsertCache({
   key,
   insertCallback,
   removeInMs = 0,
+  removeInMin = 0,
+  removeInDays = 0,
 }) {
   // Check if the key exists in local storage
   const cachedValue = localStorage.getItem(key);
@@ -66,8 +68,13 @@ export async function getOrInsertCache({
     // Store the value in local storage
     localStorage.setItem(key, JSON.stringify(value));
 
-    if (removeInMs) {
-      setTimeout(() => localStorage.removeItem(key), removeInMs);
+    if (removeInMs || removeInMin || removeInDays) {
+      setTimeout(
+        () => localStorage.removeItem(key),
+        removeInMs ||
+          removeInMin * 60 * 1000 ||
+          removeInDays * 24 * 60 * 60 * 1000,
+      );
     }
 
     // Return the fetched value
