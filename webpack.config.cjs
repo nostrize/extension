@@ -8,6 +8,7 @@ module.exports = {
     "github-issue": "./src/github/issue/issue.js",
     "github-issues": "./src/github/issues/issues.js",
     "github-profile": "./src/github/profile/profile.js",
+    "github-boost": "./src/github/feed/boost.js",
     "youtube-channel": "./src/youtube/channel/channel.js",
     "youtube-shorts": "./src/youtube/shorts/shorts.js",
     "youtube-watch": "./src/youtube/watch/watch.js",
