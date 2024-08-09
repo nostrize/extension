@@ -32,13 +32,31 @@ async function githubProfilePage() {
   const log = logger({ ...settings.debug, namespace: "[N][GH-Profile]" });
   const user = pathParts[0];
 
-  const fetchUrl = `https://${user}.github.io/github-connect/.well-known/nostr.json`;
-
   const { pubkey } = await getOrInsertCache({
     key: `user_pubkey:${user}`,
     insertCallback: () =>
       Either.getOrElseThrow({
-        eitherFn: () => fetchFromNip05({ user, fetchUrl }),
+        eitherFn: async () => {
+          log("trying to reach github connect nostr.json");
+          // if the repo name is kept as the fork
+          const res = await fetchFromNip05({
+            user,
+            fetchUrl: `https://${user}.github.io/github-connect/.well-known/nostr.json?user=${user}`,
+          });
+
+          if (Either.isRight(res)) {
+            return res;
+          }
+
+          log(Either.getLeft(res));
+          log("trying the short url version");
+
+          // if the repo is renamed to [username].github.io
+          return fetchFromNip05({
+            user,
+            fetchUrl: `https://${user}.github.io/.well-known/nostr.json?user=${user}`,
+          });
+        },
       }),
   });
 
