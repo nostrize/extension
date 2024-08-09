@@ -70,6 +70,8 @@ function getPageFromUrl(url) {
         return "github/issue";
       } else if (parsedUrl.pathname.match(/^\/[^/]+\/?$/)) {
         return "github/profile";
+      } else if (parsedUrl.pathname.match(/^\/?$/)) {
+        return "github/feed";
       }
     }
 
@@ -174,6 +176,18 @@ function injectGithubScripts({ page, tabId }) {
     chrome.scripting.insertCSS({
       target: { tabId },
       files: ["github-profile.css", "zap-modal.css"],
+    });
+  } else if (page === "github/feed") {
+    // Inject JavaScript file
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["github-boost.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["github-boost.css"],
     });
   }
 }

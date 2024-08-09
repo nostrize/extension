@@ -15,6 +15,7 @@ cp src/components/zap-modal.css dist/zap-modal.css
 cp src/github/issues/issues.css dist/github-issues.css
 cp src/github/issue/issue.css dist/github-issue.css
 cp src/github/profile/profile.css dist/github-profile.css
+cp src/github/feed/boost.css dist/github-boost.css
 
 # copy youtube specific files
 cp src/youtube/channel/channel.css dist/youtube-channel.css
