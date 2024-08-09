@@ -1,3 +1,4 @@
+// window.nostr.signEvent
 window.addEventListener("message", async (event) => {
   if (event.source !== window) {
     return;
@@ -15,6 +16,15 @@ window.addEventListener("message", async (event) => {
     return;
   }
 
+  if (!window.nostr) {
+    console.log(`window.nostr is not defined. type: ${type}, from: ${from}`);
+
+    return window.postMessage(
+      { from: "nostrize-nip07-provider", type, signedEvent: null },
+      "*",
+    );
+  }
+
   const signedEvent = await window.nostr.signEvent(eventTemplate);
 
   window.postMessage(
@@ -23,6 +33,7 @@ window.addEventListener("message", async (event) => {
   );
 });
 
+// window.nostr.getRelays
 window.addEventListener("message", async (event) => {
   if (event.source !== window) {
     return;
@@ -39,7 +50,9 @@ window.addEventListener("message", async (event) => {
   }
 
   if (!window.nostr) {
-    console.log("nostr was not loaded, sending empty relays");
+    console.log(
+      `nostr was not loaded, sending empty relays. type: ${type}, from: ${from}`,
+    );
 
     return window.postMessage(
       { from: "nostrize-nip07-provider", type, relays: [] },
@@ -53,6 +66,7 @@ window.addEventListener("message", async (event) => {
   window.postMessage({ from: "nostrize-nip07-provider", type, relays }, "*");
 });
 
+// window.nostr.getPublicKey
 window.addEventListener("message", async (event) => {
   if (event.source !== window) {
     return;
@@ -62,6 +76,15 @@ window.addEventListener("message", async (event) => {
 
   if (!(from === "nostrize-zap-modal" && type === "nip07-pubkey-request")) {
     return;
+  }
+
+  if (!window.nostr) {
+    console.log(`window.nostr is not defined. type: ${type}, from: ${from}`);
+
+    return window.postMessage(
+      { from: "nostrize-nip07-provider", type, pubkey: null },
+      "*",
+    );
   }
 
   const pubkey = await window.nostr.getPublicKey();

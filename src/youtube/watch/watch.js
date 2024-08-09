@@ -47,9 +47,6 @@ async function youtubeWatchPage() {
     }
   }
 
-  html.script({ src: browser.runtime.getURL("nostrize-nip07-provider.js") });
-
-  const haveNip07Provider = true;
   const channelParamsCacheKey = `yt-channel-${channelName}`;
 
   let params = getFromCache(channelParamsCacheKey);
@@ -77,7 +74,13 @@ async function youtubeWatchPage() {
     cachePrefix: "yt",
   });
 
-  const relays = await getRelays({ settings, haveNip07Provider });
+  const relays = await html.asyncScript({
+    id: "nostrize-nip07-provider",
+    src: browser.runtime.getURL("nostrize-nip07-provider.js"),
+    callback: () => getRelays({ settings, timeout: 4000 }),
+  });
+
+  log("relays", relays);
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pubkey,

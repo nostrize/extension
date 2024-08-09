@@ -1,14 +1,5 @@
-import { Relay } from "nostr-tools";
-
-import { singletonFactory } from "./utils.js";
-
-export function getRelays({
-  settings,
-  haveNip07Provider = false,
-  timeout = 4000,
-}) {
+export function getRelays({ settings, timeout = 4000 }) {
   const shouldGetNip07Relays =
-    haveNip07Provider &&
     settings.nostrSettings.mode === "nip07" &&
     settings.nostrSettings.nip07.useRelays;
 
@@ -16,12 +7,11 @@ export function getRelays({
 
   if (shouldGetNip07Relays) {
     return new Promise((resolve) => {
-      window.postMessage(
-        { type: "nip07-relays-request", from: "nostrize" },
-        "*",
-      );
+      window.postMessage({ type: "nip07-relays-request", from: "nostrize" });
 
-      setTimeout(() => resolve(localRelays), timeout);
+      if (timeout) {
+        setTimeout(() => resolve(localRelays), timeout);
+      }
 
       window.addEventListener("message", (event) => {
         if (event.source !== window) {
@@ -38,25 +28,10 @@ export function getRelays({
           return;
         }
 
-        console.log("relays", relays);
-
         return resolve([...new Set(relays.concat(localRelays))]);
       });
     });
   }
 
   return localRelays;
-}
-
-export function getRelayFactory({ relays }) {
-  return singletonFactory({
-    buildFn: async () => {
-      // TODO: use SimplePool with all the relays
-      const relay = new Relay(relays[0]);
-
-      await relay.connect();
-
-      return relay;
-    },
-  });
 }

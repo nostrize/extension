@@ -61,12 +61,6 @@ async function twitterProfilePage() {
     );
   }
 
-  html.script({
-    src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-  });
-
-  const haveNip07Provider = true;
-
   const accountDescription = [...accountDescContainer.querySelectorAll("span")]
     .map((m) => m.textContent)
     .join("");
@@ -93,10 +87,10 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
-  const relays = await getRelays({
-    settings,
-    haveNip07Provider,
-    timeout: 0,
+  const relays = await html.asyncScript({
+    id: "nostrize-nip07-provider",
+    src: browser.runtime.getURL("nostrize-nip07-provider.js"),
+    callback: () => getRelays({ settings, timeout: 4000 }),
   });
 
   log("relays", relays);

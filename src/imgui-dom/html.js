@@ -1,10 +1,39 @@
-export function script({
-  text,
+export async function asyncScript({
   src,
   id,
-  async = false,
   type = "text/javascript",
+  callback,
 }) {
+  const script = document.createElement("script");
+  script.setAttribute("src", src);
+
+  script.async = false;
+  script.setAttribute("type", type);
+
+  if (id) {
+    script.id = id;
+  }
+
+  return new Promise((resolve, reject) => {
+    script.onload = async () => {
+      try {
+        const res = await callback();
+
+        resolve(res);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    script.onerror = (error) => {
+      reject(new Error(`Failed to load script: ${src}. ${error}`));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
+export function script({ text, src, id, type = "text/javascript" }) {
   const script = document.createElement("script");
 
   if (text) {
@@ -19,7 +48,6 @@ export function script({
     script.id = id;
   }
 
-  script.setAttribute("async", async.toString());
   script.setAttribute("type", type);
 
   document.head.appendChild(script);
