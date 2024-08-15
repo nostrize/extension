@@ -27,6 +27,8 @@ export const pageLoaderListener = (tabId, changeInfo, tab) => {
     injectYoutubeScripts({ page, tabId });
   } else if (page.startsWith("twitter/")) {
     injectTwitterScripts({ page, tabId });
+  } else if (page.startsWith("telegram/web")) {
+    injectTelegramWebScripts({ page, tabId });
   }
 };
 
@@ -73,6 +75,10 @@ function getPageFromUrl(url) {
       } else if (parsedUrl.pathname.match(/^\/?$/)) {
         return "github/feed";
       }
+
+      // Check for Telegram Web URLs
+    } else if (checkHosts("web.telegram.org")) {
+      return "telegram/web";
     }
 
     // Return undefined if none of the above conditions match
@@ -81,6 +87,21 @@ function getPageFromUrl(url) {
     log("Invalid URL:", e);
 
     return;
+  }
+}
+
+function injectTelegramWebScripts({ page, tabId }) {
+  if (page === "telegram/web") {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["telegram-web-bio.js"],
+    });
+
+    // Inject CSS file
+    chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ["telegram-web-bio.css", "zap-modal.css"],
+    });
   }
 }
 

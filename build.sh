@@ -25,6 +25,9 @@ cp src/youtube/watch/watch.css dist/youtube-watch.css
 # copy twitter specific files
 cp src/twitter/profile/profile.css dist/twitter-profile.css
 
+# copy telegram web specific files
+cp src/telegram-web/bio.css dist/telegram-web-bio.css
+
 # copy settings popup files
 cp src/settings/settings.html dist/nostrize-settings.html
 cp src/settings/settings.css dist/nostrize-settings.css

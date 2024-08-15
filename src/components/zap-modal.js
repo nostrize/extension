@@ -352,6 +352,7 @@ async function generateInvoiceClick({
       limit: 1,
     },
     bolt11: invoice,
+    log,
   });
 
   log("zapReceiptEvent", zapReceiptEvent);
@@ -382,10 +383,12 @@ const createSatsOptionButton = (button) => (sats) => {
   });
 };
 
-async function getZapReceipt({ relays, filter, bolt11 }) {
+async function getZapReceipt({ relays, filter, bolt11, log }) {
   const pool = new SimplePool();
 
   return new Promise((resolve) => {
+    log("zap receipt filter", filter);
+
     const subscription = pool.subscribeMany(relays, [filter], {
       onevent(event) {
         const found = event.tags.find(
