@@ -50,6 +50,7 @@ export async function getOrInsertCache({
   removeInMs = 0,
   removeInMin = 0,
   removeInDays = 0,
+  insertEmpty = false,
 }) {
   // Check if the key exists in local storage
   const cachedValue = localStorage.getItem(key);
@@ -59,10 +60,14 @@ export async function getOrInsertCache({
     return JSON.parse(cachedValue);
   } else {
     // If it does not exist, call the fetch callback to get the value
-    const value = await insertCallback();
+    let value = await insertCallback();
 
     if (!value) {
-      throw new Error("Failed to insert value into cache");
+      if (insertEmpty) {
+        value = null;
+      } else {
+        throw new Error("Failed to insert value into cache");
+      }
     }
 
     // Store the value in local storage

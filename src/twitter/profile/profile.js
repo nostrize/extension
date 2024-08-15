@@ -102,7 +102,7 @@ async function twitterProfilePage() {
   });
 
   const lnurlData = await getOrInsertCache({
-    key: metadataEvent.id,
+    key: `nostrize-lnurldata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
         eitherFn: () => getLnurlData({ metadataEvent, log }),
