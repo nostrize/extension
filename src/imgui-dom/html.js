@@ -1,3 +1,13 @@
+export function customElement({ tagName, attributes = [] }) {
+  const customElement = document.createElement(tagName);
+
+  attributes.forEach(([key, value]) => {
+    customElement[key] = value;
+  });
+
+  return customElement;
+}
+
 export async function asyncScript({
   src,
   id,
@@ -194,7 +204,7 @@ export function link({
     linkElement.id = id;
   }
 
-  style.forEach(([name, value]) => (linkElement.style[name] = value));
+  style.forEach(([key, value]) => (linkElement.style[key] = value));
 
   data.forEach(
     ([key, value]) => (linkElement.attributes[`data-${key}`] = value),
@@ -208,7 +218,7 @@ export function link({
 
 const createContainerElement =
   (name) =>
-  ({ classList, children = [], style = [], id, text }) => {
+  ({ classList, children = [], style = [], id, text } = {}) => {
     const containerDiv = document.createElement(name);
 
     if (classList) {
@@ -241,12 +251,22 @@ export const label = createContainerElement("label");
 
 const createTextElement =
   (name) =>
-  ({ text, innerHTML, eventTuples = [], classList, onclick, id }) => {
+  ({
+    text,
+    innerHTML,
+    eventTuples = [],
+    styles = [],
+    classList,
+    onclick,
+    id,
+  }) => {
     const element = document.createElement(name);
 
     eventTuples.forEach(([eventName, event]) =>
       element.addEventListener(eventName, event),
     );
+
+    styles.forEach(([key, value]) => (element.style[key] = value));
 
     if (id) {
       element.id = id;
