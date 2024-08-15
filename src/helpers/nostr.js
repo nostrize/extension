@@ -15,7 +15,7 @@ export async function getPubkeyFrom({ npub, nip05, username, cachePrefix }) {
   }
 
   const { pubkey } = await getOrInsertCache({
-    key: `${cachePrefix}_user_pubkey:${username}`,
+    key: `nostrize-nip05-${cachePrefix}-${username}`,
     insertCallback: () => {
       const [username, domain] = nip05.split("@");
       const fetchUrl = `https://${domain}/.well-known/nostr.json?user=${username}`;
@@ -51,7 +51,10 @@ export async function fetchFromNip05({ user, fetchUrl }) {
     const nip46 = json["nip46"];
     const relays = nip46 ? nip46[pubkey] || [] : [];
 
-    return Either.right({ pubkey, relays });
+    const extensions = json["nostrize-extension"];
+    const extension = extensions ? extensions[pubkey] : undefined;
+
+    return Either.right({ pubkey, relays, extension });
   } catch (error) {
     return Either.left(`nip05 fetch error ${error}`);
   }
@@ -59,7 +62,7 @@ export async function fetchFromNip05({ user, fetchUrl }) {
 
 export async function getMetadataEvent({ cacheKey, filter, relays }) {
   return getOrInsertCache({
-    key: `${cacheKey}:kind0`,
+    key: `nostrize-kind0-${cacheKey}`,
     insertCallback: () => {
       const pool = new SimplePool();
 

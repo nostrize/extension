@@ -187,6 +187,8 @@ export function link({
   href,
   text,
   onclick,
+  append = [],
+  prepend = [],
   style = [],
   data = [],
 }) {
@@ -211,7 +213,14 @@ export function link({
   );
 
   linkElement.setAttribute("href", href);
-  linkElement.textContent = text;
+
+  if (text) {
+    linkElement.textContent = text;
+  }
+
+  append.forEach((a) => linkElement.appendChild(a));
+
+  prepend.forEach((p) => linkElement.insertBefore(p, linkElement.firstChild));
 
   return linkElement;
 }
@@ -259,7 +268,7 @@ const createTextElement =
     classList,
     onclick,
     id,
-  }) => {
+  } = {}) => {
     const element = document.createElement(name);
 
     eventTuples.forEach(([eventName, event]) =>

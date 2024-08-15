@@ -9,9 +9,10 @@ import {
 } from "../../helpers/local-cache.js";
 import { Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
-import { fetchFromNip05, getMetadataEvent } from "../../helpers/nostr.js";
+import { getMetadataEvent } from "../../helpers/nostr.js";
 import { getRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
+import { getGithubConnectData } from "../github-connect.js";
 
 async function githubProfilePage() {
   const settings = await getLocalSettings();
@@ -33,30 +34,10 @@ async function githubProfilePage() {
   const user = pathParts[0];
 
   const { pubkey } = await getOrInsertCache({
-    key: `user_pubkey:${user}`,
+    key: `nostrize-github-connect-${user}`,
     insertCallback: () =>
       Either.getOrElseThrow({
-        eitherFn: async () => {
-          log("trying to reach github connect nostr.json");
-          // if the repo name is kept as the fork
-          const res = await fetchFromNip05({
-            user,
-            fetchUrl: `https://${user}.github.io/github-connect/.well-known/nostr.json?user=${user}`,
-          });
-
-          if (Either.isRight(res)) {
-            return res;
-          }
-
-          log(Either.getLeft(res));
-          log("trying the short url version");
-
-          // if the repo is renamed to [username].github.io
-          return fetchFromNip05({
-            user,
-            fetchUrl: `https://${user}.github.io/.well-known/nostr.json?user=${user}`,
-          });
-        },
+        eitherFn: getGithubConnectData,
       }),
   });
 
@@ -77,7 +58,7 @@ async function githubProfilePage() {
   log("metadataEvent", metadataEvent);
 
   const lnurlData = await getOrInsertCache({
-    key: metadataEvent.id,
+    key: `nostrize-metadata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
         eitherFn: () => getLnurlData({ metadataEvent, log }),

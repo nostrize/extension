@@ -11,7 +11,7 @@
 }
 
 .n-boost-items-container {
-  padding: 10px 2px 10px 6px;
+  padding: 7px 7px 0px 7px;
   background-color: rgb(130, 80, 223, 0.1);
 }
 
@@ -20,5 +20,58 @@
 }
 
 .n-boost-item {
-  padding-bottom: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgb(130 80 223 / 25%);
+}
+
+.n-boost-item:first-child {
+  padding-top: 0px;
+}
+
+.n-boost-item:last-child {
+  border-bottom: none;
+}
+
+.n-boost-info {
+  display: flex;
+  position: relative;
+  padding: 2px 15px 4px 2px;
+}
+
+.n-boost-sats {
+  font-weight: 500;
+  color: black;
+  text-shadow: gold 1px 1px 1px;
+}
+
+.n-boost-message-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.n-boost-message {
+  background-color: rgb(130 80 223 / 10%);
+  margin: 0 10px 0 10px;
+  padding: 8px 10px 8px 10px;
+  border-radius: 9px;
+  width: 100%;
+  font-size: medium;
+}
+
+.n-github-pr-icon svg, .n-github-issue-icon svg {
+  margin-right: 2px;
+}
+
+.n-boost-item-emoji {
+  font-size: large;
+}
+
+.n-boost-item-ago {
+  position: absolute;
+  top: -5px;
+  right: 0px;
+  text-wrap: nowrap;
+  font-size: x-small;
+  color: gray;
 }
