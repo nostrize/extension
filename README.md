@@ -38,6 +38,12 @@ With Nostrize on GitHub, you can:
   * Earn payments for your pull requests that address and resolve issues.
 * And more features are coming...
 
+## Telegram Web (web.telegram.org)
+
+The latest integration of Nostrize. Add your npub to your bio and you're ready to go!
+
+If you're a telegram user, please join our group: https://t.me/+3ZIAq1yCcyJlMWUy
+
 # How to install
 
 * You can only install the development version right now
