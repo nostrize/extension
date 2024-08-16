@@ -326,10 +326,10 @@ async function generateInvoiceClick({
     JSON.stringify(zapRequestEvent),
   )}&comment=${encodeURIComponent(comment)}`;
 
-  const since = Math.floor(Date.now() / 1000);
-
   const res = await fetch(url);
   const { pr: invoice } = await res.json();
+
+  log("invoice", invoice);
 
   document.getElementById("n-invoice-hidden").text = invoice;
 
@@ -348,7 +348,7 @@ async function generateInvoiceClick({
       authors: [recipient],
       kinds: [9735],
       "#p": [metadataEvent.pubkey],
-      since,
+      since: zapRequestEvent.created_at - 20,
       limit: 1,
     },
     bolt11: invoice,
