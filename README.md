@@ -2,6 +2,10 @@
 
 Welcome to Nostrize - the browser extension that empowers any website with the [Nostr](https://github.com/nostr-protocol/nostr) experience. Nostrize seamlessly integrates tipping and crowdsourcing capabilities through Bitcoin, making every interaction permissionless. Join us in a world where supporting content and collaborative projects is effortless. Elevate your browsing with the power of Nostr and Bitcoin, and become part of the [Value4Value](https://value4value.info/) movement today.
 
+# Presentation
+
+https://slides.com/nostrize/code/fullscreen
+
 # Demo video
 
 https://github.com/user-attachments/assets/a12b9fa1-e351-462c-b706-d186040ffc6e
