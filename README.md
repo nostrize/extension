@@ -38,6 +38,42 @@ With Nostrize on GitHub, you can:
   * Earn payments for your pull requests that address and resolve issues.
 * And more features are coming...
 
+### Nostrize Booster
+
+Nostrize Booster is designed for GitHub and may be added for other platforms later.
+
+Nostrize users can make a boost to a github user, organization or a repository for endorsement, to a PR for visibility that more people can see and review it, or to a github issue for again for visibility hoping people would see and share a workaround or fix it. 
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Bob as Bob (User)
+    participant Extension as Nostrize Extension
+    participant NostrizeRelay as Nostrize Relay
+    participant NostrizeNode as Nostrize Lightning Node
+    participant Alice as Alice (Developer)
+
+    Bob->>Extension: Initiates a boost request
+    Extension->>NostrizeRelay: Sends zap request to Nostrize<br />with metadata indicating that the payment is for Alice
+    NostrizeRelay->>NostrizeNode: Forwards zap request
+    NostrizeNode-->>Extension: Generates Lightning Invoice
+    Extension-->>Bob: Displays Lightning Invoice
+    Bob->>NostrizeNode: Pays the invoice (10000 sats)
+    NostrizeNode->>Alice: Sends 9600 sats to Alice's wallet
+    NostrizeNode-->>NostrizeRelay: Confirms payment, creates zap receipt
+    NostrizeRelay-->>Extension: Sends boost event receipt
+    Extension-->>Bob: Displays confirmation of boost
+    NostrizeRelay->>NostrizeRelay: Stores boost request and receipt
+
+    autonumber 1
+
+    alt Boost Visibility
+        Other Users->>NostrizeRelay: Fetch boost events
+        NostrizeRelay-->>Other Users: Return boost events
+        Extension-->>Other Users: Displays boosts on GitHub homepage
+    end
+```
+
 ## Telegram Web (web.telegram.org)
 
 The latest integration of Nostrize. Add your npub to your bio and you're ready to go!
