@@ -17,6 +17,16 @@ async function telegramBio() {
 
   const log = logger({ ...settings.debug, namespace: "[N][Telegram-Web]" });
 
+  const tipButtonId = "n-telegram-web-tip-button";
+
+  let existingTipButton = gui.gebid(tipButtonId);
+
+  if (existingTipButton) {
+    log("zap button already there");
+
+    return;
+  }
+
   const ce = document.querySelector(".ChatExtra");
 
   let username;
@@ -44,17 +54,14 @@ async function telegramBio() {
     }
   });
 
-  if (!bio) {
-    log(`bio is not defined for user: ${username}`);
+  if (!username) {
+    log("username is not defined");
 
     return;
   }
 
-  const tipButtonId = "n-telegram-web-tip-button";
-  const existingTipButton = gui.gebid(tipButtonId);
-
-  if (existingTipButton) {
-    log("zap button already there");
+  if (!bio) {
+    log(`bio is not defined for user: ${username}`);
 
     return;
   }
@@ -139,6 +146,15 @@ async function telegramBio() {
     },
   });
 
+  existingTipButton = gui.gebid(tipButtonId);
+
+  if (existingTipButton) {
+    log("zap button already there");
+
+    return;
+  }
+
+  log("putting zap button to dom");
   gui.prepend(usernameDom, tipButton);
 }
 

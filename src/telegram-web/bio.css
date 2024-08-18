@@ -1,4 +1,4 @@
-.n-bio-zap-button {
+.n-bio-zap-button, .n-bio-zap-button:hover {
   color: white;
   background-color: rgb(130, 80, 223);
   border: solid 3px black;

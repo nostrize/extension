@@ -320,7 +320,7 @@ async function generateInvoiceClick({
   log("zapRequestEvent", zapRequestEvent);
 
   const zapEndpoint = lnurlData.callback;
-  const recipient = lnurlData.nostrPubkey;
+  const receiptAuthor = lnurlData.nostrPubkey;
 
   const url = `${zapEndpoint}?amount=${milliSats}&nostr=${encodeURIComponent(
     JSON.stringify(zapRequestEvent),
@@ -345,7 +345,7 @@ async function generateInvoiceClick({
   const zapReceiptEvent = await getZapReceipt({
     relays,
     filter: {
-      authors: [recipient],
+      authors: [receiptAuthor],
       kinds: [9735],
       "#p": [metadataEvent.pubkey],
       since: zapRequestEvent.created_at - 20,
