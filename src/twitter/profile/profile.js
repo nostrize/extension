@@ -19,7 +19,9 @@ async function twitterProfilePage() {
 
   const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
-  const accountName = window.location.href.match(/^https:\/\/x\.com\/(.*)$/)[1];
+  const accountName = window.location.href.match(
+    /^https:\/\/x\.com\/(.*?)(?=\?|\s|$)/,
+  )[1];
 
   log("accountName", accountName);
 
