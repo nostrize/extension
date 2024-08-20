@@ -54,14 +54,13 @@ sequenceDiagram
     participant Alice as Alice (Developer)
 
     Bob->>Extension: Initiates a boost request
-    Extension->>NostrizeRelay: Sends zap request to Nostrize<br />with metadata indicating that the payment is for Alice
-    NostrizeRelay->>NostrizeNode: Forwards zap request
-    NostrizeNode-->>Extension: Generates Lightning Invoice
+    Extension->>NostrizeNode: Sends a zap request to Nostrize<br />with tag ["p", "<pubkey_of_alice>"]
+    NostrizeNode-->>Extension: Generates and sends the Lightning Invoice
     Extension-->>Bob: Displays Lightning Invoice
     Bob->>NostrizeNode: Pays the invoice (10000 sats)
     NostrizeNode->>Alice: Sends 9600 sats to Alice's wallet
     NostrizeNode-->>NostrizeRelay: Confirms payment, creates zap receipt
-    NostrizeRelay-->>Extension: Sends boost event receipt
+    NostrizeRelay-->>Extension: Gets zap receipt from node,<br />sends it to the extension and creates a boost event
     Extension-->>Bob: Displays confirmation of boost
     NostrizeRelay->>NostrizeRelay: Stores boost request and receipt
 
