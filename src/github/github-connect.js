@@ -29,14 +29,15 @@ export async function getGithubConnectData({ user, log }) {
     return res;
   }
 
-  return null;
+  return Either.left(`coulnd't find github-connect for user ${user}`);
 }
 
 export async function getIconComponent({ user, isOrg = false, log }) {
   const githubConnectData = await getOrInsertCache({
     key: `nostrize-github-connect-${user}`,
     insertEmpty: true,
-    insertCallback: () => getGithubConnectData({ user, log }),
+    insertCallback: () =>
+      getGithubConnectData({ user, log }).then(Either.getOrElse(null)),
   });
 
   const empty = html.span({

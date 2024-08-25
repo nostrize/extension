@@ -51,6 +51,14 @@ export const Either = {
     throw new Error("Tried to getRight from a Left");
   },
 
+  getOrElse: (elseValue) => (either) => {
+    if (Either.isLeft(either)) {
+      return elseValue;
+    }
+
+    return Either.getRight(either);
+  },
+
   getOrElseThrow: async ({ eitherFn }) => {
     const either = await eitherFn();
 
