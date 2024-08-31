@@ -47,11 +47,11 @@ Nostrize users can make a boost to a github user, organization or a repository f
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Bob as Bob (User)
+    participant Bob as Bob
     participant Extension as Nostrize Extension
     participant NostrizeRelay as Nostrize Relay
     participant NostrizeNode as Nostrize Lightning Node
-    participant Alice as Alice (Developer)
+    participant Alice as Alice
 
     Bob->>Extension: Initiates a boost request
     Extension->>NostrizeNode: Sends a zap request to Nostrize<br />with tag ["p", "<pubkey_of_alice>"]
