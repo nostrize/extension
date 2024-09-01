@@ -7,30 +7,10 @@
   <link rel="stylesheet" href="nostrize-settings.css">
 </head>
 <body>
-  <div class="section" id="debug-settings">
-    <h2>Debug Settings</h2>
-
-    <div class="input-container">
-      <label>
-        <input type="checkbox" id="log" /> 
-        <span>Enable Logging</span>
-      </label>
-
-      <div><hr /></div>
-
-      <label for="namespace">Namespace
-        <span class="help-icon">❓</span>
-        <span class="tooltip">This helps in identifying Nostrize logs.</span>
-      </label>
-      
-      <input type="text" id="namespace" placeholder="Namespace" />
-    </div>
-  </div>
-
-  <div class="section" id="nostr-settings">
+  <div class="section collapsable" id="nostr-settings">
     <h2>Nostr Settings</h2>
     
-    <div class="input-container">
+    <div class="input-container collapsed">
       <label for="mode">Mode
         <span class="help-icon">❓</span>
         <span class="tooltip">Choose the mode for Nostr. 'Anonymous' generates new keys everytime for event signing, while 'NIP-07' gets your nostr public key and signs events using browser extensions like alby or nos2x</span>
@@ -60,9 +40,27 @@
     </div>
   </div>
 
-  <div class="section" id="misc-container">
-    <h2>Misc</h2>
+  <div class="section collapsable" id="debug-settings">
+    <h2>Debug Settings</h2>
 
+    <div class="input-container collapsed">
+      <label>
+        <input type="checkbox" id="log" /> 
+        <span>Enable Logging</span>
+      </label>
+
+      <div><hr /></div>
+
+      <label for="namespace">Namespace
+        <span class="help-icon">❓</span>
+        <span class="tooltip">This helps in identifying Nostrize logs.</span>
+      </label>
+      
+      <input type="text" id="namespace" placeholder="Namespace" />
+    </div>
+  </div>
+
+  <div class="sections" id="misc-container">
     <div class="input-container" id="misc-container">
       <div>
         <button id="reset-settings">Reset settings</button>

@@ -122,6 +122,19 @@ async function settingsPage() {
   document.getElementById("reset-settings").onclick = resetSettings;
   document.getElementById("save-settings").onclick = saveSettings;
 
+  document.querySelectorAll(".section.collapsable").forEach((collapsable) => {
+    const header = collapsable.querySelector("h2");
+
+    header.addEventListener("click", () => {
+      header.classList.toggle("collapsed");
+      header.classList.toggle("expanded");
+
+      const inputContainer = collapsable.querySelector(".input-container");
+      inputContainer.classList.toggle("collapsed");
+      inputContainer.classList.toggle("expanded");
+    });
+  });
+
   // Load the state initially
   loadState();
 }

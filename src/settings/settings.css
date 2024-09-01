@@ -57,6 +57,45 @@ label span {
   flex-direction: column;
 }
 
+.input-container.collapsed {
+  display: none;
+}
+
+.input-container.expanded {
+  display: flex;
+}
+
+.section .indicator {
+  float: right;
+  font-weight: bold;
+  transition: transform 0.3s ease-out;
+}
+
+.section.expanded .indicator {
+  transform: rotate(90deg); /* Rotate the indicator when expanded */
+}
+
+.section h2 {
+  margin: 0;
+  padding: 10px 10px 10px 40px;
+  position: relative;
+}
+
+.section h2::before {
+  content: '▶'; /* The default arrow indicator */
+  position: absolute;
+  left: 10px; /* Adjust this value to position the indicator inside the section */
+  transition: transform 0.3s ease-out;
+}
+
+.section:has(.input-container.collapsed) h2::before {
+  transform: rotate(0deg); /* Indicator points right when collapsed */
+}
+
+.section:has(.input-container.expanded) h2::before {
+  transform: rotate(90deg); /* Indicator points down when expanded */
+}
+
 .input-container input {
   width: 100%;
   max-width: 100%;
