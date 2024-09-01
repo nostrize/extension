@@ -7,7 +7,7 @@ export const defaultSettings = {
     namespace: "[N]",
   },
   nostrSettings: {
-    mode: "nip07", // "anon" | "nip07",
+    mode: "anon", // "anon" | "nip07",
     relays: ["wss://relay.damus.io"],
     nip07: {
       useRelays: false,

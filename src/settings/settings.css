@@ -108,11 +108,14 @@ label span {
   margin-bottom: 5px;
 }
 
-.input-container select {
+.input-container 
+input[type="text"],
+input[type="password"],
+select {
   width: 100%;
-  max-width: 100%;
-  padding: 5px;
+  padding: 5px 0 5px 5px;
   margin-top: 5px;
+  max-width: 96%;
 }
 
 /* Container for the checkbox and label */
