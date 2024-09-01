@@ -1,4 +1,7 @@
+import { mergeDeep } from "./utils.js";
+
 export const defaultSettings = {
+  version: 4,
   debug: {
     log: true,
     namespace: "[N]",
@@ -9,6 +12,10 @@ export const defaultSettings = {
     nip07: {
       useRelays: false,
     },
+  },
+  lightsatsSettings: {
+    apiKey: "",
+    enabled: false,
   },
 };
 
@@ -23,6 +30,16 @@ export async function getLocalSettings() {
     await chrome.storage.local.set({ settings: defaultSettings });
 
     return defaultSettings;
+  } else {
+    console.log("version", settings.version);
+
+    if (settings.version !== defaultSettings.version) {
+      const mergedSettings = mergeDeep(defaultSettings, settings);
+
+      await chrome.storage.local.set({ settings: mergedSettings });
+
+      return mergedSettings;
+    }
   }
 
   return settings;

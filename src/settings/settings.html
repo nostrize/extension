@@ -11,32 +11,68 @@
     <h2>Nostr Settings</h2>
     
     <div class="input-container collapsed">
-      <label for="mode">Mode
-        <span class="help-icon">❓</span>
-        <span class="tooltip">Choose the mode for Nostr. 'Anonymous' generates new keys everytime for event signing, while 'NIP-07' gets your nostr public key and signs events using browser extensions like alby or nos2x</span>
-      </label>
+      <fieldset>
+        <legend>Mode</legend>
+        <label for="mode">Mode
+          <span class="help-icon">❓</span>
+          <span class="tooltip">Choose the mode for Nostr. 'Anonymous' generates new keys everytime for event signing, while 'NIP-07' gets your nostr public key and signs events using browser extensions like alby or nos2x</span>
+        </label>
+        <select id="mode">
+          <option value="anon">Anonymous</option>
+          <option value="nip07">NIP07</option>
+        </select>
+      </fieldset>
 
-      <select id="mode">
-        <option value="anon">Anonymous</option>
-        <option value="nip07">NIP07</option>
-      </select>
-
-      <div id="nip07-settings">
+      <fieldset id="nip07-settings">
+        <legend>NIP07 Settings</legend>
         <label>
           <input type="checkbox" id="nip07-relays" /> 
+          <span class="custom-checkbox"></span>
           <span>Use relays from NIP07 extension</span>
         </label>
-      </div>
+      </fieldset>
 
-      <div><hr /></div>
+      <fieldset>
+        <legend>Relays</legend>
+        <label>Relays</label>
+        <ul id="relays-list" style="list-style-type: none; padding-left: 0;"></ul>
+        <button id="add-relay">Add Relay</button>
+      </fieldset>
+    </div>
+  </div>
 
-      <label>Relays</label>
-      
-      <ul id="relays-list" style="list-style-type: none; padding-left: 0;">
-       
-      </ul>
-      
-      <button id="add-relay">Add Relay</button>
+  <div class="section collapsable" id="lightsats-settings">
+    <h2>Lightsats Integration</h2>
+    
+    <div class="input-container collapsed">
+      <fieldset>
+        <legend>Registration</legend>
+        <label for="lightsats-registration">
+          <a href="https://lightsats.com/register" target="_blank">Register for Lightsats</a>
+          <span class="help-icon">❓</span>
+          <span class="tooltip">This link is for registering a new account on Lightsats.</span>
+        </label>
+      </fieldset>
+  
+      <fieldset>
+        <legend>API Key</legend>
+        <label for="lightsats-api-key">API Key
+          <span class="help-icon">❓</span>
+          <span class="tooltip">Enter your Lightsats API key here.</span>
+        </label>
+        <input type="password" id="lightsats-api-key" placeholder="API Key" />
+      </fieldset>
+  
+      <fieldset>
+        <legend>Integration</legend>
+        <label class="checkbox-container">
+          <input type="checkbox" id="lightsats-enable" />
+          <span class="custom-checkbox"></span>
+          <span>Enable Lightsats Integration</span>
+          <span class="help-icon">❓</span>
+          <span class="tooltip">When enabled, Nostrize extension will show a Lightsats button if the user has no Nostr integration.</span>
+        </label>
+      </fieldset>
     </div>
   </div>
 
@@ -44,19 +80,23 @@
     <h2>Debug Settings</h2>
 
     <div class="input-container collapsed">
-      <label>
-        <input type="checkbox" id="log" /> 
-        <span>Enable Logging</span>
-      </label>
+      <fieldset>
+        <legend>Logging</legend>
+        <label class="checkbox-container">
+          <input type="checkbox" id="log" /> 
+          <span class="custom-checkbox"></span>
+          <span>Enable Logging</span>
+        </label>
+      </fieldset>
 
-      <div><hr /></div>
-
-      <label for="namespace">Namespace
-        <span class="help-icon">❓</span>
-        <span class="tooltip">This helps in identifying Nostrize logs.</span>
-      </label>
-      
-      <input type="text" id="namespace" placeholder="Namespace" />
+      <fieldset>
+        <legend>Namespace</legend>
+        <label for="namespace">Namespace
+          <span class="help-icon">❓</span>
+          <span class="tooltip">This helps in identifying Nostrize logs.</span>
+        </label>
+        <input type="text" id="namespace" placeholder="Namespace" />
+      </fieldset>
     </div>
   </div>
 

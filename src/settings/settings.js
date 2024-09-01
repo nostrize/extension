@@ -27,6 +27,12 @@ async function settingsPage() {
     });
 
     toggleNIP07Settings();
+
+    // Load Lightsats Settings
+    document.getElementById("lightsats-api-key").value =
+      state.lightsatsSettings.apiKey;
+    document.getElementById("lightsats-enable").checked =
+      state.lightsatsSettings.enabled;
   }
 
   // Create a relay item element
@@ -81,8 +87,11 @@ async function settingsPage() {
 
     state.nostrSettings.nip07.useRelays =
       defaultSettings.nostrSettings.nip07.useRelays;
-
     state.nostrSettings.relays = [...defaultSettings.nostrSettings.relays];
+
+    // Lightsats settings
+    state.lightsatsSettings.apiKey = defaultSettings.lightsatsSettings.apiKey;
+    state.lightsatsSettings.enabled = defaultSettings.lightsatsSettings.enabled;
 
     loadState();
   }
@@ -103,12 +112,14 @@ async function settingsPage() {
   }
 
   // Attach event listeners
+  // Debug settings
   document.getElementById("log").onchange = (e) =>
     (state.debug.log = e.target.checked);
 
   document.getElementById("namespace").onchange = (e) =>
     (state.debug.namespace = e.target.value);
 
+  // Nostr settings
   document.getElementById("mode").onchange = (e) => {
     state.nostrSettings.mode = e.target.value;
 
@@ -119,9 +130,47 @@ async function settingsPage() {
     (state.nostrSettings.nip07.useRelays = e.target.checked);
 
   document.getElementById("add-relay").onclick = addRelay;
+
+  // Lightsats settings
+  document.getElementById("lightsats-api-key").onchange = (e) =>
+    (state.lightsatsSettings.apiKey = e.target.value);
+
+  document.getElementById("lightsats-enable").onchange = (e) =>
+    (state.lightsatsSettings.enabled = e.target.checked);
+
+  // Save/Reset settings
   document.getElementById("reset-settings").onclick = resetSettings;
   document.getElementById("save-settings").onclick = saveSettings;
 
+  // Tooltips
+  document.querySelectorAll(".help-icon").forEach((icon) => {
+    icon.addEventListener("mouseenter", () => {
+      const tooltip = icon.nextElementSibling;
+      if (tooltip) {
+        // Show the tooltip to measure its position
+        tooltip.style.display = "block";
+
+        // Get the bounding rectangle of the tooltip and the icon
+        const tooltipRect = tooltip.getBoundingClientRect();
+        // Check if the tooltip is going off the top of the screen
+        if (tooltipRect.top < 0) {
+          tooltip.classList.add("below");
+        } else {
+          tooltip.classList.remove("below");
+        }
+      }
+    });
+
+    icon.addEventListener("mouseleave", () => {
+      const tooltip = icon.nextElementSibling;
+      if (tooltip) {
+        // Hide the tooltip when not hovering
+        tooltip.style.display = "none";
+      }
+    });
+  });
+
+  // Collapsable sections
   document.querySelectorAll(".section.collapsable").forEach((collapsable) => {
     const header = collapsable.querySelector("h2");
 
