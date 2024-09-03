@@ -3,6 +3,37 @@ import { nip19, SimplePool } from "nostr-tools";
 import { getOrInsertCache } from "./local-cache.js";
 import { Either } from "./utils.js";
 
+export async function getUserPubkey({ settings, timeout = 1000 }) {
+  if (settings.nostrSettings.mode === "nip07") {
+    return new Promise((resolve) => {
+      window.addEventListener("message", (event) => {
+        if (event.source !== window) {
+          return;
+        }
+
+        const { from, type, pubkey } = event.data;
+
+        if (
+          !(
+            from === "nostrize-nip07-provider" &&
+            type === "nip07-pubkey-request"
+          )
+        ) {
+          return;
+        }
+
+        return resolve(pubkey);
+      });
+
+      window.postMessage({ type: "nip07-pubkey-request", from: "nostrize" });
+
+      setTimeout(() => resolve(null), timeout);
+    });
+  } else {
+    return null;
+  }
+}
+
 export async function getPubkeyFrom({ npub, nip05, username, cachePrefix }) {
   if (npub) {
     const { type, data } = nip19.decode(npub);

@@ -27,9 +27,13 @@ export async function asyncScript({
   return new Promise((resolve, reject) => {
     script.onload = async () => {
       try {
-        const res = await callback();
+        if (callback) {
+          const res = await callback();
 
-        resolve(res);
+          resolve(res);
+        } else {
+          resolve();
+        }
       } catch (error) {
         reject(error);
       }

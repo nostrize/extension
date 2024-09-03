@@ -3,15 +3,18 @@ import { nip19 } from "nostr-tools";
 export function parseDescription({ content, log }) {
   const npubMatch = content.match(/npub1[a-z0-9]{58}/);
 
+  let pubkey;
   let npub = npubMatch && npubMatch.length ? npubMatch[0] : undefined;
 
   if (npub) {
-    const { type } = nip19.decode(npub);
+    const { type, data } = nip19.decode(npub);
 
     if (type !== "npub") {
       log("npub decode error");
 
       npub = undefined;
+    } else {
+      pubkey = data;
     }
   }
 
@@ -20,7 +23,7 @@ export function parseDescription({ content, log }) {
   const nip05 =
     nip05Match && nip05Match.length === 2 ? nip05Match[1] : undefined;
 
-  return { npub, nip05 };
+  return { npub, pubkey, nip05 };
 }
 
 // function test() {

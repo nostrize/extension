@@ -66,6 +66,31 @@ window.addEventListener("message", async (event) => {
   window.postMessage({ from: "nostrize-nip07-provider", type, relays }, "*");
 });
 
+window.addEventListener("message", async (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  const { from, type } = event.data;
+
+  if (!(from === "nostrize" && type === "nip07-pubkey-request")) {
+    return;
+  }
+
+  if (!window.nostr) {
+    console.log(`window.nostr is not defined. type: ${type}, from: ${from}`);
+
+    return window.postMessage(
+      { from: "nostrize-nip07-provider", type, pubkey: null },
+      "*",
+    );
+  }
+
+  const pubkey = await window.nostr.getPublicKey();
+
+  window.postMessage({ from: "nostrize-nip07-provider", type, pubkey }, "*");
+});
+
 // window.nostr.getPublicKey
 window.addEventListener("message", async (event) => {
   if (event.source !== window) {

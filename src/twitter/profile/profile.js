@@ -10,7 +10,11 @@ import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { parseDescription } from "../../helpers/dom.js";
-import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
+import {
+  getMetadataEvent,
+  getPubkeyFrom,
+  getUserPubkey,
+} from "../../helpers/nostr.js";
 import { getRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
@@ -74,10 +78,28 @@ async function twitterProfilePage() {
         .join("")
     : "";
 
-  const { nip05, npub } = parseDescription({
+  const {
+    nip05,
+    npub,
+    pubkey: pubk,
+  } = parseDescription({
     content: accountDescription,
     log,
   });
+
+  const userPubkey = await html.asyncScript({
+    id: "nostrize-nip07-provider",
+    src: browser.runtime.getURL("nostrize-nip07-provider.js"),
+    callback: () => getUserPubkey({ settings, timeout: 10000 }),
+  });
+
+  console.log("pubk", pubk, "userPubkey", userPubkey);
+
+  if (pubk === userPubkey) {
+    log("logged in user");
+
+    return;
+  }
 
   if (!npub && !nip05) {
     log("No Nostr integration found");
@@ -158,11 +180,7 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
-  const relays = await html.asyncScript({
-    id: "nostrize-nip07-provider",
-    src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getRelays({ settings, timeout: 4000 }),
-  });
+  const relays = await getRelays({ settings, timeout: 4000 });
 
   log("relays", relays);
 
