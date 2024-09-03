@@ -269,8 +269,8 @@ export function link({
 
   style.forEach(([key, value]) => (linkElement.style[key] = value));
 
-  data.forEach(
-    ([key, value]) => (linkElement.attributes[`data-${key}`] = value),
+  data.forEach(([key, value]) =>
+    linkElement.setAttribute(`data-${key}`, value),
   );
 
   linkElement.setAttribute("href", href);

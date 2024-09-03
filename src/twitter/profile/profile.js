@@ -18,6 +18,7 @@ import {
 import { getRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
+import { setupModal } from "../../components/common.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -30,30 +31,49 @@ async function twitterProfilePage() {
 
   log("accountName", accountName);
 
+  let hasZapButton = false;
+  let hasLightsatsButton = false;
+
+  // remove zap and lightsats button if they are not for this account
+  document.querySelectorAll("[data-for-account]").forEach((e) => {
+    if (e.attributes["data-for-account"] !== accountName) {
+      e.remove();
+    } else {
+      if (e.id === "n-tw-zap-button") {
+        hasZapButton = true;
+      }
+
+      if (e.id === "n-tw-lightsats-button") {
+        hasLightsatsButton = true;
+      }
+    }
+  });
+
   if (
-    ["home", "explore", "notifications", "search?", "follower_requests"].some(
-      (s) => accountName.startsWith(s),
-    )
+    [
+      "home",
+      "explore",
+      "notifications",
+      "messages",
+      "search",
+      "follower_requests",
+    ].some((s) => accountName.startsWith(s))
   ) {
-    log("not a correct account page");
+    log("not an account page");
 
     return;
   }
 
-  const existingTipButton = gui.gebid("n-tw-tip-button");
+  if (hasZapButton) {
+    log("don't need to load");
 
-  if (existingTipButton) {
-    log("zap button already there");
+    return;
+  }
 
-    if (existingTipButton.attributes["data-for-account"] !== accountName) {
-      log("button doesn't belong to account", accountName);
+  if (hasLightsatsButton) {
+    log("don't need to load");
 
-      existingTipButton.parentElement.removeChild(existingTipButton);
-    } else {
-      log("don't need to load");
-
-      return;
-    }
+    return;
   }
 
   let userNameContainer = document.querySelector("div[data-testid='UserName']");
@@ -93,10 +113,11 @@ async function twitterProfilePage() {
     callback: () => getUserPubkey({ settings, timeout: 10000 }),
   });
 
-  console.log("pubk", pubk, "userPubkey", userPubkey);
-
   if (pubk === userPubkey) {
     log("logged in user");
+
+    gui.gebid("n-tw-zap-button")?.remove();
+    gui.gebid("n-tw-lightsats-button")?.remove();
 
     return;
   }
@@ -108,26 +129,6 @@ async function twitterProfilePage() {
       settings.lightsatsSettings.enabled &&
       settings.lightsatsSettings.apiKey
     ) {
-      const existingLightsatsButton = gui.gebid("n-tw-lightsats-button");
-
-      if (existingLightsatsButton) {
-        log("lightsats button already there");
-
-        if (
-          existingLightsatsButton.attributes["data-for-account"] !== accountName
-        ) {
-          log("button doesn't belong to account", accountName);
-
-          existingLightsatsButton.parentElement.removeChild(
-            existingLightsatsButton,
-          );
-        } else {
-          log("don't need to load");
-
-          return;
-        }
-      }
-
       const lightsatsButton = html.link({
         id: "n-tw-lightsats-button",
         data: [["for-account", accountName]],
@@ -139,29 +140,7 @@ async function twitterProfilePage() {
             settings,
           });
 
-          document.body.append(lightsatsModal);
-
-          // Center the modal after appending it to the body
-          centerModal(lightsatsModal);
-
-          // Recenter the modal on window resize
-          window.addEventListener("resize", () => centerModal(lightsatsModal));
-
-          // When the user clicks anywhere outside of the modal, close it
-          window.onclick = function (event) {
-            if (event.target == lightsatsModal) {
-              closeModal();
-            }
-          };
-
-          // Listen for keydown events to close the modal when ESC is pressed
-          window.addEventListener("keydown", function (event) {
-            if (event.key === "Escape" || event.key === "Esc") {
-              closeModal();
-            }
-          });
-
-          lightsatsModal.style.display = "block";
+          setupModal(lightsatsModal, closeModal);
         },
       });
 
@@ -182,8 +161,6 @@ async function twitterProfilePage() {
 
   const relays = await getRelays({ settings, timeout: 4000 });
 
-  log("relays", relays);
-
   const metadataEvent = await getMetadataEvent({
     cacheKey: pubkey,
     filter: { authors: [pubkey], kinds: [0], limit: 1 },
@@ -199,7 +176,7 @@ async function twitterProfilePage() {
   });
 
   const zapButton = html.link({
-    id: "n-tw-tip-button",
+    id: "n-tw-zap-button",
     data: [["for-account", accountName]],
     text: "⚡ Zap ⚡",
     href: "javascript:void(0)",
@@ -213,46 +190,11 @@ async function twitterProfilePage() {
         settings,
       });
 
-      document.body.append(zapModal);
-
-      // Center the modal after appending it to the body
-      centerModal(zapModal);
-
-      // Recenter the modal on window resize
-      window.addEventListener("resize", () => centerModal(zapModal));
-
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function (event) {
-        if (event.target == zapModal) {
-          closeModal();
-        }
-      };
-
-      // Listen for keydown events to close the modal when ESC is pressed
-      window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" || event.key === "Esc") {
-          closeModal();
-        }
-      });
-
-      zapModal.style.display = "block";
+      setupModal(zapModal, closeModal);
     },
   });
 
   document.querySelector("div[data-testid='UserName']").append(zapButton);
-}
-
-function centerModal(modal) {
-  const modalContent = modal.querySelector(".n-modal-content");
-  const windowHeight = window.innerHeight;
-  const modalHeight = modalContent.offsetHeight;
-
-  if (modalHeight < windowHeight) {
-    modalContent.style.marginTop = `${(windowHeight - modalHeight) / 2}px`;
-  } else {
-    modalContent.style.marginTop = "20px";
-    modalContent.style.marginBottom = "20px";
-  }
 }
 
 twitterProfilePage().catch((e) => console.error(e));
