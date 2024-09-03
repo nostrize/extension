@@ -1,4 +1,5 @@
 import * as html from "../../imgui-dom/html.js";
+import * as gui from "../../imgui-dom/gui.js";
 import { getFromCache, insertToCache } from "../../helpers/local-cache.js";
 
 import {
@@ -16,7 +17,7 @@ import {
 
 // Create a loading screen element
 let modalStep0 = html.div({
-  classList: "n-modal-step-0",
+  classList: "n-modal-steps n-modal-step-0",
   children: [
     html.h2({
       classList: "n-modal-title",
@@ -29,22 +30,22 @@ let modalStep0 = html.div({
 });
 
 const modalStep1 = html.div({
-  classList: "n-modal-step-1",
+  classList: "n-modal-steps n-modal-step-1",
   children: [],
 });
 
 const modalStep2 = html.div({
-  classList: "n-modal-step-2",
+  classList: "n-modal-steps n-modal-step-2",
   children: [],
 });
 
 const modalStep3 = html.div({
-  classList: "n-modal-step-3",
+  classList: "n-modal-steps n-modal-step-3",
   children: [],
 });
 
 const modalStep4 = html.div({
-  classList: "n-modal-step-4",
+  classList: "n-modal-steps n-modal-step-4",
   children: [],
 });
 
@@ -188,6 +189,8 @@ export async function lightsatsModalComponent({ user, settings }) {
       generateTipButton.disabled = true;
       generateTipButton.classList.add("n-modal-button-disabled");
 
+      const generatePassphrase = gui.gebid("n-modal-tip-passphrase").checked;
+
       // Send a message to the service worker
       chrome.runtime.sendMessage(
         {
@@ -204,7 +207,8 @@ export async function lightsatsModalComponent({ user, settings }) {
               ? recipientNameInput.value
               : user,
             note: noteToRecipientInput.value,
-            generatePassphrase: tipPassphraseCheckbox.checked,
+            generatePassphrase: generatePassphrase,
+            passphraseLength: generatePassphrase ? 3 : undefined,
           },
         },
         async (response) => {
@@ -244,6 +248,8 @@ export async function lightsatsModalComponent({ user, settings }) {
             );
           } else {
             console.error("Error generating tip:", response.error);
+
+            displayStepError(modalStep0);
           }
         },
       );

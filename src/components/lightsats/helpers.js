@@ -49,7 +49,7 @@ export function determineStep(status) {
 }
 
 export function displayStepError(modalStep0) {
-  modalStep0.innerHTML = "";
+  modalStep0.innerHTML = "<div></div>";
 
   modalStep0.append(
     html.h2({
@@ -66,6 +66,12 @@ export function displayStepError(modalStep0) {
       ],
     }),
   );
+
+  modalStep0.style.display = "flex";
+
+  document.querySelectorAll(".n-modal-steps").forEach((step) => {
+    step.style.display = "none";
+  });
 }
 
 export function displayStep1(modalStep0, modalStep1) {
