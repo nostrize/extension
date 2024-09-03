@@ -86,6 +86,26 @@ async function twitterProfilePage() {
       settings.lightsatsSettings.enabled &&
       settings.lightsatsSettings.apiKey
     ) {
+      const existingLightsatsButton = gui.gebid("n-tw-lightsats-button");
+
+      if (existingLightsatsButton) {
+        log("lightsats button already there");
+
+        if (
+          existingLightsatsButton.attributes["data-for-account"] !== accountName
+        ) {
+          log("button doesn't belong to account", accountName);
+
+          existingLightsatsButton.parentElement.removeChild(
+            existingLightsatsButton,
+          );
+        } else {
+          log("don't need to load");
+
+          return;
+        }
+      }
+
       const lightsatsButton = html.link({
         id: "n-tw-lightsats-button",
         data: [["for-account", accountName]],
