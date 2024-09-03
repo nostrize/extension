@@ -155,7 +155,6 @@ select {
 
 /* Align the span to the left */
 .checkbox-container span {
-  color: black;
   cursor: pointer;
 }
 
