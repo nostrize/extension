@@ -220,7 +220,7 @@ export async function displayStep3(
   modalStep3.append(
     html.h2({
       classList: "n-modal-title",
-      text: `🎉 Invoice is funded! Now you can share the tip URL with the recipient. 🎁`,
+      text: `🎉 Your tip is funded! Now you can share the tip URL with the recipient. 🎁`,
     }),
     descriptionList,
   );

@@ -162,6 +162,17 @@ export function input({
   return inputElement;
 }
 
+export function textarea({ id, classList, placeholder, rows }) {
+  const textareaElement = document.createElement("textarea");
+
+  textareaElement.id = id;
+  textareaElement.classList = classList;
+  textareaElement.placeholder = placeholder;
+  textareaElement.rows = rows;
+
+  return textareaElement;
+}
+
 export function hr({ classList }) {
   const hr = document.createElement("hr");
 
@@ -273,7 +284,15 @@ export function link({
 
 const createContainerElement =
   (name) =>
-  ({ classList, children = [], style = [], id, text, innerHTML } = {}) => {
+  ({
+    classList,
+    children = [],
+    style = [],
+    id,
+    onclick,
+    text,
+    innerHTML,
+  } = {}) => {
     const containerDiv = document.createElement(name);
 
     if (classList) {
@@ -288,6 +307,10 @@ const createContainerElement =
 
     if (innerHTML) {
       containerDiv.innerHTML = innerHTML;
+    }
+
+    if (onclick) {
+      containerDiv.onclick = onclick;
     }
 
     style.forEach(([name, value]) => (containerDiv.style[name] = value));

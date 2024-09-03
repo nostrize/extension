@@ -169,11 +169,11 @@ export async function lightsatsModalComponent({ user, settings }) {
     placeholder: user,
   });
 
-  const noteToRecipientInput = html.input({
-    type: "text",
+  const noteToRecipientInput = html.textarea({
     id: "n-modal-note-to-recipient",
     classList: "n-modal-input",
     placeholder: "Note to recipient",
+    rows: 3,
   });
 
   const generateTipButton = html.button({
@@ -260,10 +260,40 @@ export async function lightsatsModalComponent({ user, settings }) {
     },
   });
 
-  const tipPassphraseCheckbox = html.input({
-    type: "checkbox",
-    id: "n-modal-tip-passphrase",
-    classList: "n-modal-input",
+  const tipPassphraseCheckbox = html.div({
+    classList: "checkbox-container",
+    children: [
+      html.input({
+        type: "checkbox",
+        id: "n-modal-tip-passphrase",
+      }),
+      html.label({
+        for: "n-modal-tip-passphrase",
+        classList: "custom-checkbox",
+        onclick: (e) => {
+          // Prevent the default behavior
+          e.preventDefault();
+          // Toggle the checked state of the input
+          const input = e.target.previousElementSibling;
+          input.checked = !input.checked;
+          // Update the custom checkbox appearance
+          e.target.classList.toggle("checked", input.checked);
+        },
+      }),
+      html.span({
+        text: "Set a passphrase",
+        onclick: (e) => {
+          // Toggle the checkbox when the text is clicked
+          const input = e.target.previousElementSibling.previousElementSibling;
+          input.checked = !input.checked;
+          // Update the custom checkbox appearance
+          e.target.previousElementSibling.classList.toggle(
+            "checked",
+            input.checked,
+          );
+        },
+      }),
+    ],
   });
 
   modalStep1.append(
@@ -305,6 +335,10 @@ export async function lightsatsModalComponent({ user, settings }) {
           text: "Recommended wallet",
         }),
       }),
+      html.div({
+        classList: "n-sats-option-row",
+        children: [tipPassphraseCheckbox],
+      }),
     ),
     html.fieldset(
       html.legend("Recipient Settings"),
@@ -322,14 +356,6 @@ export async function lightsatsModalComponent({ user, settings }) {
           input: noteToRecipientInput,
           classList: "n-modal-note-to-recipient",
           text: "Note to recipient",
-        }),
-      }),
-      html.div({
-        classList: "n-sats-option-row",
-        children: html.labelFor({
-          input: tipPassphraseCheckbox,
-          classList: "n-modal-tip-passphrase",
-          text: "Set a passphrase",
         }),
       }),
     ),
