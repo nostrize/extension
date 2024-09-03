@@ -11,6 +11,7 @@ import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { parseDescription } from "../../helpers/dom.js";
 import {
+  getFollowSet,
   getMetadataEvent,
   getPubkeyFrom,
   getUserPubkey,
@@ -29,7 +30,17 @@ async function twitterProfilePage() {
     /^https:\/\/x\.com\/(.*?)(?=\?|\s|$)/,
   )[1];
 
-  log("accountName", accountName);
+  const { isProfileLoaded } = await browser.storage.local.get(
+    `nostrize-twitter-profile-${accountName}`,
+  );
+
+  if (isProfileLoaded) {
+    return;
+  }
+
+  await browser.storage.local.set({
+    [`nostrize-twitter-profile-${accountName}`]: true,
+  });
 
   let hasZapButton = false;
   let hasLightsatsButton = false;
@@ -59,19 +70,33 @@ async function twitterProfilePage() {
       "follower_requests",
     ].some((s) => accountName.startsWith(s))
   ) {
-    log("not an account page");
+    log("not an account page: " + accountName);
+
+    await browser.storage.local.set({
+      [`nostrize-twitter-profile-${accountName}`]: false,
+    });
 
     return;
   }
 
+  log("accountName", accountName);
+
   if (hasZapButton) {
     log("don't need to load");
+
+    await browser.storage.local.set({
+      [`nostrize-twitter-profile-${accountName}`]: false,
+    });
 
     return;
   }
 
   if (hasLightsatsButton) {
     log("don't need to load");
+
+    await browser.storage.local.set({
+      [`nostrize-twitter-profile-${accountName}`]: false,
+    });
 
     return;
   }
@@ -98,11 +123,7 @@ async function twitterProfilePage() {
         .join("")
     : "";
 
-  const {
-    nip05,
-    npub,
-    pubkey: pubk,
-  } = parseDescription({
+  const { nip05, npub } = parseDescription({
     content: accountDescription,
     log,
   });
@@ -112,15 +133,6 @@ async function twitterProfilePage() {
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () => getUserPubkey({ settings, timeout: 10000 }),
   });
-
-  if (pubk === userPubkey) {
-    log("logged in user");
-
-    gui.gebid("n-tw-zap-button")?.remove();
-    gui.gebid("n-tw-lightsats-button")?.remove();
-
-    return;
-  }
 
   if (!npub && !nip05) {
     log("No Nostr integration found");
@@ -149,6 +161,10 @@ async function twitterProfilePage() {
         .append(lightsatsButton);
     }
 
+    await browser.storage.local.set({
+      [`nostrize-twitter-profile-${accountName}`]: false,
+    });
+
     return;
   }
 
@@ -159,7 +175,26 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
+  if (pubkey === userPubkey) {
+    log("logged in user");
+
+    gui.gebid("n-tw-zap-button")?.remove();
+    gui.gebid("n-tw-lightsats-button")?.remove();
+
+    await browser.storage.local.set({
+      [`nostrize-twitter-profile-${accountName}`]: false,
+    });
+
+    return;
+  }
+
   const relays = await getRelays({ settings, timeout: 4000 });
+
+  const followSet = await getFollowSet({ pubkey, relays });
+
+  const amIFollewed = followSet?.has(userPubkey);
+
+  console.log(`Am I (${userPubkey}) followed by ${pubkey}? ${amIFollewed}`);
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pubkey,
@@ -195,6 +230,10 @@ async function twitterProfilePage() {
   });
 
   document.querySelector("div[data-testid='UserName']").append(zapButton);
+
+  await browser.storage.local.set({
+    [`nostrize-twitter-profile-${accountName}`]: false,
+  });
 }
 
 twitterProfilePage().catch((e) => console.error(e));

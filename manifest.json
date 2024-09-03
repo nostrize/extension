@@ -24,7 +24,7 @@
     "*://www.twitter.com/*",
     "*://web.telegram.org/*",
     "*://lightsats.com/*",
-    "*://*.twimg.com"
+    "*://*.twimg.com/*"
   ],
   "web_accessible_resources": [
     {

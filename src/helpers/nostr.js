@@ -1,6 +1,10 @@
 import { nip19, SimplePool } from "nostr-tools";
 
-import { getOrInsertCache } from "./local-cache.js";
+import {
+  getFromCache,
+  getOrInsertCache,
+  insertToCache,
+} from "./local-cache.js";
 import { Either } from "./utils.js";
 
 export async function getUserPubkey({ settings, timeout = 1000 }) {
@@ -100,4 +104,38 @@ export async function getMetadataEvent({ cacheKey, filter, relays }) {
       return pool.get(relays, filter);
     },
   });
+}
+
+export async function getFollowSet({ pubkey, relays, timeout = 1000 }) {
+  const cacheKey = `nostrize-follow-list-${pubkey}-created_at`;
+  const cache = getFromCache(cacheKey);
+  const since = cache ? cache.created_at : undefined;
+
+  const filter = {
+    kinds: [3],
+    authors: [pubkey],
+    limit: 1,
+    since,
+  };
+
+  const pool = new SimplePool();
+
+  const latestEvent = await pool.get(relays, filter, { maxWait: timeout });
+
+  if (latestEvent) {
+    const followSet = new Set(
+      latestEvent.tags.reduce((acc, tag) => {
+        if (tag[0] === "p") {
+          acc.push(tag[1]);
+        }
+        return acc;
+      }, []),
+    );
+
+    insertToCache(cacheKey, latestEvent.created_at);
+
+    return followSet;
+  }
+
+  return new Set();
 }
