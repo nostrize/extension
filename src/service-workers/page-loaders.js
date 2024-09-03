@@ -116,7 +116,7 @@ function injectTwitterScripts({ page, tabId }) {
     // Inject CSS file
     chrome.scripting.insertCSS({
       target: { tabId },
-      files: ["twitter-profile.css", "zap-modal.css"],
+      files: ["twitter-profile.css", "zap-modal.css", "lightsats-modal.css"],
     });
   }
 }

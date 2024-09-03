@@ -13,6 +13,7 @@ import { parseDescription } from "../../helpers/dom.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
+import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -26,8 +27,8 @@ async function twitterProfilePage() {
   log("accountName", accountName);
 
   if (
-    ["home", "explore", "notifications", "search?"].some((s) =>
-      accountName.startsWith(s),
+    ["home", "explore", "notifications", "search?", "follower_requests"].some(
+      (s) => accountName.startsWith(s),
     )
   ) {
     log("not a correct account page");
@@ -51,27 +52,27 @@ async function twitterProfilePage() {
     }
   }
 
+  let userNameContainer = document.querySelector("div[data-testid='UserName']");
+
   let accountDescContainer = document.querySelector(
     "div[data-testid='UserDescription']",
   );
 
-  while (!accountDescContainer) {
+  while (!(userNameContainer || accountDescContainer)) {
     await delay(200);
+
+    userNameContainer = document.querySelector("div[data-testid='UserName']");
 
     accountDescContainer = document.querySelector(
       "div[data-testid='UserDescription']",
     );
   }
 
-  const accountDescription = [...accountDescContainer.querySelectorAll("span")]
-    .map((m) => m.textContent)
-    .join("");
-
-  if (!accountDescription) {
-    log("accountDescription is not in the dom");
-
-    return;
-  }
+  const accountDescription = accountDescContainer
+    ? [...accountDescContainer.querySelectorAll("span")]
+        .map((m) => m.textContent)
+        .join("")
+    : "";
 
   const { nip05, npub } = parseDescription({
     content: accountDescription,
@@ -79,6 +80,54 @@ async function twitterProfilePage() {
   });
 
   if (!npub && !nip05) {
+    log("No Nostr integration found");
+
+    if (
+      settings.lightsatsSettings.enabled &&
+      settings.lightsatsSettings.apiKey
+    ) {
+      const lightsatsButton = html.link({
+        id: "n-tw-lightsats-button",
+        data: [["for-account", accountName]],
+        text: "💸 Lightsats💸",
+        href: "javascript:void(0)",
+        onclick: async () => {
+          const { lightsatsModal, closeModal } = await lightsatsModalComponent({
+            user: accountName,
+            settings,
+          });
+
+          document.body.append(lightsatsModal);
+
+          // Center the modal after appending it to the body
+          centerModal(lightsatsModal);
+
+          // Recenter the modal on window resize
+          window.addEventListener("resize", () => centerModal(lightsatsModal));
+
+          // When the user clicks anywhere outside of the modal, close it
+          window.onclick = function (event) {
+            if (event.target == lightsatsModal) {
+              closeModal();
+            }
+          };
+
+          // Listen for keydown events to close the modal when ESC is pressed
+          window.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" || event.key === "Esc") {
+              closeModal();
+            }
+          });
+
+          lightsatsModal.style.display = "block";
+        },
+      });
+
+      document
+        .querySelector("div[data-testid='UserName']")
+        .append(lightsatsButton);
+    }
+
     return;
   }
 
@@ -111,10 +160,10 @@ async function twitterProfilePage() {
       }),
   });
 
-  const tipButton = html.link({
+  const zapButton = html.link({
     id: "n-tw-tip-button",
     data: [["for-account", accountName]],
-    text: "⚡Tip⚡",
+    text: "⚡ Zap ⚡",
     href: "javascript:void(0)",
     onclick: async () => {
       const { zapModal, closeModal } = await zapModalComponent({
@@ -127,6 +176,12 @@ async function twitterProfilePage() {
       });
 
       document.body.append(zapModal);
+
+      // Center the modal after appending it to the body
+      centerModal(zapModal);
+
+      // Recenter the modal on window resize
+      window.addEventListener("resize", () => centerModal(zapModal));
 
       // When the user clicks anywhere outside of the modal, close it
       window.onclick = function (event) {
@@ -146,7 +201,20 @@ async function twitterProfilePage() {
     },
   });
 
-  document.querySelector("div[data-testid='UserName']").append(tipButton);
+  document.querySelector("div[data-testid='UserName']").append(zapButton);
+}
+
+function centerModal(modal) {
+  const modalContent = modal.querySelector(".n-modal-content");
+  const windowHeight = window.innerHeight;
+  const modalHeight = modalContent.offsetHeight;
+
+  if (modalHeight < windowHeight) {
+    modalContent.style.marginTop = `${(windowHeight - modalHeight) / 2}px`;
+  } else {
+    modalContent.style.marginTop = "20px";
+    modalContent.style.marginBottom = "20px";
+  }
 }
 
 twitterProfilePage().catch((e) => console.error(e));

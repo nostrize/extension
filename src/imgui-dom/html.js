@@ -76,6 +76,47 @@ export function svg({ gId }) {
   return svg;
 }
 
+export function canvas({ id, classList }) {
+  const canvasElement = document.createElement("canvas");
+
+  if (id) {
+    canvasElement.id = id;
+  }
+
+  if (classList) {
+    canvasElement.classList = classList;
+  }
+
+  return canvasElement;
+}
+
+export function select({ id, classList, options }) {
+  const selectElement = document.createElement("select");
+
+  if (id) {
+    selectElement.id = id;
+  }
+
+  if (classList) {
+    selectElement.className = classList;
+  }
+
+  options.forEach((option) => {
+    const optionElement = document.createElement("option");
+
+    optionElement.value = option.value;
+    optionElement.textContent = option.text;
+
+    if (option.selected) {
+      optionElement.selected = true;
+    }
+
+    selectElement.appendChild(optionElement);
+  });
+
+  return selectElement;
+}
+
 export function input({
   type = "text",
   id,
@@ -187,6 +228,7 @@ export function link({
   href,
   text,
   onclick,
+  targetBlank = false,
   append = [],
   prepend = [],
   style = [],
@@ -196,6 +238,10 @@ export function link({
 
   if (classList) {
     linkElement.className = classList;
+  }
+
+  if (targetBlank) {
+    linkElement.target = "_blank";
   }
 
   if (onclick) {
@@ -227,7 +273,7 @@ export function link({
 
 const createContainerElement =
   (name) =>
-  ({ classList, children = [], style = [], id, text } = {}) => {
+  ({ classList, children = [], style = [], id, text, innerHTML } = {}) => {
     const containerDiv = document.createElement(name);
 
     if (classList) {
@@ -238,6 +284,10 @@ const createContainerElement =
       children.forEach((element) => {
         containerDiv.appendChild(element);
       });
+    }
+
+    if (innerHTML) {
+      containerDiv.innerHTML = innerHTML;
     }
 
     style.forEach(([name, value]) => (containerDiv.style[name] = value));
@@ -315,6 +365,28 @@ export function labelFor({ input, classList, text }) {
   label.textContent = text;
 
   return [label, input];
+}
+
+export function fieldset(...children) {
+  const fieldsetElement = document.createElement("fieldset");
+
+  children.forEach((child) => fieldsetElement.appendChild(child));
+
+  return fieldsetElement;
+}
+
+export function legend(text) {
+  const legendElement = document.createElement("legend");
+
+  legendElement.textContent = text;
+
+  return legendElement;
+}
+
+export function br() {
+  const brElement = document.createElement("br");
+
+  return brElement;
 }
 
 export function buildApp({ appId, classList, children = [] }) {

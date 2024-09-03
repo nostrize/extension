@@ -10,6 +10,7 @@ cp src/logo.png dist/logo.png
 
 # copy component specific files
 cp src/components/zap-modal.css dist/zap-modal.css
+cp src/components/lightsats/lightsats-modal.css dist/lightsats-modal.css
 
 # copy github specific files
 cp src/github/issues/issues.css dist/github-issues.css
