@@ -2,10 +2,10 @@ import * as gui from "../../imgui-dom/gui.js";
 
 import { setupModal } from "../../components/common.js";
 
-export const createTwitterButton = (copyButton, accountName, options) => {
-  const button = copyButton.cloneNode(true);
+export const createTwitterButton = (buttonTobeCloned, accountName, options) => {
+  const button = buttonTobeCloned.cloneNode(true);
 
-  gui.insertAfter(button, copyButton);
+  gui.insertAfter(button, buttonTobeCloned);
 
   button.id = options.id;
   button.href = "javascript:void(0)";

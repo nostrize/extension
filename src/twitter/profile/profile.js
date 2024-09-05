@@ -24,7 +24,7 @@ import {
 } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
-import { wrapInputTooltip } from "../../components/tooltip/wrapper.js";
+import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
 
 import { createTwitterButton } from "./twitter-helpers.js";
 
@@ -40,41 +40,14 @@ async function twitterProfilePage() {
     /^https:\/\/x\.com\/(.*?)(?=\?|\s|$)/,
   )[1];
 
-  // Remove duplicate nostrize components
-  // Remove nostrize components that are not for the current account
-  let hasZapButton = false;
-  let hasLightsatsButton = false;
-  let followingYouIndicator = false;
+  const removeNostrButtons = () => {
+    gui.gebid("n-tw-zap-button")?.remove();
+    gui.gebid("n-tw-lightsats-button")?.remove();
+    gui.gebid("n-follows-you-indicator")?.remove();
+    gui.gebid("n-tw-nostr-profile-button")?.remove();
+  };
 
-  document.querySelectorAll("[data-for-account]").forEach((e) => {
-    if (e.attributes["data-for-account"] !== accountName) {
-      e.remove();
-    } else {
-      if (e.id === "n-tw-zap-button") {
-        if (hasZapButton) {
-          e.remove();
-        } else {
-          hasZapButton = true;
-        }
-      }
-
-      if (e.id === "n-tw-lightsats-button") {
-        if (hasLightsatsButton) {
-          e.remove();
-        } else {
-          hasLightsatsButton = true;
-        }
-      }
-
-      if (e.id === "n-follows-you-indicator") {
-        if (followingYouIndicator) {
-          e.remove();
-        } else {
-          followingYouIndicator = true;
-        }
-      }
-    }
-  });
+  removeNostrButtons();
 
   if (
     [
@@ -92,18 +65,6 @@ async function twitterProfilePage() {
   }
 
   log("accountName", accountName);
-
-  if (hasZapButton) {
-    log("don't need to load");
-
-    return;
-  }
-
-  if (hasLightsatsButton) {
-    log("don't need to load");
-
-    return;
-  }
 
   let userNameContainer = document.querySelector("div[data-testid='UserName']");
 
@@ -138,11 +99,11 @@ async function twitterProfilePage() {
     callback: () => getUserPubkey({ settings, timeout: 10000 }),
   });
 
-  const copyButton = document.querySelector(
+  const buttonTobeCloned = document.querySelector(
     "button[data-testid='userActions']",
   );
 
-  if (!copyButton) {
+  if (!buttonTobeCloned) {
     log("no copy button");
 
     return;
@@ -155,7 +116,7 @@ async function twitterProfilePage() {
       settings.lightsatsSettings.enabled &&
       settings.lightsatsSettings.apiKey
     ) {
-      createTwitterButton(copyButton, accountName, {
+      createTwitterButton(buttonTobeCloned, accountName, {
         id: "n-tw-lightsats-button",
         icon: "💸",
         modalComponentFn: () =>
@@ -176,8 +137,7 @@ async function twitterProfilePage() {
   if (accountPubkey === nip07UserPubkey) {
     log("nip07 user");
 
-    gui.gebid("n-tw-zap-button")?.remove();
-    gui.gebid("n-tw-lightsats-button")?.remove();
+    removeNostrButtons();
 
     return;
   }
@@ -204,12 +164,13 @@ async function twitterProfilePage() {
 
   const handleContent = handle.textContent;
 
-  handle.remove();
+  handle.style.display = "none";
 
   if (handleContainer) {
     gui.prepend(
       handleContainer,
       wrapInputTooltip({
+        id: "n-tw-nostr-profile-button",
         input: html.link({
           text: handleContent,
           href: `${settings.nostrSettings.openNostr}/${accountPubkey}`,
@@ -232,10 +193,10 @@ async function twitterProfilePage() {
       if (accountFollowsYou) {
         handleContainer?.append(
           wrapInputTooltip({
+            id: "n-follows-you-indicator",
             input: html.span({
               text: "Follows you",
               classList: "n-follows-you-indicator",
-              id: "n-follows-you-indicator",
             }),
             tooltipText: `${accountName} follows you on Nostr.`,
           }),
@@ -314,7 +275,7 @@ async function twitterProfilePage() {
       }),
   });
 
-  createTwitterButton(copyButton, accountName, {
+  createTwitterButton(buttonTobeCloned, accountName, {
     id: "n-tw-zap-button",
     icon: "⚡️",
     modalComponentFn: () =>

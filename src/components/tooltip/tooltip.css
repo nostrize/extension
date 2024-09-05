@@ -1,10 +1,9 @@
-.tooltip-wrapper {
+.n-tooltip-wrapper {
   position: relative;
   display: inline-block;
-  cursor: pointer;
 }
 
-.tooltip {
+.n-tooltip-text {
   display: none;
   position: absolute;
   background-color: black;
@@ -16,19 +15,19 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: normal;
-  z-index: 10;
-  min-width: 250px;
+  z-index: 9999;
+  min-width: 200px;
   max-width: 300px;
   text-align: center;
   pointer-events: none;
   font-family: TwitterChirp, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.tooltip-wrapper a:hover + .tooltip,
-.tooltip-wrapper a:focus + .tooltip {
+.n-tooltip-wrapper .n-tooltip-wrapper-input:hover + .n-tooltip-text,
+.n-tooltip-wrapper .n-tooltip-wrapper-input:focus + .n-tooltip-text {
   display: block;
 }
 
-.tooltip-wrapper .tooltip {
+.n-tooltip-wrapper .n-tooltip-text {
   display: none;
 }
