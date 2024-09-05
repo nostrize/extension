@@ -1,16 +1,16 @@
-import * as gui from "../../imgui-dom/gui.js";
-
 import { setupModal } from "../../components/common.js";
+
+export const updateFollowButton = (button, emojiIcon) => {
+  button.childNodes[0].childNodes[0].textContent = emojiIcon;
+};
 
 export const createTwitterButton = (buttonTobeCloned, accountName, options) => {
   const button = buttonTobeCloned.cloneNode(true);
 
-  gui.insertAfter(button, buttonTobeCloned);
-
   button.id = options.id;
   button.href = "javascript:void(0)";
   button.childNodes[0].childNodes[0].remove();
-  button.childNodes[0].childNodes[0].textContent = options.icon;
+  button.childNodes[0].childNodes[0].textContent = options.emojiIcon;
   button.setAttribute("data-for-account", accountName);
 
   button.addEventListener("mouseenter", () => {
@@ -22,7 +22,13 @@ export const createTwitterButton = (buttonTobeCloned, accountName, options) => {
   });
 
   button.onclick = async () => {
-    const { modal, closeModal } = await options.modalComponentFn();
+    const res = await options.modalComponentFn();
+
+    if (!res) {
+      return;
+    }
+
+    const { modal, closeModal } = res;
 
     setupModal(modal, closeModal);
   };

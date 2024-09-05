@@ -26,10 +26,7 @@ import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
 import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
 
-import { createTwitterButton } from "./twitter-helpers.js";
-
-// Watch user handle for changes
-// AccountName is from the URL
+import { createTwitterButton, updateFollowButton } from "./twitter-helpers.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -45,6 +42,7 @@ async function twitterProfilePage() {
     gui.gebid("n-tw-lightsats-button")?.remove();
     gui.gebid("n-follows-you-indicator")?.remove();
     gui.gebid("n-tw-nostr-profile-button")?.remove();
+    gui.gebid("n-tw-follow-unfollow-button")?.remove();
   };
 
   removeNostrButtons();
@@ -116,12 +114,18 @@ async function twitterProfilePage() {
       settings.lightsatsSettings.enabled &&
       settings.lightsatsSettings.apiKey
     ) {
-      createTwitterButton(buttonTobeCloned, accountName, {
+      const lightsatsButton = wrapInputTooltip({
         id: "n-tw-lightsats-button",
-        icon: "💸",
-        modalComponentFn: () =>
-          lightsatsModalComponent({ user: accountName, settings }),
+        input: createTwitterButton(buttonTobeCloned, accountName, {
+          id: "n-tw-lightsats-button",
+          emojiIcon: "💸",
+          modalComponentFn: () =>
+            lightsatsModalComponent({ user: accountName, settings }),
+        }),
+        tooltipText: `Orange pill ${accountName} with Lightning Network`,
       });
+
+      gui.insertAfter(lightsatsButton, buttonTobeCloned);
     }
 
     return;
@@ -155,17 +159,15 @@ async function twitterProfilePage() {
     relays: nip07Relays,
   });
 
+  // handle container is the div that contains the username and the handle
   const usernamePanel = document.querySelector("div[data-testid='UserName']");
-
   const handleContainer =
     usernamePanel?.childNodes[0]?.childNodes[0]?.childNodes[0]?.childNodes[1];
-
   const handle = handleContainer?.childNodes[0];
-
   const handleContent = handle.textContent;
-
   handle.style.display = "none";
 
+  // nostr profile link
   if (handleContainer) {
     gui.prepend(
       handleContainer,
@@ -205,66 +207,51 @@ async function twitterProfilePage() {
     },
   });
 
-  // TODO: handle errors: how?
-
-  const userFollowsCallback = ({ followSet, latestEvent }) => {
-    const userFollowsAccount = followSet.has(accountPubkey);
-
-    // TODO: put the icons in the twitter buttons
-    const followIcon = wrapInputTooltip({
-      input: html.span({
-        text: userFollowsAccount ? "👤➡️" : "➕👤",
-        classList: "n-follow-icon",
-        style: [["cursor", "pointer"]],
-        onclick: async () => {
-          log("unfollowing");
-
-          let newFollowSet;
-          let newLatestEvent;
-
-          if (userFollowsAccount) {
-            const newFollowResult = await unfollowAccount({
-              pubkey: nip07UserPubkey,
-              currentFollowEvent: latestEvent,
-              accountPubkey,
-              relays: nip07Relays,
-              log,
-            });
-
-            newFollowSet = newFollowResult.followSet;
-            newLatestEvent = newFollowResult.latestEvent;
-          } else {
-            const newFollowResult = await followAccount({
-              pubkey: nip07UserPubkey,
-              currentFollowEvent: latestEvent,
-              accountPubkey,
-              relays: nip07Relays,
-              log,
-            });
-
-            newFollowSet = newFollowResult.followSet;
-            newLatestEvent = newFollowResult.latestEvent;
-          }
-
-          followIcon.remove();
-
-          userFollowsCallback({
-            followSet: newFollowSet,
-            latestEvent: newLatestEvent,
-          });
-        },
-      }),
-      tooltipText: userFollowsAccount
-        ? `You follow ${accountName} on Nostr. Click to unfollow.`
-        : `You don't follow ${accountName} on Nostr. Click to follow.`,
-    });
-  };
-
   // follows of the user
-  const userFollowsSubscription = getFollowSet({
+  // the button to follow/unfollow
+  getFollowSet({
     pubkey: nip07UserPubkey,
     relays: readRelays,
-    callback: userFollowsCallback,
+    timeout: 1000 * 60 * 10,
+    callback: ({ followSet, latestEvent }) => {
+      gui.gebid("n-tw-follow-unfollow-button")?.remove();
+
+      let userFollowsAccount = followSet.has(accountPubkey);
+
+      const button = wrapInputTooltip({
+        id: "n-tw-follow-unfollow-button",
+        input: createTwitterButton(buttonTobeCloned, accountName, {
+          emojiIcon: userFollowsAccount ? "➖" : "➕",
+          modalComponentFn: async () => {
+            const followParams = {
+              pubkey: nip07UserPubkey,
+              currentFollowEvent: latestEvent,
+              accountPubkey,
+              accountWriteRelay: writeRelays[0],
+              relays: nip07Relays,
+              log,
+            };
+
+            button.disabled = true;
+
+            updateFollowButton(gui.gebid("n-tw-follow-unfollow-button"), "⏳");
+
+            try {
+              if (userFollowsAccount) {
+                await unfollowAccount(followParams);
+              } else {
+                await followAccount(followParams);
+              }
+            } catch (err) {
+              alert("Nostrize error on follow/unfollow: " + err);
+            }
+          },
+        }),
+        tooltipText: `${userFollowsAccount ? "Unfollow" : "Follow"} ${accountName} on Nostr`,
+      });
+
+      gui.insertAfter(button, buttonTobeCloned);
+    },
   });
 
   const lnurlData = await getOrInsertCache({
@@ -275,22 +262,27 @@ async function twitterProfilePage() {
       }),
   });
 
-  createTwitterButton(buttonTobeCloned, accountName, {
+  const zapButton = wrapInputTooltip({
     id: "n-tw-zap-button",
-    icon: "⚡️",
-    modalComponentFn: () =>
-      zapModalComponent({
-        user: accountName,
-        metadataEvent,
-        relays: nip07Relays,
-        lnurlData,
-        log,
-        settings,
-      }),
+    input: createTwitterButton(buttonTobeCloned, accountName, {
+      id: "n-tw-zap-button",
+      emojiIcon: "⚡️",
+      modalComponentFn: () =>
+        zapModalComponent({
+          user: accountName,
+          metadataEvent,
+          relays: nip07Relays,
+          lnurlData,
+          log,
+          settings,
+        }),
+    }),
+    tooltipText: `Zap ${accountName}`,
   });
 
+  gui.insertAfter(zapButton, buttonTobeCloned);
+
   accountFollowSubscription.close();
-  userFollowsSubscription.close();
 }
 
 twitterProfilePage().catch((e) => console.error(e));

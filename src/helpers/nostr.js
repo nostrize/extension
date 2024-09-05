@@ -148,7 +148,7 @@ function toFollowSet(event) {
   );
 }
 
-export function getFollowSet({ pubkey, relays, callback }) {
+export function getFollowSet({ pubkey, relays, callback, timeout }) {
   const cache = getFollowSetFromCache(pubkey);
 
   let since;
@@ -172,6 +172,7 @@ export function getFollowSet({ pubkey, relays, callback }) {
       },
     ],
     {
+      maxWait: timeout,
       onevent(event) {
         if (!since || event.created_at > since) {
           const followSet = toFollowSet(event);
@@ -193,10 +194,11 @@ async function updateFollowList({ pubkey, tags, relays, log, accountPubkey }) {
     pubkey,
     tags,
     content: "",
+    created_at: Math.floor(Date.now() / 1000),
   };
 
   const signedEvent = await requestSigningFromNip07({
-    type: "nostr-sign-event",
+    type: "nip07-sign-request",
     from: "nostrize",
     eventTemplate,
   });
@@ -208,11 +210,19 @@ async function updateFollowList({ pubkey, tags, relays, log, accountPubkey }) {
   const publishedCount = res.filter((r) => r.status === "fulfilled").length;
   const publishFailedCount = res.filter((r) => r.status === "rejected").length;
 
-  log(accountPubkey, publishedCount, publishFailedCount);
+  log(
+    `accountPubkey: ${accountPubkey}, publishedCount: ${publishedCount}, publishFailedCount: ${publishFailedCount}`,
+  );
+
+  if (publishedCount === 0) {
+    throw new Error("failed to publish event");
+  }
 
   const followSet = toFollowSet(signedEvent);
 
   setFollowSetToCache(pubkey, signedEvent, followSet);
+
+  log(`followSet: cache is updated`);
 
   return { followSet, latestEvent: signedEvent };
 }
