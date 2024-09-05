@@ -1,7 +1,7 @@
-import { mergeDeep } from "./utils.js";
+import { mergeSettings } from "./utils.js";
 
 export const defaultSettings = {
-  version: 4,
+  version: 1,
   debug: {
     log: true,
     namespace: "[N]",
@@ -12,6 +12,7 @@ export const defaultSettings = {
     nip07: {
       useRelays: false,
     },
+    openNostr: "https://nosta.me",
   },
   lightsatsSettings: {
     apiKey: "",
@@ -34,7 +35,8 @@ export async function getLocalSettings() {
     console.log("version", settings.version);
 
     if (settings.version !== defaultSettings.version) {
-      const mergedSettings = mergeDeep(defaultSettings, settings);
+      const mergedSettings = mergeSettings(settings, defaultSettings);
+      mergedSettings.version = defaultSettings.version;
 
       await chrome.storage.local.set({ settings: mergedSettings });
 

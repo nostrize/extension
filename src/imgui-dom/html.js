@@ -341,7 +341,7 @@ const createTextElement =
     text,
     innerHTML,
     eventTuples = [],
-    styles = [],
+    style = [],
     classList,
     onclick,
     id,
@@ -352,7 +352,7 @@ const createTextElement =
       element.addEventListener(eventName, event),
     );
 
-    styles.forEach(([key, value]) => (element.style[key] = value));
+    style.forEach(([key, value]) => (element.style[key] = value));
 
     if (id) {
       element.id = id;

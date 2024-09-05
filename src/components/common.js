@@ -24,7 +24,7 @@ export function setupModal(modal, closeModalFn) {
   modal.style.display = "block";
 }
 
-function centerModal(modal) {
+export function centerModal(modal) {
   const modalContent = modal.querySelector(".n-modal-content");
   const windowHeight = window.innerHeight;
   const modalHeight = modalContent.offsetHeight;

@@ -5,7 +5,7 @@ import * as html from "../imgui-dom/html.js";
 
 import { getLocalSettings, getOrInsertCache } from "../helpers/local-cache.js";
 import { logger } from "../helpers/logger.js";
-import { getRelays } from "../helpers/relays.js";
+import { getAccountRelays } from "../helpers/relays.js";
 import { parseDescription } from "../helpers/dom.js";
 import { getMetadataEvent, getPubkeyFrom } from "../helpers/nostr.js";
 import { Either } from "../helpers/utils.js";
@@ -76,27 +76,28 @@ async function telegramBio() {
     return;
   }
 
-  const pubkey = await getPubkeyFrom({
+  const accountPubkey = await getPubkeyFrom({
     nip05,
     npub,
     username,
     cachePrefix: "telegram-web",
   });
 
-  log("pubkey", pubkey);
+  log("pubkey", accountPubkey);
 
-  const relays = await html.asyncScript({
+  const accountRelays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getRelays({ settings, timeout: 4000 }),
+    callback: () =>
+      getAccountRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
   });
 
-  log("relays", relays);
+  log("relays", accountRelays);
 
   const metadataEvent = await getMetadataEvent({
-    cacheKey: pubkey,
-    filter: { authors: [pubkey], kinds: [0], limit: 1 },
-    relays,
+    cacheKey: accountPubkey,
+    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
+    relays: accountRelays,
   });
 
   const lnurlData = await getOrInsertCache({
@@ -119,7 +120,7 @@ async function telegramBio() {
         metadataEvent,
         lnurlData,
         log,
-        relays,
+        relays: accountRelays,
         settings,
       });
 

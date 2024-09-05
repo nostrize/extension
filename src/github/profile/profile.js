@@ -10,7 +10,7 @@ import {
 import { Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
-import { getRelays } from "../../helpers/relays.js";
+import { getNip07OrLocalRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { getGithubConnectData } from "../github-connect.js";
 import { parseDescription } from "../../helpers/dom.js";
@@ -61,7 +61,7 @@ async function githubProfilePage() {
     pubkey = await getPubkeyFrom({
       nip05,
       npub,
-      username: user,
+      accountName: user,
       cachePrefix: "github",
     });
 
@@ -71,7 +71,7 @@ async function githubProfilePage() {
   const relays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getRelays({ settings, timeout: 4000 }),
+    callback: () => getNip07OrLocalRelays({ settings, timeout: 4000 }),
   });
 
   log("relays", relays);

@@ -11,15 +11,25 @@ import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { parseDescription } from "../../helpers/dom.js";
 import {
+  followAccount,
   getFollowSet,
   getMetadataEvent,
   getPubkeyFrom,
   getUserPubkey,
+  unfollowAccount,
 } from "../../helpers/nostr.js";
-import { getRelays } from "../../helpers/relays.js";
+import {
+  getAccountRelays,
+  getNip07OrLocalRelays,
+} from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
-import { setupModal } from "../../components/common.js";
+import { wrapInputTooltip } from "../../components/tooltip/wrapper.js";
+
+import { createTwitterButton } from "./twitter-helpers.js";
+
+// Watch user handle for changes
+// AccountName is from the URL
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -30,32 +40,38 @@ async function twitterProfilePage() {
     /^https:\/\/x\.com\/(.*?)(?=\?|\s|$)/,
   )[1];
 
-  const { isProfileLoaded } = await browser.storage.local.get(
-    `nostrize-twitter-profile-${accountName}`,
-  );
-
-  if (isProfileLoaded) {
-    return;
-  }
-
-  await browser.storage.local.set({
-    [`nostrize-twitter-profile-${accountName}`]: true,
-  });
-
+  // Remove duplicate nostrize components
+  // Remove nostrize components that are not for the current account
   let hasZapButton = false;
   let hasLightsatsButton = false;
+  let followingYouIndicator = false;
 
-  // remove zap and lightsats button if they are not for this account
   document.querySelectorAll("[data-for-account]").forEach((e) => {
     if (e.attributes["data-for-account"] !== accountName) {
       e.remove();
     } else {
       if (e.id === "n-tw-zap-button") {
-        hasZapButton = true;
+        if (hasZapButton) {
+          e.remove();
+        } else {
+          hasZapButton = true;
+        }
       }
 
       if (e.id === "n-tw-lightsats-button") {
-        hasLightsatsButton = true;
+        if (hasLightsatsButton) {
+          e.remove();
+        } else {
+          hasLightsatsButton = true;
+        }
+      }
+
+      if (e.id === "n-follows-you-indicator") {
+        if (followingYouIndicator) {
+          e.remove();
+        } else {
+          followingYouIndicator = true;
+        }
       }
     }
   });
@@ -72,10 +88,6 @@ async function twitterProfilePage() {
   ) {
     log("not an account page: " + accountName);
 
-    await browser.storage.local.set({
-      [`nostrize-twitter-profile-${accountName}`]: false,
-    });
-
     return;
   }
 
@@ -84,19 +96,11 @@ async function twitterProfilePage() {
   if (hasZapButton) {
     log("don't need to load");
 
-    await browser.storage.local.set({
-      [`nostrize-twitter-profile-${accountName}`]: false,
-    });
-
     return;
   }
 
   if (hasLightsatsButton) {
     log("don't need to load");
-
-    await browser.storage.local.set({
-      [`nostrize-twitter-profile-${accountName}`]: false,
-    });
 
     return;
   }
@@ -128,11 +132,21 @@ async function twitterProfilePage() {
     log,
   });
 
-  const userPubkey = await html.asyncScript({
+  const nip07UserPubkey = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () => getUserPubkey({ settings, timeout: 10000 }),
   });
+
+  const copyButton = document.querySelector(
+    "button[data-testid='userActions']",
+  );
+
+  if (!copyButton) {
+    log("no copy button");
+
+    return;
+  }
 
   if (!npub && !nip05) {
     log("No Nostr integration found");
@@ -141,65 +155,155 @@ async function twitterProfilePage() {
       settings.lightsatsSettings.enabled &&
       settings.lightsatsSettings.apiKey
     ) {
-      const lightsatsButton = html.link({
+      createTwitterButton(copyButton, accountName, {
         id: "n-tw-lightsats-button",
-        data: [["for-account", accountName]],
-        text: "💸 Lightsats💸",
-        href: "javascript:void(0)",
-        onclick: async () => {
-          const { lightsatsModal, closeModal } = await lightsatsModalComponent({
-            user: accountName,
-            settings,
-          });
-
-          setupModal(lightsatsModal, closeModal);
-        },
+        icon: "💸",
+        modalComponentFn: () =>
+          lightsatsModalComponent({ user: accountName, settings }),
       });
-
-      document
-        .querySelector("div[data-testid='UserName']")
-        .append(lightsatsButton);
     }
-
-    await browser.storage.local.set({
-      [`nostrize-twitter-profile-${accountName}`]: false,
-    });
 
     return;
   }
 
-  const pubkey = await getPubkeyFrom({
+  const accountPubkey = await getPubkeyFrom({
     nip05,
     npub,
-    username: accountName,
+    accountName,
     cachePrefix: "tw",
   });
 
-  if (pubkey === userPubkey) {
-    log("logged in user");
+  if (accountPubkey === nip07UserPubkey) {
+    log("nip07 user");
 
     gui.gebid("n-tw-zap-button")?.remove();
     gui.gebid("n-tw-lightsats-button")?.remove();
 
-    await browser.storage.local.set({
-      [`nostrize-twitter-profile-${accountName}`]: false,
-    });
-
     return;
   }
 
-  const relays = await getRelays({ settings, timeout: 4000 });
-
-  const followSet = await getFollowSet({ pubkey, relays });
-
-  const amIFollewed = followSet?.has(userPubkey);
-
-  console.log(`Am I (${userPubkey}) followed by ${pubkey}? ${amIFollewed}`);
+  const nip07Relays = await getNip07OrLocalRelays({ settings, timeout: 4000 });
 
   const metadataEvent = await getMetadataEvent({
-    cacheKey: pubkey,
-    filter: { authors: [pubkey], kinds: [0], limit: 1 },
-    relays,
+    cacheKey: accountPubkey,
+    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
+    relays: nip07Relays,
+  });
+
+  const { readRelays, writeRelays } = await getAccountRelays({
+    pubkey: accountPubkey,
+    relays: nip07Relays,
+  });
+
+  const usernamePanel = document.querySelector("div[data-testid='UserName']");
+
+  const handleContainer =
+    usernamePanel?.childNodes[0]?.childNodes[0]?.childNodes[0]?.childNodes[1];
+
+  const handle = handleContainer?.childNodes[0];
+
+  const handleContent = handle.textContent;
+
+  handle.remove();
+
+  if (handleContainer) {
+    gui.prepend(
+      handleContainer,
+      wrapInputTooltip({
+        input: html.link({
+          text: handleContent,
+          href: `${settings.nostrSettings.openNostr}/${accountPubkey}`,
+          targetBlank: true,
+        }),
+        tooltipText: `User is on Nostr. Click to open Nostr profile.`,
+      }),
+    );
+  }
+
+  // follows of the account
+  const accountFollowSubscription = getFollowSet({
+    pubkey: accountPubkey,
+    relays: writeRelays,
+    callback: ({ followSet }) => {
+      const accountFollowsYou = followSet.has(nip07UserPubkey);
+
+      log("accountFollowsYou", accountFollowsYou);
+
+      if (accountFollowsYou) {
+        handleContainer?.append(
+          wrapInputTooltip({
+            input: html.span({
+              text: "Follows you",
+              classList: "n-follows-you-indicator",
+              id: "n-follows-you-indicator",
+            }),
+            tooltipText: `${accountName} follows you on Nostr.`,
+          }),
+        );
+      }
+    },
+  });
+
+  // TODO: handle errors: how?
+
+  const userFollowsCallback = ({ followSet, latestEvent }) => {
+    const userFollowsAccount = followSet.has(accountPubkey);
+
+    // TODO: put the icons in the twitter buttons
+    const followIcon = wrapInputTooltip({
+      input: html.span({
+        text: userFollowsAccount ? "👤➡️" : "➕👤",
+        classList: "n-follow-icon",
+        style: [["cursor", "pointer"]],
+        onclick: async () => {
+          log("unfollowing");
+
+          let newFollowSet;
+          let newLatestEvent;
+
+          if (userFollowsAccount) {
+            const newFollowResult = await unfollowAccount({
+              pubkey: nip07UserPubkey,
+              currentFollowEvent: latestEvent,
+              accountPubkey,
+              relays: nip07Relays,
+              log,
+            });
+
+            newFollowSet = newFollowResult.followSet;
+            newLatestEvent = newFollowResult.latestEvent;
+          } else {
+            const newFollowResult = await followAccount({
+              pubkey: nip07UserPubkey,
+              currentFollowEvent: latestEvent,
+              accountPubkey,
+              relays: nip07Relays,
+              log,
+            });
+
+            newFollowSet = newFollowResult.followSet;
+            newLatestEvent = newFollowResult.latestEvent;
+          }
+
+          followIcon.remove();
+
+          userFollowsCallback({
+            followSet: newFollowSet,
+            latestEvent: newLatestEvent,
+          });
+        },
+      }),
+      tooltipText: userFollowsAccount
+        ? `You follow ${accountName} on Nostr. Click to unfollow.`
+        : `You don't follow ${accountName} on Nostr. Click to follow.`,
+    });
+  };
+
+  // follows of the user
+  const userFollowsSubscription = getFollowSet({
+    pubkey: nip07UserPubkey,
+    relays: readRelays,
+    callback: userFollowsCallback,
   });
 
   const lnurlData = await getOrInsertCache({
@@ -210,30 +314,22 @@ async function twitterProfilePage() {
       }),
   });
 
-  const zapButton = html.link({
+  createTwitterButton(copyButton, accountName, {
     id: "n-tw-zap-button",
-    data: [["for-account", accountName]],
-    text: "⚡ Zap ⚡",
-    href: "javascript:void(0)",
-    onclick: async () => {
-      const { zapModal, closeModal } = await zapModalComponent({
+    icon: "⚡️",
+    modalComponentFn: () =>
+      zapModalComponent({
         user: accountName,
         metadataEvent,
+        relays: nip07Relays,
         lnurlData,
         log,
-        relays,
         settings,
-      });
-
-      setupModal(zapModal, closeModal);
-    },
+      }),
   });
 
-  document.querySelector("div[data-testid='UserName']").append(zapButton);
-
-  await browser.storage.local.set({
-    [`nostrize-twitter-profile-${accountName}`]: false,
-  });
+  accountFollowSubscription.close();
+  userFollowsSubscription.close();
 }
 
 twitterProfilePage().catch((e) => console.error(e));

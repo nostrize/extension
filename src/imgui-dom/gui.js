@@ -12,6 +12,14 @@ export function gebid(id) {
   return document.getElementById(id);
 }
 
+export function insertBefore(newNode, existingNode) {
+  existingNode.insertAdjacentElement("beforebegin", newNode);
+}
+
+export function insertAfter(newNode, existingNode) {
+  existingNode.insertAdjacentElement("afterend", newNode);
+}
+
 export function reset({ app, state, log }) {
   log("reset is called");
 

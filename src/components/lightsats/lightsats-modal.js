@@ -400,5 +400,5 @@ export async function lightsatsModalComponent({ user, settings }) {
     lightsatsModal.remove();
   };
 
-  return { lightsatsModal, closeModal };
+  return { modal: lightsatsModal, closeModal };
 }

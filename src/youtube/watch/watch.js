@@ -16,7 +16,7 @@ import {
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
-import { getRelays } from "../../helpers/relays.js";
+import { getAccountRelays } from "../../helpers/relays.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 
@@ -67,7 +67,7 @@ async function youtubeWatchPage() {
 
   const { nip05, npub, channel } = params;
 
-  const pubkey = await getPubkeyFrom({
+  const accountPubkey = await getPubkeyFrom({
     nip05,
     npub,
     username: channel,
@@ -77,14 +77,15 @@ async function youtubeWatchPage() {
   const relays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getRelays({ settings, timeout: 4000 }),
+    callback: () =>
+      getAccountRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
   });
 
   log("relays", relays);
 
   const metadataEvent = await getMetadataEvent({
-    cacheKey: pubkey,
-    filter: { authors: [pubkey], kinds: [0], limit: 1 },
+    cacheKey: accountPubkey,
+    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
     relays,
   });
 

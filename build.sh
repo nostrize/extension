@@ -8,9 +8,12 @@ cp src/logo.png dist/logo.png
 
 ./node_modules/.bin/webpack
 
+// TODO: prefix files with nostrize-
+
 # copy component specific files
 cp src/components/zap-modal.css dist/zap-modal.css
 cp src/components/lightsats/lightsats-modal.css dist/lightsats-modal.css
+cp src/components/tooltip/tooltip.css dist/nostrize-tooltip.css
 
 # copy github specific files
 cp src/github/issues/issues.css dist/github-issues.css

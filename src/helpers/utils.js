@@ -110,25 +110,29 @@ export async function delay(ms) {
   });
 }
 
-// Deep merge function to merge default settings with user settings
-export function mergeDeep(target, source) {
-  const output = { ...target };
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach((key) => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
-        } else {
-          output[key] = mergeDeep(target[key], source[key]);
-        }
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
-  }
-  return output;
-}
-
 function isObject(item) {
   return item && typeof item === "object" && !Array.isArray(item);
+}
+
+export function mergeSettings(target, source) {
+  const output = { ...target };
+
+  Object.keys(source).forEach((key) => {
+    if (isObject(source[key])) {
+      // Recursively merge if both target and source have an object at the same key
+      if (key in target && isObject(target[key])) {
+        output[key] = mergeSettings(target[key], source[key]);
+      } else {
+        // Copy the entire source object if it's new or not in target
+        output[key] = { ...source[key] };
+      }
+    } else {
+      // Only copy if the target does not already have a value for this key
+      if (!(key in target) || target[key] == undefined) {
+        output[key] = source[key];
+      }
+    }
+  });
+
+  return output;
 }

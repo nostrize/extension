@@ -9,11 +9,15 @@ async function settingsPage() {
 
   // Load state into UI
   function loadState() {
+    document.getElementById("version-number").textContent = state.version;
+
     // Load Debug Settings
     document.getElementById("log").checked = state.debug.log;
     document.getElementById("namespace").value = state.debug.namespace;
 
     // Load Nostr Settings
+    document.getElementById("open-nostr").value = state.nostrSettings.openNostr;
+
     document.getElementById("mode").value = state.nostrSettings.mode;
     document.getElementById("nip07-relays").checked =
       state.nostrSettings.nip07.useRelays;

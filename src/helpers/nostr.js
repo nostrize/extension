@@ -38,7 +38,7 @@ export async function getUserPubkey({ settings, timeout = 1000 }) {
   }
 }
 
-export async function getPubkeyFrom({ npub, nip05, username, cachePrefix }) {
+export async function getPubkeyFrom({ npub, nip05, accountName, cachePrefix }) {
   if (npub) {
     const { type, data } = nip19.decode(npub);
 
@@ -49,19 +49,27 @@ export async function getPubkeyFrom({ npub, nip05, username, cachePrefix }) {
     return data;
   }
 
-  const { pubkey } = await getOrInsertCache({
-    key: `nostrize-nip05-${cachePrefix}-${username}`,
+  const cacheKey = `nostrize-nip05-${cachePrefix}-${accountName}`;
+
+  const { pubkey } = await fetchNip05Data({ nip05, cacheKey });
+
+  return pubkey;
+}
+
+export async function fetchNip05Data({ nip05, cacheKey }) {
+  const { relays, pubkey } = await getOrInsertCache({
+    key: cacheKey,
     insertCallback: () => {
       const [username, domain] = nip05.split("@");
       const fetchUrl = `https://${domain}/.well-known/nostr.json?user=${username}`;
 
-      Either.getOrElseThrow({
+      return Either.getOrElseThrow({
         eitherFn: () => fetchFromNip05({ user: username, fetchUrl }),
       });
     },
   });
 
-  return pubkey;
+  return { relays, pubkey };
 }
 
 export async function fetchFromNip05({ user, fetchUrl }) {
@@ -106,36 +114,173 @@ export async function getMetadataEvent({ cacheKey, filter, relays }) {
   });
 }
 
-export async function getFollowSet({ pubkey, relays, timeout = 1000 }) {
-  const cacheKey = `nostrize-follow-list-${pubkey}-created_at`;
-  const cache = getFromCache(cacheKey);
-  const since = cache ? cache.created_at : undefined;
+const getFollowSetCacheKey = (pubkey) => `nostrize-follow-list-${pubkey}`;
 
-  const filter = {
-    kinds: [3],
-    authors: [pubkey],
-    limit: 1,
-    since,
+const getFollowSetFromCache = (pubkey) => {
+  const cache = getFromCache(getFollowSetCacheKey(pubkey));
+
+  if (!cache) {
+    return null;
+  }
+
+  return {
+    followSet: new Set(cache.followSet),
+    latestEvent: cache.latestEvent,
   };
+};
+
+const setFollowSetToCache = (pubkey, latestEvent, followSet) =>
+  insertToCache(getFollowSetCacheKey(pubkey), {
+    latestEvent,
+    followSet: [...followSet],
+  });
+
+function toFollowSet(event) {
+  return new Set(
+    // tag example: ["p", "91cf9..4e5ca", "wss://alicerelay.com/", "alice"]
+    event.tags.reduce((acc, tag) => {
+      if (tag[0] === "p") {
+        acc.push(tag[1]);
+      }
+
+      return acc;
+    }, []),
+  );
+}
+
+export function getFollowSet({ pubkey, relays, callback }) {
+  const cache = getFollowSetFromCache(pubkey);
+
+  let since;
+
+  if (cache) {
+    callback(cache);
+
+    since = cache.latestEvent.created_at;
+  }
 
   const pool = new SimplePool();
 
-  const latestEvent = await pool.get(relays, filter, { maxWait: timeout });
+  const subscription = pool.subscribeMany(
+    relays,
+    [
+      {
+        kinds: [3],
+        authors: [pubkey],
+        limit: 1,
+        since,
+      },
+    ],
+    {
+      onevent(event) {
+        if (!since || event.created_at > since) {
+          const followSet = toFollowSet(event);
 
-  if (latestEvent) {
-    const followSet = new Set(
-      latestEvent.tags.reduce((acc, tag) => {
-        if (tag[0] === "p") {
-          acc.push(tag[1]);
+          setFollowSetToCache(pubkey, event, followSet);
+
+          callback({ latestEvent: event, followSet });
         }
-        return acc;
-      }, []),
-    );
+      },
+    },
+  );
 
-    insertToCache(cacheKey, latestEvent.created_at);
+  return subscription;
+}
 
-    return followSet;
-  }
+async function updateFollowList({ pubkey, tags, relays, log, accountPubkey }) {
+  const eventTemplate = {
+    kind: 3,
+    pubkey,
+    tags,
+    content: "",
+  };
 
-  return new Set();
+  const signedEvent = await requestSigningFromNip07({
+    type: "nostr-sign-event",
+    from: "nostrize",
+    eventTemplate,
+  });
+
+  const pool = new SimplePool();
+
+  const res = await Promise.allSettled(pool.publish(relays, signedEvent));
+
+  const publishedCount = res.filter((r) => r.status === "fulfilled").length;
+  const publishFailedCount = res.filter((r) => r.status === "rejected").length;
+
+  log(accountPubkey, publishedCount, publishFailedCount);
+
+  const followSet = toFollowSet(signedEvent);
+
+  setFollowSetToCache(pubkey, signedEvent, followSet);
+
+  return { followSet, latestEvent: signedEvent };
+}
+
+export async function followAccount({
+  pubkey,
+  accountPubkey,
+  currentFollowEvent,
+  accountWriteRelay,
+  relays,
+  log,
+}) {
+  const tags = [
+    ...currentFollowEvent.tags,
+    ["p", accountPubkey, accountWriteRelay],
+  ];
+
+  return updateFollowList({
+    pubkey,
+    tags,
+    relays,
+    log,
+    accountPubkey,
+  });
+}
+
+export async function unfollowAccount({
+  pubkey,
+  accountPubkey,
+  currentFollowEvent,
+  relays,
+  log,
+}) {
+  const tags = currentFollowEvent.tags.filter(
+    (tag) => tag[1] !== accountPubkey,
+  );
+
+  return updateFollowList({
+    pubkey,
+    tags,
+    relays,
+    log,
+    accountPubkey,
+  });
+}
+
+export async function requestSigningFromNip07(messageParams) {
+  window.postMessage(messageParams);
+
+  return new Promise((resolve) => {
+    window.addEventListener("message", function (event) {
+      if (event.source !== window) {
+        return;
+      }
+
+      const { from, type, signedEvent } = event.data;
+
+      if (
+        !(
+          from === "nostrize-nip07-provider" &&
+          type === "nip07-sign-request" &&
+          !!signedEvent
+        )
+      ) {
+        return;
+      }
+
+      return resolve(signedEvent);
+    });
+  });
 }

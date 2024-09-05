@@ -1,0 +1,34 @@
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: black;
+  color: white;
+  padding: 10px;
+  border: 1px solid white;
+  border-radius: 5px;
+  bottom: 150%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: normal;
+  z-index: 10;
+  min-width: 250px;
+  max-width: 300px;
+  text-align: center;
+  pointer-events: none;
+  font-family: TwitterChirp, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.tooltip-wrapper a:hover + .tooltip,
+.tooltip-wrapper a:focus + .tooltip {
+  display: block;
+}
+
+.tooltip-wrapper .tooltip {
+  display: none;
+}

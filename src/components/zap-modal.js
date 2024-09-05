@@ -6,7 +6,8 @@ import * as html from "../imgui-dom/html.js";
 import * as gui from "../imgui-dom/gui.js";
 import { milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
 import { createKeyPair } from "../helpers/crypto.js";
-import { getMetadataEvent } from "../helpers/nostr.js";
+import { getMetadataEvent, requestSigningFromNip07 } from "../helpers/nostr.js";
+import { centerModal } from "./common.js";
 
 export async function zapModalComponent({
   user,
@@ -217,12 +218,12 @@ export async function zapModalComponent({
     ],
   });
 
-  return { zapModal, closeModal };
+  return { modal: zapModal, closeModal };
 }
 
 async function getPubkeyFromNip07() {
   window.postMessage({
-    from: "nostrize-zap-modal",
+    from: "nostrize",
     type: "nip07-pubkey-request",
   });
 
@@ -245,32 +246,6 @@ async function getPubkeyFromNip07() {
       }
 
       return resolve(pubkey);
-    });
-  });
-}
-
-async function requestSigningFromNip07(messageParams) {
-  window.postMessage(messageParams);
-
-  return new Promise((resolve) => {
-    window.addEventListener("message", function (event) {
-      if (event.source !== window) {
-        return;
-      }
-
-      const { from, type, signedEvent } = event.data;
-
-      if (
-        !(
-          from === "nostrize-nip07-provider" &&
-          type === "nip07-sign-request" &&
-          !!signedEvent
-        )
-      ) {
-        return;
-      }
-
-      return resolve(signedEvent);
     });
   });
 }
@@ -305,7 +280,7 @@ async function generateInvoiceClick({
     zapRequestEvent = finalizeEvent(eventTemplate, localNostrKeys.secret);
   } else if (nostrSettings.mode === "nip07") {
     zapRequestEvent = await requestSigningFromNip07({
-      from: "nostrize-zap-modal",
+      from: "nostrize",
       type: "nip07-sign-request",
       eventTemplate,
     });
@@ -342,6 +317,8 @@ async function generateInvoiceClick({
   document.getElementById("n-modal-step-1").style.display = "none";
   document.getElementById("n-modal-step-2").style.display = "flex";
 
+  centerModal(document.getElementById("n-modal"));
+
   const zapReceiptEvent = await getZapReceipt({
     relays,
     filter: {
@@ -361,6 +338,8 @@ async function generateInvoiceClick({
 
   document.getElementById("n-modal-step-2").style.display = "none";
   document.getElementById("n-modal-step-3").style.display = "flex";
+
+  centerModal(document.getElementById("n-modal"));
 }
 
 const createSatsOptionButton = (button) => (sats) => {

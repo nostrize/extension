@@ -7,11 +7,7 @@ window.addEventListener("message", async (event) => {
   const { from, type, eventTemplate } = event.data;
 
   if (
-    !(
-      from === "nostrize-zap-modal" &&
-      type === "nip07-sign-request" &&
-      !!eventTemplate
-    )
+    !(from === "nostrize" && type === "nip07-sign-request" && !!eventTemplate)
   ) {
     return;
   }
@@ -99,7 +95,7 @@ window.addEventListener("message", async (event) => {
 
   const { from, type } = event.data;
 
-  if (!(from === "nostrize-zap-modal" && type === "nip07-pubkey-request")) {
+  if (!(from === "nostrize" && type === "nip07-pubkey-request")) {
     return;
   }
 

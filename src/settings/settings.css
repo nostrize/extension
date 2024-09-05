@@ -1,5 +1,5 @@
 body {
-  background-color: rgb(130, 80, 223, 0.1);
+  background-color: rgba(130, 80, 223, 0.1);
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
@@ -28,7 +28,7 @@ hr {
 }
 
 .section {
-  background-color: rgb(130, 80, 223, 0.1);
+  background-color: rgba(130, 80, 223, 0.1);
   padding: 10px;
   margin-bottom: 20px;
   min-width: 400px;
@@ -209,7 +209,7 @@ select {
 }
 
 button {
-  background-color: rgb(130 80 223 / 75%);
+  background-color: rgba(130 80 223 / 75%);
   color: floralwhite;
   padding: 5px;
   cursor: pointer;
@@ -254,4 +254,12 @@ legend {
   font-weight: bold;
   color: #8250df;
   padding: 0 5px;
+}
+
+.version-container {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  align-items: flex-end;
+  padding-top: 20px;
 }

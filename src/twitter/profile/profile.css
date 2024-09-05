@@ -1,14 +1,20 @@
-#n-tw-zap-button, #n-tw-lightsats-button {
-  color: white;
+.nostr-indicators {
+  display: inline-flex;
+  margin-top: -5px;
+  margin-left: 5px;
+  border: 2px solid white;
+  border-radius: 7px;
+  padding: 5px;
+  background-color:  rgb(130, 80, 223);
+}
+
+.n-follows-you-indicator {
+  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: rgb(130, 80, 223);
-  border: solid 3px white;
-  border-radius: 9px;
-  margin-left: 8px;
-  text-decoration: none;
-  font-size: 14px;
-  font-family: TwitterChirp, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-weight: 700;
-  font-stretch: 100%;
-  height: fit-content;
-  padding: 3px;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 12px;
+  padding: 2px 4px 2px 4px;
+  margin-left: 4px;
+  border-radius: 4px;
 }
