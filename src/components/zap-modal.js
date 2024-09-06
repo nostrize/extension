@@ -19,8 +19,8 @@ export async function zapModalComponent({
 }) {
   const zapSatsAmountInput = html.input({
     type: "number",
-    id: "n-modal-amount",
-    classList: "n-modal-input",
+    id: "n-zap-modal-amount",
+    classList: "n-zap-modal-input",
     min: milliSatsToSats({ milliSats: lnurlData.minSendable }),
     max: milliSatsToSats({ milliSats: lnurlData.maxSendable }),
     placeholder: "Amount in sats",
@@ -28,10 +28,10 @@ export async function zapModalComponent({
       const value = Number(e.target.value);
 
       if (value) {
-        e.target.classList.remove("n-input-error");
+        e.target.classList.remove("n-zap-input-error");
       }
 
-      gui.gebid("n-invoice-hidden").value = value;
+      gui.gebid("n-zap-invoice-hidden").value = value;
     },
   });
 
@@ -59,28 +59,28 @@ export async function zapModalComponent({
 
   const commentInput = html.input({
     type: "text",
-    id: "n-modal-comment",
-    classList: "n-modal-input",
+    id: "n-zap-modal-comment",
+    classList: "n-zap-modal-input",
     placeholder: await getComment(),
   });
 
   const generateInvoiceButton = html.button({
-    id: "n-generate-invoice-btn",
-    classList: "n-generate-invoice-btn",
+    id: "n-zap-generate-invoice-btn",
+    classList: "n-zap-generate-invoice-btn",
     text: "Generate Invoice",
     onclick: async (e) => {
-      const amountInput = gui.gebid("n-modal-amount");
+      const amountInput = gui.gebid("n-zap-modal-amount");
 
       if (!amountInput.value) {
-        amountInput.classList.add("n-input-error");
+        amountInput.classList.add("n-zap-input-error");
 
         return e.preventDefault();
       }
 
       e.target.textContent = "Generating...";
 
-      gui.gebid("n-modal-step-2-desc").innerHTML =
-        `Scan QR code to zap <span class="n-span-red">${user}</span> ${zapSatsAmountInput.value} sats`;
+      gui.gebid("n-zap-modal-step-2-desc").innerHTML =
+        `Scan QR code to zap <span class="n-zap-span-red">${user}</span> ${zapSatsAmountInput.value} sats`;
 
       await generateInvoiceClick({
         sats: zapSatsAmountInput.value,
@@ -101,20 +101,20 @@ export async function zapModalComponent({
   });
 
   const qrCodeContainer = html.div({
-    id: "n-modal-qr",
-    classList: "n-modal-qr",
+    id: "n-zap-modal-qr",
+    classList: "n-zap-modal-qr",
   });
 
   const paidMessagePlaceholder = html.div({
-    id: "n-modal-paid-msg",
-    classList: "n-modal-paid-msg",
+    id: "n-zap-modal-paid-msg",
+    classList: "n-zap-modal-paid-msg",
     text: "",
   });
 
   const copyInvoiceButtonHandler = (e) => {
     window.focus();
 
-    const invoice = document.getElementById("n-invoice-hidden").text;
+    const invoice = document.getElementById("n-zap-invoice-hidden").text;
 
     navigator.clipboard.writeText(invoice).then(() => {
       // Change button text to "Copied" and set it to green
@@ -134,47 +134,47 @@ export async function zapModalComponent({
   const closeModal = () => {
     zapModal.style.display = "none";
 
-    document.getElementById("n-generate-invoice-btn").textContent =
+    document.getElementById("n-zap-generate-invoice-btn").textContent =
       "Generate Invoice";
-    document.getElementById("n-modal-step-1").style.display = "block";
-    document.getElementById("n-modal-step-2").style.display = "none";
-    document.getElementById("n-modal-step-3").style.display = "none";
+    document.getElementById("n-zap-modal-step-1").style.display = "block";
+    document.getElementById("n-zap-modal-step-2").style.display = "none";
+    document.getElementById("n-zap-modal-step-3").style.display = "none";
   };
 
   const zapModal = html.div({
-    id: "n-modal",
-    classList: "n-modal",
+    id: "n-zap-modal",
+    classList: "n-zap-modal",
     children: [
       html.div({
-        id: "n-modal-content",
-        classList: "n-modal-content",
+        id: "n-zap-modal-content",
+        classList: "n-modal-content n-zap-modal-content",
         children: [
           html.span({
-            classList: "n-modal-close",
+            classList: "n-zap-modal-close",
             text: "×",
             onclick: closeModal,
           }),
           html.div({
-            id: "n-modal-step-1",
+            id: "n-zap-modal-step-1",
             children: [
               html.h2({
-                classList: "n-modal-title",
-                innerHTML: `Zap <span class="n-span-red">${user}</span> using a lightning wallet ${settings.nostrSettings.mode === "anon" ? "anonymously" : ""}`,
+                classList: "n-zap-modal-title",
+                innerHTML: `Zap <span class="n-zap-span-red">${user}</span> using a lightning wallet ${settings.nostrSettings.mode === "anon" ? "anonymously" : ""}`,
               }),
               html.div({
                 children: [21, 69, 100, 500].map(satOptionButton),
-                classList: "n-sats-option-row",
+                classList: "n-zap-sats-option-row",
               }),
               html.div({
                 children: [2100, 6900, 10000, 20000].map(satOptionButton),
-                classList: "n-sats-option-row",
+                classList: "n-zap-sats-option-row",
               }),
               html.div({
-                classList: "n-sats-option-row",
+                classList: "n-zap-sats-option-row",
                 children: [zapSatsAmountInput],
               }),
               html.div({
-                classList: "n-sats-option-row",
+                classList: "n-zap-sats-option-row",
                 children: [commentInput],
               }),
               html.div({
@@ -188,20 +188,20 @@ export async function zapModalComponent({
             ],
           }),
           html.div({
-            id: "n-modal-step-2",
+            id: "n-zap-modal-step-2",
             children: [
               html.span({
-                id: "n-modal-step-2-desc",
+                id: "n-zap-modal-step-2-desc",
               }),
               qrCodeContainer,
-              html.input({ type: "hidden", id: "n-invoice-hidden" }),
+              html.input({ type: "hidden", id: "n-zap-invoice-hidden" }),
               html.div({
-                id: "n-modal-copy-container",
-                classList: "n-modal-copy-container",
+                id: "n-zap-modal-copy-container",
+                classList: "n-zap-modal-copy-container",
                 children: [
                   html.button({
-                    id: "n-modal-copy-btn",
-                    classList: "n-modal-copy-btn",
+                    id: "n-zap-modal-copy-btn",
+                    classList: "n-zap-modal-copy-btn",
                     text: "Copy invoice",
                     onclick: copyInvoiceButtonHandler,
                   }),
@@ -210,7 +210,7 @@ export async function zapModalComponent({
             ],
           }),
           html.div({
-            id: "n-modal-step-3",
+            id: "n-zap-modal-step-3",
             children: [paidMessagePlaceholder],
           }),
         ],
@@ -306,7 +306,7 @@ async function generateInvoiceClick({
 
   log("invoice", invoice);
 
-  document.getElementById("n-invoice-hidden").text = invoice;
+  document.getElementById("n-zap-invoice-hidden").text = invoice;
 
   const svg = await qrCode(invoice, {
     type: "svg",
@@ -314,10 +314,10 @@ async function generateInvoiceClick({
 
   qrCodeContainer.innerHTML = svg;
 
-  document.getElementById("n-modal-step-1").style.display = "none";
-  document.getElementById("n-modal-step-2").style.display = "flex";
+  document.getElementById("n-zap-modal-step-1").style.display = "none";
+  document.getElementById("n-zap-modal-step-2").style.display = "flex";
 
-  centerModal(document.getElementById("n-modal"));
+  centerModal(document.getElementById("n-zap-modal"));
 
   const zapReceiptEvent = await getZapReceipt({
     relays,
@@ -334,20 +334,20 @@ async function generateInvoiceClick({
 
   log("zapReceiptEvent", zapReceiptEvent);
 
-  paidMessagePlaceholder.innerHTML = `⚡ You just zapped <span class="n-span-red">${user}</span> ${sats} sats ⚡`;
+  paidMessagePlaceholder.innerHTML = `⚡ You just zapped <span class="n-zap-span-red">${user}</span> ${sats} sats ⚡`;
 
-  document.getElementById("n-modal-step-2").style.display = "none";
-  document.getElementById("n-modal-step-3").style.display = "flex";
+  document.getElementById("n-zap-modal-step-2").style.display = "none";
+  document.getElementById("n-zap-modal-step-3").style.display = "flex";
 
-  centerModal(document.getElementById("n-modal"));
+  centerModal(document.getElementById("n-zap-modal"));
 }
 
 const createSatsOptionButton = (button) => (sats) => {
   return button({
     text: `⚡ ${sats}`,
-    classList: "n-sats-option-btn",
+    classList: "n-zap-sats-option-btn",
     onclick: () => {
-      const amountInput = gui.gebid("n-modal-amount");
+      const amountInput = gui.gebid("n-zap-modal-amount");
 
       amountInput.value = sats;
 

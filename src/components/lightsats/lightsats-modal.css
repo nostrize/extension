@@ -1,17 +1,21 @@
-.n-modal {
+.n-ls-modal {
+  display: none;
+  color-scheme: none;
   position: fixed;
-  z-index: 1000;
+  z-index: 3005;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(130, 80, 223, 0.1);
   overflow-y: auto;
-  display: flex;
+  color: black;
   align-items: flex-start;
+  font-family: sans-serif;
 }
 
-.n-modal-content {
+.n-ls-modal-content {
+  position: relative;
   background-color: white;
   padding: 20px;
   border-radius: 5px;
@@ -22,11 +26,26 @@
   margin: auto;
 }
 
-.n-modal-title {
+.n-ls-modal-close {
+  position: absolute;
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  top: 10px;
+  right: 10px;
+}
+
+.n-ls-modal-title {
   display: inline;
+  width: 85%;
 }
 
 fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   border: 1px solid #8250df;
   border-radius: 5px;
   padding: 10px;
@@ -39,40 +58,40 @@ legend {
   padding: 0 5px;
 }
 
-.n-sats-option-row,
-.n-sats-amount-row {
+.n-ls-sats-option-row,
+.n-ls-sats-amount-row {
   margin-bottom: 10px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
 }
 
-.n-sats-button-row {
+.n-ls-sats-button-row {
   display: flex;
   justify-content: center;
 }
 
-.n-modal-button-disabled {
+.n-ls-modal-button-disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.n-modal-step-0, .n-modal-step-1, .n-modal-step-2, .n-modal-step-3, .n-modal-step-4 {
+.n-ls-modal-step-0, .n-ls-modal-step-1, .n-ls-modal-step-2, .n-ls-modal-step-3, .n-ls-modal-step-4 {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
 
-.n-modal-step-1, .n-modal-step-3, .n-modal-step-4 {
+.n-ls-modal-step-1, .n-ls-modal-step-3, .n-ls-modal-step-4 {
   display: none;
 }
 
-.n-modal-step-0 fieldset,
-.n-modal-step-1 fieldset,
-.n-modal-step-2 fieldset,
-.n-modal-step-3 fieldset,
-.n-modal-step-4 fieldset {
+.n-ls-modal-step-0 fieldset,
+.n-ls-modal-step-1 fieldset,
+.n-ls-modal-step-2 fieldset,
+.n-ls-modal-step-3 fieldset,
+.n-ls-modal-step-4 fieldset {
   width: 100%; /* Make all fieldsets full width of their container */
   box-sizing: border-box; /* Include padding and border in the width */
 }
@@ -86,7 +105,7 @@ label {
   flex: 0 0 auto;
 }
 
-.n-modal-input {
+.n-ls-modal-input {
   width: 225px;
   min-width: 150px;
   max-width: 90%;
@@ -97,12 +116,12 @@ label {
   box-sizing: border-box;
 }
 
-.n-modal-input:focus {
+.n-ls-modal-input:focus {
   outline: none;
   border-color: #8250df;
 }
 
-select.n-modal-input {
+select.n-ls-modal-input {
   width: 225px;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238250df' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
@@ -113,7 +132,7 @@ select.n-modal-input {
   -moz-appearance: none;
 }
 
-.n-modal-button {
+.n-ls-modal-button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
@@ -124,11 +143,11 @@ select.n-modal-input {
   margin-top: 10px;
 }
 
-.n-modal-button:hover {
+.n-ls-modal-button:hover {
   background-color: rgb(130, 80, 223, 0.9);
 }
 
-.n-modal-button:active {
+.n-ls-modal-button:active {
   background-color: rgb(130, 80, 223, 1);
 }
 
@@ -160,7 +179,7 @@ select.n-modal-input {
   display: block;
 }
 
-.n-copy-button {
+.n-ls-copy-button {
   margin-left: 5px;
   font-size: 14px;
   padding: 2px 5px;

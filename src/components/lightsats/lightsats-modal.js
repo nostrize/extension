@@ -17,41 +17,41 @@ import {
 
 // Create a loading screen element
 let modalStep0 = html.div({
-  classList: "n-modal-steps n-modal-step-0",
+  classList: "n-ls-modal-steps n-ls-modal-step-0",
   children: [
     html.h2({
-      classList: "n-modal-title",
+      classList: "n-ls-modal-title",
       text: "Loading tip information...",
     }),
     html.div({
-      classList: "n-modal-loading-spinner",
+      classList: "n-ls-modal-loading-spinner",
     }),
   ],
 });
 
 const modalStep1 = html.div({
-  classList: "n-modal-steps n-modal-step-1",
+  classList: "n-ls-modal-steps n-ls-modal-step-1",
   children: [],
 });
 
 const modalStep2 = html.div({
-  classList: "n-modal-steps n-modal-step-2",
+  classList: "n-ls-modal-steps n-ls-modal-step-2",
   children: [],
 });
 
 const modalStep3 = html.div({
-  classList: "n-modal-steps n-modal-step-3",
+  classList: "n-ls-modal-steps n-ls-modal-step-3",
   children: [],
 });
 
 const modalStep4 = html.div({
-  classList: "n-modal-steps n-modal-step-4",
+  classList: "n-ls-modal-steps n-ls-modal-step-4",
   children: [],
 });
 
 const qrCodeContainer = html.div({
-  id: "n-modal-qr",
-  classList: "n-modal-qr",
+  id: "n-ls-modal-qr",
+  classList: "n-ls-modal-qr",
 });
 
 function updateModalStep(newStep, tip, qrCodeContainer, apiKey) {
@@ -128,8 +128,8 @@ export async function lightsatsModalComponent({ user, settings }) {
 
   const tipExpiryInput = html.input({
     type: "number",
-    id: "n-modal-tip-expiry",
-    classList: "n-modal-input",
+    id: "n-ls-modal-tip-expiry",
+    classList: "n-ls-modal-input",
     min: 1,
     value: 5,
     placeholder: "Tip expiry (in days)",
@@ -137,16 +137,16 @@ export async function lightsatsModalComponent({ user, settings }) {
 
   const tipAmountInput = html.input({
     type: "number",
-    id: "n-modal-tip-amount",
-    classList: "n-modal-input",
+    id: "n-ls-modal-tip-amount",
+    classList: "n-ls-modal-input",
     min: 1,
     value: 210,
     placeholder: "Tip amount (in sats)",
   });
 
   const onboardingFlowSelect = html.select({
-    id: "n-modal-onboarding-flow",
-    classList: "n-modal-input",
+    id: "n-ls-modal-onboarding-flow",
+    classList: "n-ls-modal-input",
     options: [
       { value: "lightning", text: "Lightning", selected: true },
       { value: "standard", text: "Standard" },
@@ -155,8 +155,8 @@ export async function lightsatsModalComponent({ user, settings }) {
   });
 
   const recommendedWalletSelect = html.select({
-    id: "n-modal-recommended-wallet",
-    classList: "n-modal-input",
+    id: "n-ls-modal-recommended-wallet",
+    classList: "n-ls-modal-input",
     options: wallets.map((wallet) => ({
       value: wallet.id,
       text: wallet.name,
@@ -165,21 +165,21 @@ export async function lightsatsModalComponent({ user, settings }) {
 
   const recipientNameInput = html.input({
     type: "text",
-    id: "n-modal-recipient-name",
-    classList: "n-modal-input",
+    id: "n-ls-modal-recipient-name",
+    classList: "n-ls-modal-input",
     placeholder: user,
   });
 
   const noteToRecipientInput = html.textarea({
-    id: "n-modal-note-to-recipient",
-    classList: "n-modal-input",
+    id: "n-ls-modal-note-to-recipient",
+    classList: "n-ls-modal-input",
     placeholder: "Note to recipient",
     rows: 3,
   });
 
   const generateTipButton = html.button({
-    id: "n-generate-tip-btn",
-    classList: "n-modal-button",
+    id: "n-ls-generate-tip-btn",
+    classList: "n-ls-modal-button",
     text: "Generate Tip",
     onclick: async () => {
       const days = parseInt(tipExpiryInput.value);
@@ -187,9 +187,9 @@ export async function lightsatsModalComponent({ user, settings }) {
 
       generateTipButton.textContent = "Generating...";
       generateTipButton.disabled = true;
-      generateTipButton.classList.add("n-modal-button-disabled");
+      generateTipButton.classList.add("n-ls-modal-button-disabled");
 
-      const generatePassphrase = gui.gebid("n-modal-tip-passphrase").checked;
+      const generatePassphrase = gui.gebid("n-ls-modal-tip-passphrase").checked;
 
       // Send a message to the service worker
       chrome.runtime.sendMessage(
@@ -217,8 +217,8 @@ export async function lightsatsModalComponent({ user, settings }) {
           if (response.success) {
             console.log("Tip generated:", response.data);
 
-            document.querySelector(".n-modal-step-1").style.display = "none";
-            document.querySelector(".n-modal-step-2").style.display = "flex";
+            document.querySelector(".n-ls-modal-step-1").style.display = "none";
+            document.querySelector(".n-ls-modal-step-2").style.display = "flex";
 
             tip = response.data;
 
@@ -257,8 +257,8 @@ export async function lightsatsModalComponent({ user, settings }) {
   });
 
   const copyTipUrlButton = html.button({
-    id: "n-modal-copy-tip-url-btn",
-    classList: "n-modal-button",
+    id: "n-ls-modal-copy-tip-url-btn",
+    classList: "n-ls-modal-button",
     text: "Copy Tip URL",
     onclick: () => {
       navigator.clipboard.writeText(claimUrl(tip.id));
@@ -271,10 +271,10 @@ export async function lightsatsModalComponent({ user, settings }) {
     children: [
       html.input({
         type: "checkbox",
-        id: "n-modal-tip-passphrase",
+        id: "n-ls-modal-tip-passphrase",
       }),
       html.label({
-        for: "n-modal-tip-passphrase",
+        for: "n-ls-modal-tip-passphrase",
         classList: "custom-checkbox",
         onclick: (e) => {
           // Prevent the default behavior
@@ -304,83 +304,83 @@ export async function lightsatsModalComponent({ user, settings }) {
 
   modalStep1.append(
     html.h2({
-      classList: "n-modal-title",
-      innerHTML: `Onboard <span style="color: red;">${user}</span> to the Lightning Network with <a href="https://lightsats.com" class="n-modal-title-link" target="_blank">Lightsats</a>`,
+      classList: "n-ls-modal-title",
+      innerHTML: `Onboard <span style="color: red;">${user}</span> to the Lightning Network with <a href="https://lightsats.com" class="n-ls-modal-title-link" target="_blank">Lightsats</a>`,
     }),
     html.fieldset(
       html.legend("Tip Settings"),
       html.div({
-        classList: "n-sats-option-row",
+        classList: "n-ls-sats-option-row",
         children: html.labelFor({
           input: tipExpiryInput,
-          classList: "n-modal-tip-expiry",
+          classList: "n-ls-modal-tip-expiry",
           text: "Tip expiry (in days)",
         }),
       }),
       html.div({
-        classList: "n-sats-amount-row",
+        classList: "n-ls-sats-amount-row",
         children: html.labelFor({
           input: tipAmountInput,
-          classList: "n-modal-tip-amount",
+          classList: "n-ls-modal-tip-amount",
           text: "Tip amount (in sats)",
         }),
       }),
       html.div({
-        classList: "n-sats-option-row",
+        classList: "n-ls-sats-option-row",
         children: html.labelFor({
           input: onboardingFlowSelect,
-          classList: "n-modal-onboarding-flow",
+          classList: "n-ls-modal-onboarding-flow",
           text: "Onboarding flow",
         }),
       }),
       html.div({
-        classList: "n-sats-option-row",
+        classList: "n-ls-sats-option-row",
         children: html.labelFor({
           input: recommendedWalletSelect,
-          classList: "n-modal-recommended-wallet",
+          classList: "n-ls-modal-recommended-wallet",
           text: "Recommended wallet",
         }),
       }),
       html.div({
-        classList: "n-sats-option-row",
+        classList: "n-ls-sats-option-row",
         children: [tipPassphraseCheckbox],
       }),
     ),
     html.fieldset(
       html.legend("Recipient Settings"),
       html.div({
-        classList: "n-sats-option-row",
+        classList: "n-ls-sats-option-row",
         children: html.labelFor({
           input: recipientNameInput,
-          classList: "n-modal-recipient-name",
+          classList: "n-ls-modal-recipient-name",
           text: "Recipient name",
         }),
       }),
       html.div({
-        classList: "n-sats-option-row",
+        classList: "n-ls-sats-option-row",
         children: html.labelFor({
           input: noteToRecipientInput,
-          classList: "n-modal-note-to-recipient",
+          classList: "n-ls-modal-note-to-recipient",
           text: "Note to recipient",
         }),
       }),
     ),
     html.div({
-      classList: "n-sats-button-row",
+      classList: "n-ls-sats-button-row",
       children: [generateTipButton],
     }),
   );
 
   const lightsatsModal = html.div({
-    id: "n-modal",
-    classList: "n-modal",
+    id: "n-ls-modal",
+    classList: "n-ls-modal",
     children: [
       html.div({
-        id: "n-modal-content",
-        classList: "n-modal-content",
+        id: "n-ls-modal-content",
+        classList: "n-ls-modal-content n-modal-content",
         children: [
           html.span({
-            classList: "n-modal-close",
+            classList: "n-ls-modal-close",
             text: "×",
             onclick: () => closeModal(),
           }),

@@ -1,6 +1,8 @@
 export function setupModal(modal, closeModalFn) {
   document.body.append(modal);
 
+  modal.style.display = "block";
+
   // Center the modal after appending it to the body
   centerModal(modal);
 
@@ -20,8 +22,6 @@ export function setupModal(modal, closeModalFn) {
       closeModalFn();
     }
   });
-
-  modal.style.display = "block";
 }
 
 export function centerModal(modal) {

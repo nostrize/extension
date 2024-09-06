@@ -1,5 +1,5 @@
 /* Modal container, hidden by default */
-.n-modal {
+.n-zap-modal {
   display: none;
   color-scheme: none;
   position: fixed;
@@ -15,7 +15,7 @@
 }
 
 /* Modal content */
-.n-modal-content {
+.n-zap-modal-content {
   background-color: #fff;
   padding: 20px;
   border: 1px solid #888;
@@ -26,17 +26,17 @@
   margin: auto; /* This will help with vertical centering */
 }
 
-.n-modal-content span {
+.n-zap-modal-content span {
   font-size: large;
 }
 
-.n-span-red {
+.n-zap-span-red {
   color: red;
   margin: 0px 5px 0px 5px;
 }
 
 /* Close button */
-.n-modal-close {
+.n-zap-modal-close {
   color: #aaa;
   float: right;
   font-size: 28px;
@@ -47,15 +47,15 @@
   right: 10px;
 }
 
-.n-modal-close:hover,
-.n-modal-close:focus {
+.n-zap-modal-close:hover,
+.n-zap-modal-close:focus {
   color: #000;
   text-decoration: none;
   cursor: pointer;
 }
 
 /* Title */
-.n-modal-title {
+.n-zap-modal-title {
   display: flex;
   position: relative;
   justify-content: center;
@@ -63,29 +63,29 @@
   margin-bottom: 20px;
 }
 
-.n-modal-title-link {
+.n-zap-modal-title-link {
   color: #8250df;
   text-decoration: none;
 }
 
-.n-modal-title-link:hover {
+.n-zap-modal-title-link:hover {
   text-decoration: underline;
 }
 
 /* Numeric input */
-.n-modal-input {
+.n-zap-modal-input {
   width: 100%;
   padding: 5px;
   margin: 5px;
   font-size: 18px;
 }
 
-.n-input-error {
+.n-zap-input-error {
   border: 2px solid coral;
 }
 
 /* QR code container */
-.n-modal-qr {
+.n-zap-modal-qr {
   width: 100%;
   background-color: #f0f0f0;
   display: flex;
@@ -96,18 +96,18 @@
 }
 
 /* Payment message */
-.n-modal-paid-msg {
+.n-zap-modal-paid-msg {
   font-size: 18px;
   color: green;
   text-align: center;
 }
 
-.n-modal-copy-container {
+.n-zap-modal-copy-container {
   display: flex;
   justify-content: center;
 }
 
-.n-modal-copy-btn {
+.n-zap-modal-copy-btn {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
@@ -117,19 +117,19 @@
   color: white;
 }
 
-.n-modal-copy-btn.copied {
+.n-zap-modal-copy-btn.copied {
   background-color: green;
 }
 
 /* Sats option buttons */
-.n-sats-option-row {
+.n-zap-sats-option-row {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.n-sats-option-btn {
+.n-zap-sats-option-btn {
   display: flex;
   justify-content: center;
   padding: 5px 10px 5px 0px;
@@ -143,12 +143,12 @@
   color: #333;
 }
 
-.n-sats-option-btn:hover {
+.n-zap-sats-option-btn:hover {
   background-color: rgba(130, 80, 223);
 }
 
 /* Generate Invoice button */
-.n-generate-invoice-btn {
+.n-zap-generate-invoice-btn {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
@@ -159,15 +159,15 @@
   margin-top: 10px;
 }
 
-#n-modal-step-1,
-#n-modal-step-2,
-#n-modal-step-3 {
+#n-zap-modal-step-1,
+#n-zap-modal-step-2,
+#n-zap-modal-step-3 {
   display: none;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 }
 
-#n-modal-step-1 {
+#n-zap-modal-step-1 {
   display: block;
 }
