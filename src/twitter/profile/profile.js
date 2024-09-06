@@ -26,7 +26,11 @@ import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
 import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
 
-import { createTwitterButton, updateFollowButton } from "./twitter-helpers.js";
+import {
+  addAccountNotesTab,
+  createTwitterButton,
+  updateFollowButton,
+} from "./twitter-helpers.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -43,6 +47,7 @@ async function twitterProfilePage() {
     gui.gebid("n-follows-you-indicator")?.remove();
     gui.gebid("n-tw-nostr-profile-button")?.remove();
     gui.gebid("n-tw-follow-unfollow-button")?.remove();
+    gui.gebid("n-tw-account-notes")?.remove();
   };
 
   removeNostrButtons();
@@ -138,6 +143,22 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
+  const nip07Relays = await getNip07OrLocalRelays({ settings, timeout: 4000 });
+
+  const { readRelays, writeRelays } = await getAccountRelays({
+    pubkey: accountPubkey,
+    relays: nip07Relays,
+  });
+
+  console.log("writeRelays", writeRelays);
+
+  // Account Notes
+  addAccountNotesTab(
+    accountPubkey,
+    writeRelays,
+    settings.nostrSettings.openNostr,
+  );
+
   if (accountPubkey === nip07UserPubkey) {
     log("nip07 user");
 
@@ -146,16 +167,9 @@ async function twitterProfilePage() {
     return;
   }
 
-  const nip07Relays = await getNip07OrLocalRelays({ settings, timeout: 4000 });
-
   const metadataEvent = await getMetadataEvent({
     cacheKey: accountPubkey,
     filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
-    relays: nip07Relays,
-  });
-
-  const { readRelays, writeRelays } = await getAccountRelays({
-    pubkey: accountPubkey,
     relays: nip07Relays,
   });
 

@@ -1,4 +1,5 @@
 import { nip19, SimplePool } from "nostr-tools";
+import { binarySearch } from "nostr-tools/utils";
 
 import {
   getFromCache,
@@ -293,4 +294,78 @@ export async function requestSigningFromNip07(messageParams) {
       return resolve(signedEvent);
     });
   });
+}
+
+/**
+ * @param {Array} sortedArray - The array to insert the event into
+ * @param {Object} event - The event to insert
+ * @returns {number} - The index where the event was inserted
+ */
+function insertEventIntoAscendingList(sortedArray, event) {
+  const [idx, found] = binarySearch(sortedArray, (b) => {
+    if (event.id === b.id) {
+      return 0;
+    }
+    if (event.created_at === b.created_at) {
+      return -1;
+    }
+    return event.created_at - b.created_at;
+  });
+
+  if (!found) {
+    sortedArray.splice(idx, 0, event);
+  }
+
+  return idx;
+}
+
+const latestNotesCacheKey = (pubkey) => `nostrize-latest-notes-${pubkey}`;
+
+export function fetchLatestNotes({ pubkey, relays, callback }) {
+  const cache = getFromCache(latestNotesCacheKey(pubkey));
+
+  if (cache) {
+    return cache;
+  }
+
+  const pool = new SimplePool();
+
+  const notesSet = new Set();
+  const latestNotes = [];
+
+  pool.subscribeMany(
+    relays,
+    [
+      {
+        kinds: [1],
+        authors: [pubkey],
+        limit: 100,
+      },
+    ],
+    {
+      onevent(event) {
+        if (notesSet.has(event.id)) {
+          return;
+        }
+
+        notesSet.add(event.id);
+
+        const index = insertEventIntoAscendingList(latestNotes, event);
+
+        console.log(`inserted at index: ${index}`);
+
+        callback(event, index);
+      },
+      oneose() {
+        console.log("eose, updating cache");
+
+        insertToCache(latestNotesCacheKey(pubkey), latestNotes);
+      },
+      alreadyHaveEvent(id) {
+        return notesSet.has(id);
+      },
+    },
+  );
+
+  return latestNotes;
 }
