@@ -85,6 +85,48 @@ function processNoteContent(content, openNostr) {
     .replace(/\n/g, "<br />");
 }
 
+export async function setNostrMode(
+  enabled,
+  accountPubkey,
+  writeRelays,
+  openNostr,
+) {
+  if (enabled) {
+    const trimNote = shortenNote(500);
+
+    const latestNotes = fetchLatestNotes({
+      pubkey: accountPubkey,
+      relays: writeRelays,
+      callback: (event, index) => {
+        notesSection.insertBefore(
+          html.div({
+            classList: "tw-note",
+            innerHTML: trimNote(processNoteContent(event.content, openNostr)),
+          }),
+          notesSection.children[index],
+        );
+      },
+    });
+
+    const notesSection = gui.gebid("n-tw-notes-section");
+    notesSection.style.display = "flex";
+
+    latestNotes.forEach((note) => {
+      notesSection.appendChild(
+        html.div({
+          classList: "tw-note",
+          innerHTML: trimNote(processNoteContent(note.content, openNostr)),
+        }),
+      );
+    });
+  } else {
+    const notesSection = gui.gebid("n-tw-notes-section");
+    notesSection.style.display = "none";
+
+    // TODO: set twitter section display to flex
+  }
+}
+
 export async function addAccountNotesTab(
   accountPubkey,
   writeRelays,

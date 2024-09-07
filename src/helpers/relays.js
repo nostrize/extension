@@ -40,8 +40,8 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
   return localRelays;
 }
 
-export async function getAccountRelays({ pubkey, relays, timeout = 1000 }) {
-  const cacheKey = `nostrize-account-relays-${pubkey}-created_at`;
+export async function getPageUserRelays({ pubkey, relays, timeout = 1000 }) {
+  const cacheKey = `nostrize-pageuser-relay-list-metadata-${pubkey}`;
   const cache = getFromCache(cacheKey);
   const since = cache ? cache.created_at : undefined;
 
@@ -59,8 +59,8 @@ export async function getAccountRelays({ pubkey, relays, timeout = 1000 }) {
   if (latestEvent) {
     insertToCache(cacheKey, latestEvent.created_at);
 
-    const readRelays = [];
-    const writeRelays = [];
+    const pageUserReadRelays = [];
+    const pageUserWriteRelays = [];
 
     latestEvent.tags.forEach((tag) => {
       if (tag[0] === "r") {
@@ -69,17 +69,17 @@ export async function getAccountRelays({ pubkey, relays, timeout = 1000 }) {
         const canWrite = tag[2] ? tag[2] === "write" : true;
 
         if (canRead) {
-          readRelays.push(relay);
+          pageUserReadRelays.push(relay);
         }
 
         if (canWrite) {
-          writeRelays.push(relay);
+          pageUserWriteRelays.push(relay);
         }
       }
     });
 
-    return { readRelays, writeRelays };
+    return { pageUserReadRelays, pageUserWriteRelays };
   }
 
-  return { readRelays: [], writeRelays: [] };
+  return { pageUserReadRelays: [], pageUserWriteRelays: [] };
 }

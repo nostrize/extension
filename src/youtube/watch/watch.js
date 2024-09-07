@@ -16,7 +16,7 @@ import {
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
-import { getAccountRelays } from "../../helpers/relays.js";
+import { getPageUserRelays } from "../../helpers/relays.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 
@@ -27,11 +27,13 @@ async function youtubeWatchPage() {
 
   await delay(2000);
 
-  const tipButtonId = "n-yt-watch-tip-button";
+  const zapButtonId = "n-yt-watch-tip-button";
 
   const channelName = await getChannelNameInWatch();
 
-  const existingTipButton = gui.gebid(tipButtonId);
+  // TODO: Use the removeNostrButtons way from twitter/profile/profile.js
+  // Remove all nostr buttons in the beginning
+  const existingTipButton = gui.gebid(zapButtonId);
 
   if (existingTipButton) {
     log("zap button already there");
@@ -67,26 +69,26 @@ async function youtubeWatchPage() {
 
   const { nip05, npub, channel } = params;
 
-  const accountPubkey = await getPubkeyFrom({
+  const pageUserPubkey = await getPubkeyFrom({
     nip05,
     npub,
-    username: channel,
+    pageUsername: channel,
     cachePrefix: "yt",
   });
 
-  const relays = await html.asyncScript({
+  const nostrizeUserRelays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () =>
-      getAccountRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
+      getPageUserRelays({ pubkey: pageUserPubkey, settings, timeout: 4000 }),
   });
 
-  log("relays", relays);
+  log("relays", nostrizeUserRelays);
 
   const metadataEvent = await getMetadataEvent({
-    cacheKey: accountPubkey,
-    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
-    relays,
+    cacheKey: pageUserPubkey,
+    filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
+    relays: nostrizeUserRelays,
   });
 
   const lnurlData = await getOrInsertCache({
@@ -97,11 +99,11 @@ async function youtubeWatchPage() {
       }),
   });
 
-  const tipButton = html.link({
-    id: tipButtonId,
+  const zapButton = html.link({
+    id: zapButtonId,
     data: [["for-account", channelName]],
     classList: "n-shorts-tip-button yt-simple-endpoint style-scope",
-    text: "⚡Tip⚡",
+    text: "⚡Zap⚡",
     href: "javascript:void(0);",
     onclick: async () => {
       const { zapModal, closeModal } = await zapModalComponent({
@@ -109,7 +111,7 @@ async function youtubeWatchPage() {
         metadataEvent,
         lnurlData,
         log,
-        relays,
+        relays: nostrizeUserRelays,
         settings,
       });
 
@@ -139,7 +141,7 @@ async function youtubeWatchPage() {
   gui.prepend(
     document.getElementById("middle-row") ||
       document.querySelector("ytm-slim-owner-renderer"),
-    tipButton,
+    zapButton,
   );
 }
 

@@ -5,7 +5,7 @@ import * as html from "../imgui-dom/html.js";
 
 import { getLocalSettings, getOrInsertCache } from "../helpers/local-cache.js";
 import { logger } from "../helpers/logger.js";
-import { getAccountRelays } from "../helpers/relays.js";
+import { getPageUserRelays } from "../helpers/relays.js";
 import { parseDescription } from "../helpers/dom.js";
 import { getMetadataEvent, getPubkeyFrom } from "../helpers/nostr.js";
 import { Either } from "../helpers/utils.js";
@@ -79,7 +79,7 @@ async function telegramBio() {
   const accountPubkey = await getPubkeyFrom({
     nip05,
     npub,
-    username,
+    pageUsername: username,
     cachePrefix: "telegram-web",
   });
 
@@ -89,7 +89,7 @@ async function telegramBio() {
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () =>
-      getAccountRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
+      getPageUserRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
   });
 
   log("relays", accountRelays);

@@ -41,10 +41,10 @@ async function githubProfilePage() {
     skipEmpty: true,
   });
 
-  let pubkey;
+  let pageUserPubkey;
 
   if (githubConnectData) {
-    pubkey = githubConnectData.pubkey;
+    pageUserPubkey = githubConnectData.pubkey;
   } else {
     const bio = document.querySelector(".user-profile-bio").textContent;
 
@@ -58,28 +58,26 @@ async function githubProfilePage() {
       return;
     }
 
-    pubkey = await getPubkeyFrom({
+    pageUserPubkey = await getPubkeyFrom({
       nip05,
       npub,
-      accountName: user,
+      pageUsername: user,
       cachePrefix: "github",
     });
 
-    log("pubkey", pubkey);
+    log("pubkey", pageUserPubkey);
   }
 
-  const relays = await html.asyncScript({
+  const nostrizeUserRelays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () => getNip07OrLocalRelays({ settings, timeout: 4000 }),
   });
 
-  log("relays", relays);
-
   const metadataEvent = await getMetadataEvent({
-    cacheKey: pubkey,
-    filter: { authors: [pubkey], kinds: [0], limit: 1 },
-    relays,
+    cacheKey: pageUserPubkey,
+    filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
+    relays: nostrizeUserRelays,
   });
 
   log("metadataEvent", metadataEvent);
@@ -103,7 +101,7 @@ async function githubProfilePage() {
       const { zapModal, closeModal } = await zapModalComponent({
         user,
         metadataEvent,
-        relays,
+        relays: nostrizeUserRelays,
         lnurlData,
         settings,
         log,

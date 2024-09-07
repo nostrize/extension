@@ -39,7 +39,12 @@ export async function getUserPubkey({ settings, timeout = 1000 }) {
   }
 }
 
-export async function getPubkeyFrom({ npub, nip05, accountName, cachePrefix }) {
+export async function getPubkeyFrom({
+  npub,
+  nip05,
+  pageUsername,
+  cachePrefix,
+}) {
   if (npub) {
     const { type, data } = nip19.decode(npub);
 
@@ -50,7 +55,7 @@ export async function getPubkeyFrom({ npub, nip05, accountName, cachePrefix }) {
     return data;
   }
 
-  const cacheKey = `nostrize-nip05-${cachePrefix}-${accountName}`;
+  const cacheKey = `nostrize-nip05-${cachePrefix}-${pageUsername}`;
 
   const { pubkey } = await fetchNip05Data({ nip05, cacheKey });
 

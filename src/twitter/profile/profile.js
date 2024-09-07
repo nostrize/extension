@@ -19,7 +19,7 @@ import {
   unfollowAccount,
 } from "../../helpers/nostr.js";
 import {
-  getAccountRelays,
+  getPageUserRelays,
   getNip07OrLocalRelays,
 } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
@@ -27,8 +27,8 @@ import { lightsatsModalComponent } from "../../components/lightsats/lightsats-mo
 import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
 
 import {
-  addAccountNotesTab,
   createTwitterButton,
+  setNostrMode,
   updateFollowButton,
 } from "./twitter-helpers.js";
 
@@ -37,7 +37,7 @@ async function twitterProfilePage() {
 
   const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
-  const accountName = window.location.href.match(
+  const pageUsername = window.location.href.match(
     /^https:\/\/x\.com\/(.*?)(?=\?|\s|$)/,
   )[1];
 
@@ -48,6 +48,8 @@ async function twitterProfilePage() {
     gui.gebid("n-tw-nostr-profile-button")?.remove();
     gui.gebid("n-tw-follow-unfollow-button")?.remove();
     gui.gebid("n-tw-account-notes")?.remove();
+    // TODO: remove the nostr mode checkbox
+    // TODO: remove the notes section
   };
 
   removeNostrButtons();
@@ -60,14 +62,14 @@ async function twitterProfilePage() {
       "messages",
       "search",
       "follower_requests",
-    ].some((s) => accountName.startsWith(s))
+    ].some((s) => pageUsername.startsWith(s))
   ) {
-    log("not an account page: " + accountName);
+    log("not an account page: " + pageUsername);
 
     return;
   }
 
-  log("accountName", accountName);
+  log("accountName", pageUsername);
 
   let userNameContainer = document.querySelector("div[data-testid='UserName']");
 
@@ -96,18 +98,19 @@ async function twitterProfilePage() {
     log,
   });
 
-  const nip07UserPubkey = await html.asyncScript({
+  const nostrizeUserPubkey = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () => getUserPubkey({ settings, timeout: 10000 }),
   });
 
+  // will be used to create zap, follow/unfollow and lightsats buttons
   const buttonTobeCloned = document.querySelector(
     "button[data-testid='userActions']",
   );
 
   if (!buttonTobeCloned) {
-    log("no copy button");
+    log("no copy button, probably it is user's account");
 
     return;
   }
@@ -121,13 +124,13 @@ async function twitterProfilePage() {
     ) {
       const lightsatsButton = wrapInputTooltip({
         id: "n-tw-lightsats-button",
-        input: createTwitterButton(buttonTobeCloned, accountName, {
+        input: createTwitterButton(buttonTobeCloned, pageUsername, {
           id: "n-tw-lightsats-button",
           emojiIcon: "💸",
           modalComponentFn: () =>
-            lightsatsModalComponent({ user: accountName, settings }),
+            lightsatsModalComponent({ user: pageUsername, settings }),
         }),
-        tooltipText: `Orange pill ${accountName} with Lightning Network`,
+        tooltipText: `Orange pill ${pageUsername} with Lightning Network`,
       });
 
       gui.insertAfter(lightsatsButton, buttonTobeCloned);
@@ -136,31 +139,52 @@ async function twitterProfilePage() {
     return;
   }
 
-  const accountPubkey = await getPubkeyFrom({
+  const pageUserPubkey = await getPubkeyFrom({
     nip05,
     npub,
-    accountName,
+    pageUsername,
     cachePrefix: "tw",
   });
 
-  const nip07Relays = await getNip07OrLocalRelays({ settings, timeout: 4000 });
-
-  const { readRelays, writeRelays } = await getAccountRelays({
-    pubkey: accountPubkey,
-    relays: nip07Relays,
+  const nostrizeUserRelays = await getNip07OrLocalRelays({
+    settings,
+    timeout: 4000,
   });
 
-  console.log("writeRelays", writeRelays);
+  const { pageUserReadRelays, pageUserWriteRelays } = await getPageUserRelays({
+    pubkey: pageUserPubkey,
+    relays: nostrizeUserRelays,
+  });
 
-  // Account Notes
-  addAccountNotesTab(
-    accountPubkey,
-    writeRelays,
-    settings.nostrSettings.openNostr,
+  const timelineNavbar = document.querySelector(
+    'nav[aria-label="Profile timelines"]',
   );
 
-  if (accountPubkey === nip07UserPubkey) {
-    log("nip07 user");
+  const enableNostrModeCheckbox = html.input({
+    type: "checkbox",
+    id: "n-tw-enable-nostr-mode",
+    onclick: async (e) => {
+      if (e.target.checked) {
+        timelineNavbar.style.display = "none";
+      } else {
+        timelineNavbar.style.display = "flex";
+      }
+
+      await setNostrMode(e.target.checked);
+    },
+  });
+
+  timelineNavbar.insertAdjacentHTML("beforeend", enableNostrModeCheckbox);
+  enableNostrModeCheckbox.insertAdjacentHTML(
+    "beforeend",
+    html.div({
+      id: "n-tw-notes-section",
+      style: [["display", "none"]],
+    }),
+  );
+
+  if (pageUserPubkey === nostrizeUserPubkey) {
+    log("current page user is the nostrize user");
 
     removeNostrButtons();
 
@@ -168,9 +192,9 @@ async function twitterProfilePage() {
   }
 
   const metadataEvent = await getMetadataEvent({
-    cacheKey: accountPubkey,
-    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
-    relays: nip07Relays,
+    cacheKey: pageUserPubkey,
+    filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
+    relays: nostrizeUserRelays,
   });
 
   // handle container is the div that contains the username and the handle
@@ -189,7 +213,7 @@ async function twitterProfilePage() {
         id: "n-tw-nostr-profile-button",
         input: html.link({
           text: handleContent,
-          href: `${settings.nostrSettings.openNostr}/${accountPubkey}`,
+          href: `${settings.nostrSettings.openNostr}/${pageUserPubkey}`,
           targetBlank: true,
         }),
         tooltipText: `User is on Nostr. Click to open Nostr profile.`,
@@ -198,15 +222,15 @@ async function twitterProfilePage() {
   }
 
   // follows of the account
-  const accountFollowSubscription = getFollowSet({
-    pubkey: accountPubkey,
-    relays: writeRelays,
+  const pageUserFollowSubscription = getFollowSet({
+    pubkey: pageUserPubkey,
+    relays: pageUserWriteRelays,
     callback: ({ followSet }) => {
-      const accountFollowsYou = followSet.has(nip07UserPubkey);
+      const pageUserFollowsNostrizeUser = followSet.has(nostrizeUserPubkey);
 
-      log("accountFollowsYou", accountFollowsYou);
+      log("pageUserFollowsNostrizeUser", pageUserFollowsNostrizeUser);
 
-      if (accountFollowsYou) {
+      if (pageUserFollowsNostrizeUser) {
         handleContainer?.append(
           wrapInputTooltip({
             id: "n-follows-you-indicator",
@@ -214,35 +238,34 @@ async function twitterProfilePage() {
               text: "Follows you",
               classList: "n-follows-you-indicator",
             }),
-            tooltipText: `${accountName} follows you on Nostr.`,
+            tooltipText: `${pageUsername} follows you on Nostr.`,
           }),
         );
       }
     },
   });
 
-  // follows of the user
+  // follows of the nostrize user
   // the button to follow/unfollow
   getFollowSet({
-    pubkey: nip07UserPubkey,
-    relays: readRelays,
-    timeout: 1000 * 60 * 10,
+    pubkey: nostrizeUserPubkey,
+    relays: nostrizeUserRelays,
+    timeout: 1000 * 60 * 10, // 10 minutes
     callback: ({ followSet, latestEvent }) => {
       gui.gebid("n-tw-follow-unfollow-button")?.remove();
 
-      let userFollowsAccount = followSet.has(accountPubkey);
+      let userFollowsNostrizeUser = followSet.has(pageUserPubkey);
 
       const button = wrapInputTooltip({
         id: "n-tw-follow-unfollow-button",
-        input: createTwitterButton(buttonTobeCloned, accountName, {
-          emojiIcon: userFollowsAccount ? "➖" : "➕",
+        input: createTwitterButton(buttonTobeCloned, pageUsername, {
+          emojiIcon: userFollowsNostrizeUser ? "➖" : "➕",
           modalComponentFn: async () => {
             const followParams = {
-              pubkey: nip07UserPubkey,
+              pubkey: nostrizeUserPubkey,
               currentFollowEvent: latestEvent,
-              accountPubkey,
-              accountWriteRelay: writeRelays[0],
-              relays: nip07Relays,
+              accountPubkey: pageUserPubkey,
+              relays: [...nostrizeUserRelays, ...pageUserReadRelays],
               log,
             };
 
@@ -251,7 +274,7 @@ async function twitterProfilePage() {
             updateFollowButton(gui.gebid("n-tw-follow-unfollow-button"), "⏳");
 
             try {
-              if (userFollowsAccount) {
+              if (userFollowsNostrizeUser) {
                 await unfollowAccount(followParams);
               } else {
                 await followAccount(followParams);
@@ -261,7 +284,7 @@ async function twitterProfilePage() {
             }
           },
         }),
-        tooltipText: `${userFollowsAccount ? "Unfollow" : "Follow"} ${accountName} on Nostr`,
+        tooltipText: `${userFollowsNostrizeUser ? "Unfollow" : "Follow"} ${pageUsername} on Nostr`,
       });
 
       gui.insertAfter(button, buttonTobeCloned);
@@ -278,25 +301,25 @@ async function twitterProfilePage() {
 
   const zapButton = wrapInputTooltip({
     id: "n-tw-zap-button",
-    input: createTwitterButton(buttonTobeCloned, accountName, {
+    input: createTwitterButton(buttonTobeCloned, pageUsername, {
       id: "n-tw-zap-button",
       emojiIcon: "⚡️",
       modalComponentFn: () =>
         zapModalComponent({
-          user: accountName,
+          user: pageUsername,
           metadataEvent,
-          relays: nip07Relays,
+          relays: nostrizeUserRelays,
           lnurlData,
           log,
           settings,
         }),
     }),
-    tooltipText: `Zap ${accountName}`,
+    tooltipText: `Zap ${pageUsername}`,
   });
 
   gui.insertAfter(zapButton, buttonTobeCloned);
 
-  accountFollowSubscription.close();
+  pageUserFollowSubscription.close();
 }
 
 twitterProfilePage().catch((e) => console.error(e));

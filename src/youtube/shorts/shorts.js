@@ -16,7 +16,7 @@ import {
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
-import { getAccountRelays } from "../../helpers/relays.js";
+import { getPageUserRelays } from "../../helpers/relays.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 
@@ -27,11 +27,13 @@ async function youtubeShortsPage() {
 
   await delay(2000);
 
-  const tipButtonId = "n-yt-shorts-tip-button";
+  const zapButtonId = "n-yt-shorts-tip-button";
 
   const { channelName, tipButtonContainer } = await getChannelNameInShorts();
 
-  const existingTipButton = gui.gebid(tipButtonId);
+  // TODO: Use the removeNostrButtons way from twitter/profile/profile.js
+  // Remove all nostr buttons in the beginning
+  const existingTipButton = gui.gebid(zapButtonId);
 
   if (existingTipButton) {
     log("zap button already there");
@@ -70,7 +72,7 @@ async function youtubeShortsPage() {
   const accountPubkey = await getPubkeyFrom({
     nip05,
     npub,
-    username: channel,
+    pageUsername: channel,
     cachePrefix: "yt",
   });
 
@@ -78,7 +80,7 @@ async function youtubeShortsPage() {
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
     callback: () =>
-      getAccountRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
+      getPageUserRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
   });
 
   log("relays", relays);
@@ -97,13 +99,13 @@ async function youtubeShortsPage() {
       }),
   });
 
-  if (gui.gebid(tipButtonId)) {
+  if (gui.gebid(zapButtonId)) {
     // if the tip button already exists, we don't need to load again
     return;
   }
 
-  const tipButton = html.link({
-    id: tipButtonId,
+  const zapButton = html.link({
+    id: zapButtonId,
     data: [["for-account", channelName]],
     classList: "yt-simple-endpoint style-scope n-shorts-tip-button",
     text: "⚡Tip⚡",
@@ -138,7 +140,7 @@ async function youtubeShortsPage() {
     },
   });
 
-  gui.prepend(tipButtonContainer, tipButton);
+  gui.prepend(tipButtonContainer, zapButton);
 }
 
 youtubeShortsPage().catch((e) => console.error(e));
