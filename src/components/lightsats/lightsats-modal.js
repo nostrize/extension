@@ -14,6 +14,7 @@ import {
   wallets,
   getTipInfo,
 } from "./helpers.js";
+import { wrapCheckbox } from "../checkbox/checkbox-wrapper.js";
 
 // Create a loading screen element
 let modalStep0 = html.div({
@@ -266,40 +267,12 @@ export async function lightsatsModalComponent({ user, settings }) {
     },
   });
 
-  const tipPassphraseCheckbox = html.div({
-    classList: "checkbox-container",
-    children: [
-      html.input({
-        type: "checkbox",
-        id: "n-ls-modal-tip-passphrase",
-      }),
-      html.label({
-        for: "n-ls-modal-tip-passphrase",
-        classList: "custom-checkbox",
-        onclick: (e) => {
-          // Prevent the default behavior
-          e.preventDefault();
-          // Toggle the checked state of the input
-          const input = e.target.previousElementSibling;
-          input.checked = !input.checked;
-          // Update the custom checkbox appearance
-          e.target.classList.toggle("checked", input.checked);
-        },
-      }),
-      html.span({
-        text: "Set a passphrase",
-        onclick: (e) => {
-          // Toggle the checkbox when the text is clicked
-          const input = e.target.previousElementSibling.previousElementSibling;
-          input.checked = !input.checked;
-          // Update the custom checkbox appearance
-          e.target.previousElementSibling.classList.toggle(
-            "checked",
-            input.checked,
-          );
-        },
-      }),
-    ],
+  const tipPassphraseCheckbox = wrapCheckbox({
+    input: html.input({
+      type: "checkbox",
+      id: "n-ls-modal-tip-passphrase",
+    }),
+    text: "Generate a passphrase",
   });
 
   modalStep1.append(

@@ -31,6 +31,7 @@ import {
   setNostrMode,
   updateFollowButton,
 } from "./twitter-helpers.js";
+import { wrapCheckbox } from "../../components/checkbox/checkbox-wrapper.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -160,9 +161,11 @@ async function twitterProfilePage() {
     'nav[aria-label="Profile timelines"]',
   );
 
-  const enableNostrModeCheckbox = html.input({
-    type: "checkbox",
-    id: "n-tw-enable-nostr-mode",
+  const enableNostrModeCheckbox = wrapCheckbox({
+    input: html.input({
+      type: "checkbox",
+      id: "n-tw-enable-nostr-mode",
+    }),
     onclick: async (e) => {
       if (e.target.checked) {
         timelineNavbar.style.display = "none";
@@ -172,14 +175,17 @@ async function twitterProfilePage() {
 
       await setNostrMode(e.target.checked);
     },
+    text: "Enable Nostr Mode",
   });
 
-  timelineNavbar.insertAdjacentHTML("beforeend", enableNostrModeCheckbox);
-  enableNostrModeCheckbox.insertAdjacentHTML(
-    "beforeend",
+  timelineNavbar.insertAdjacentElement("beforebegin", enableNostrModeCheckbox);
+
+  enableNostrModeCheckbox.insertAdjacentElement(
+    "afterend",
     html.div({
       id: "n-tw-notes-section",
       style: [["display", "none"]],
+      innerHTML: "Notes",
     }),
   );
 

@@ -16,9 +16,13 @@ import {
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
-import { getPageUserRelays } from "../../helpers/relays.js";
+import {
+  getNip07OrLocalRelays,
+  getPageUserRelays,
+} from "../../helpers/relays.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
+import { setupModal } from "../../components/common.js";
 
 async function youtubeWatchPage() {
   const settings = await getLocalSettings();
@@ -79,16 +83,21 @@ async function youtubeWatchPage() {
   const nostrizeUserRelays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () =>
-      getPageUserRelays({ pubkey: pageUserPubkey, settings, timeout: 4000 }),
+    callback: () => getNip07OrLocalRelays({ settings, timeout: 4000 }),
   });
 
-  log("relays", nostrizeUserRelays);
+  log("nostrizeUserRelays", nostrizeUserRelays);
+
+  const pageUserRelays = await getPageUserRelays({
+    pubkey: pageUserPubkey,
+    relays: nostrizeUserRelays,
+    timeout: 4000,
+  });
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pageUserPubkey,
     filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
-    relays: nostrizeUserRelays,
+    relays: pageUserRelays,
   });
 
   const lnurlData = await getOrInsertCache({
@@ -106,7 +115,7 @@ async function youtubeWatchPage() {
     text: "⚡Zap⚡",
     href: "javascript:void(0);",
     onclick: async () => {
-      const { zapModal, closeModal } = await zapModalComponent({
+      const { modal, closeModal } = await zapModalComponent({
         user: channel,
         metadataEvent,
         lnurlData,
@@ -115,25 +124,7 @@ async function youtubeWatchPage() {
         settings,
       });
 
-      document.body.append(zapModal);
-
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function (event) {
-        if (event.target == zapModal) {
-          closeModal();
-        }
-      };
-
-      // Listen for keydown events to close the modal when ESC is pressed
-      window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" || event.key === "Esc") {
-          closeModal();
-        }
-      });
-
-      zapModal.style.display = "block";
-
-      return false;
+      setupModal(modal, closeModal);
     },
     style: [["color", "white"]],
   });

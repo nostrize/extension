@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nostrize Settings</title>
   <link rel="stylesheet" href="nostrize-settings.css">
+  <link rel="stylesheet" href="nostrize-checkbox.css">
 </head>
 <body>
   <div class="section collapsable" id="nostr-settings">
@@ -72,12 +73,10 @@
         <input type="password" id="lightsats-api-key" placeholder="API Key" />
       </fieldset>
   
-      <fieldset>
+      <fieldset id="lightsats-integration">
         <legend>Integration</legend>
-        <label class="checkbox-container">
-          <input type="checkbox" id="lightsats-enable" />
-          <span class="custom-checkbox"></span>
-          <span>Enable Lightsats Integration</span>
+        <input type="checkbox" id="lightsats-enable" />
+        <label for="lightsats-enable">
           <span class="help-icon">❓</span>
           <span class="tooltip">When enabled, Nostrize extension will show a Lightsats button if the user has no Nostr integration.</span>
         </label>

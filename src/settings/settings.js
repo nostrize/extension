@@ -1,3 +1,4 @@
+import { wrapCheckbox } from "../components/checkbox/checkbox-wrapper.js";
 import {
   getLocalSettings,
   saveLocalSettings,
@@ -37,6 +38,12 @@ async function settingsPage() {
       state.lightsatsSettings.apiKey;
     document.getElementById("lightsats-enable").checked =
       state.lightsatsSettings.enabled;
+
+    if (state.lightsatsSettings.enabled) {
+      document
+        .getElementById("lightsats-enable")
+        .nextElementSibling.classList.add("checked");
+    }
   }
 
   // Create a relay item element
@@ -115,6 +122,22 @@ async function settingsPage() {
     loadState();
   }
 
+  // Load custom checkbox: Lightsats integration
+  const lightsatsCheckbox = document.getElementById("lightsats-enable");
+
+  const wrappedCheckbox = wrapCheckbox({
+    input: lightsatsCheckbox,
+    text: "Enable Lightsats",
+    onclick: (checked) => {
+      state.lightsatsSettings.enabled = checked;
+    },
+  });
+
+  document
+    .getElementById("lightsats-integration")
+    .appendChild(wrappedCheckbox)
+    .appendChild(document.querySelector("label[for='lightsats-enable']"));
+
   // Attach event listeners
   // Debug settings
   document.getElementById("log").onchange = (e) =>
@@ -138,9 +161,6 @@ async function settingsPage() {
   // Lightsats settings
   document.getElementById("lightsats-api-key").onchange = (e) =>
     (state.lightsatsSettings.apiKey = e.target.value);
-
-  document.getElementById("lightsats-enable").onchange = (e) =>
-    (state.lightsatsSettings.enabled = e.target.checked);
 
   // Save/Reset settings
   document.getElementById("reset-settings").onclick = resetSettings;
