@@ -11,6 +11,7 @@ import { getMetadataEvent, getPubkeyFrom } from "../helpers/nostr.js";
 import { Either } from "../helpers/utils.js";
 import { getLnurlData } from "../helpers/lnurl.js";
 import { zapModalComponent } from "../components/zap-modal.js";
+import { setupModal } from "../components/common.js";
 
 async function telegramBio() {
   const settings = await getLocalSettings();
@@ -115,7 +116,7 @@ async function telegramBio() {
     text: "⚡Tip⚡",
     href: "javascript:void(0);",
     onclick: async () => {
-      const { zapModal, closeModal } = await zapModalComponent({
+      const { modal, closeModal } = await zapModalComponent({
         user: username,
         metadataEvent,
         lnurlData,
@@ -124,26 +125,7 @@ async function telegramBio() {
         settings,
       });
 
-      gui.prepend(document.body, zapModal);
-      // document.body.append(zapModal);
-
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function (event) {
-        if (event.target == zapModal) {
-          closeModal();
-        }
-      };
-
-      // Listen for keydown events to close the modal when ESC is pressed
-      window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" || event.key === "Esc") {
-          closeModal();
-        }
-      });
-
-      zapModal.style.display = "block";
-
-      return false;
+      setupModal(modal, closeModal);
     },
   });
 

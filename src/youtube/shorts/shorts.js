@@ -19,6 +19,7 @@ import { zapModalComponent } from "../../components/zap-modal.js";
 import { getPageUserRelays } from "../../helpers/relays.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
+import { setupModal } from "../../components/common.js";
 
 async function youtubeShortsPage() {
   const settings = await getLocalSettings();
@@ -111,7 +112,7 @@ async function youtubeShortsPage() {
     text: "⚡Tip⚡",
     href: "javascript:void(0)",
     onclick: async () => {
-      const { zapModal, closeModal } = await zapModalComponent({
+      const { modal, closeModal } = await zapModalComponent({
         user: channel,
         metadataEvent,
         lnurlData,
@@ -120,23 +121,7 @@ async function youtubeShortsPage() {
         settings,
       });
 
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function (event) {
-        if (event.target == zapModal) {
-          closeModal();
-        }
-      };
-
-      // Listen for keydown events to close the modal when ESC is pressed
-      window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" || event.key === "Esc") {
-          closeModal();
-        }
-      });
-
-      document.body.append(zapModal);
-
-      zapModal.style.display = "block";
+      setupModal(modal, closeModal);
     },
   });
 

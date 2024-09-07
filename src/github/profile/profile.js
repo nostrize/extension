@@ -14,6 +14,7 @@ import { getNip07OrLocalRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { getGithubConnectData } from "../github-connect.js";
 import { parseDescription } from "../../helpers/dom.js";
+import { setupModal } from "../../components/common.js";
 
 async function githubProfilePage() {
   const settings = await getLocalSettings();
@@ -98,7 +99,7 @@ async function githubProfilePage() {
     id: "n-modal-open-btn",
     text: `⚡ Zap ${user} ⚡`,
     onclick: async () => {
-      const { zapModal, closeModal } = await zapModalComponent({
+      const { modal, closeModal } = await zapModalComponent({
         user,
         metadataEvent,
         relays: nostrizeUserRelays,
@@ -107,23 +108,7 @@ async function githubProfilePage() {
         log,
       });
 
-      document.body.append(zapModal);
-
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function (event) {
-        if (event.target == zapModal) {
-          closeModal();
-        }
-      };
-
-      // Listen for keydown events to close the modal when ESC is pressed
-      window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" || event.key === "Esc") {
-          closeModal();
-        }
-      });
-
-      zapModal.style.display = "block";
+      setupModal(modal, closeModal);
     },
   });
 
