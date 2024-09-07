@@ -125,6 +125,7 @@ export function input({
   type = "text",
   id,
   value,
+  checked,
   classList,
   min,
   max,
@@ -145,6 +146,10 @@ export function input({
 
   if (value) {
     inputElement.value = value;
+  }
+
+  if (checked) {
+    inputElement.checked = checked;
   }
 
   if (inputEventHandler) {

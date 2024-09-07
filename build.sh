@@ -29,6 +29,7 @@ cp src/youtube/watch/watch.css dist/youtube-watch.css
 
 # copy twitter specific files
 cp src/twitter/profile/profile.css dist/twitter-profile.css
+cp src/twitter/profile/notes.css dist/twitter-notes.css
 
 # copy telegram web specific files
 cp src/telegram-web/bio.css dist/telegram-web-bio.css

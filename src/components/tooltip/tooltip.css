@@ -3,6 +3,10 @@
   display: inline-block;
 }
 
+.n-tooltip-wrapper a {
+  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 .n-tooltip-text {
   display: none;
   position: absolute;

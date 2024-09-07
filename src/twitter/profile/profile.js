@@ -161,20 +161,28 @@ async function twitterProfilePage() {
     'nav[aria-label="Profile timelines"]',
   );
 
+  const nostrModeOnclick = async (checked) => {
+    if (checked) {
+      timelineNavbar.style.display = "none";
+    } else {
+      timelineNavbar.style.display = "flex";
+    }
+
+    await setNostrMode({
+      enabled: checked,
+      pageUserPubkey,
+      pageUserWriteRelays,
+      openNostr: settings.nostrSettings.openNostr,
+    });
+  };
+
   const enableNostrModeCheckbox = wrapCheckbox({
     input: html.input({
       type: "checkbox",
       id: "n-tw-enable-nostr-mode",
+      checked: true,
     }),
-    onclick: async (e) => {
-      if (e.target.checked) {
-        timelineNavbar.style.display = "none";
-      } else {
-        timelineNavbar.style.display = "flex";
-      }
-
-      await setNostrMode(e.target.checked);
-    },
+    onclick: nostrModeOnclick,
     text: "Enable Nostr Mode",
   });
 
@@ -185,9 +193,11 @@ async function twitterProfilePage() {
     html.div({
       id: "n-tw-notes-section",
       style: [["display", "none"]],
-      innerHTML: "Notes",
     }),
   );
+
+  // nostr mode is on by default
+  nostrModeOnclick(true);
 
   if (pageUserPubkey === nostrizeUserPubkey) {
     log("current page user is the nostrize user");

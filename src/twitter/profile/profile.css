@@ -18,31 +18,3 @@
   margin-left: 4px;
   border-radius: 4px;
 }
-
-.tw-note {
-  display: flex;
-  flex-direction: column;
-  width: calc(100% - 0.5rem);
-  gap: 1rem;
-  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.tw-note span {
-  background-color: rgb(210 105 255 / 100%);
-  padding: 10px;
-  border-radius: 5px;
-  margin: 5px;
-  color: black;
-}
-
-.tw-note span img {
-  max-width: 100%;
-  height: auto;
-  margin: 5px 0 5px 0;
-}
-
-.tw-note span a {
-  color: white;
-  text-decoration: underline;
-}
-

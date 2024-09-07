@@ -122,6 +122,7 @@ function injectTwitterScripts({ page, tabId }) {
         "lightsats-modal.css",
         "nostrize-tooltip.css",
         "nostrize-checkbox.css",
+        "twitter-notes.css",
       ],
     });
   }

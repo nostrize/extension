@@ -7,7 +7,9 @@ export function wrapCheckbox({ input, onclick, text }) {
       input,
       html.label({
         for: input.id,
-        classList: "custom-checkbox",
+        classList: input.checked
+          ? "custom-checkbox checked"
+          : "custom-checkbox",
         onclick: async (e) => {
           e.preventDefault();
 

@@ -49,15 +49,23 @@ const shortenNote = (maxLength) => (content) => {
   const remainingContent = content.slice(maxLength);
 
   return `${shortContent}...
-          <span id="shortened-content" style="display: none;">${remainingContent}</span>
-          <a href="javascript:void(0);" 
-             onclick="
-               event.preventDefault(); 
-               this.previousElementSibling.style.display = 'inline'; 
-               this.style.display = 'none';
-             ">
-             Load More
-          </a>`;
+          <span class="shortened-content" style="display: none;">${remainingContent}</span>
+          <a href="javascript:void(0);" class="load-more">Load More</a>`;
+};
+
+// Add this function to handle the click event
+const handleLoadMore = (event) => {
+  event.preventDefault();
+  console.log("TEST");
+  event.target.previousElementSibling.style.display = "inline";
+  event.target.style.display = "none";
+};
+
+// Add this function to attach event listeners after the content is added to the DOM
+const attachLoadMoreListeners = () => {
+  document.querySelectorAll(".load-more").forEach((link) => {
+    link.addEventListener("click", handleLoadMore);
+  });
 };
 
 function processNoteContent(content, openNostr) {
@@ -85,22 +93,22 @@ function processNoteContent(content, openNostr) {
     .replace(/\n/g, "<br />");
 }
 
-export async function setNostrMode(
+export async function setNostrMode({
   enabled,
-  accountPubkey,
-  writeRelays,
+  pageUserPubkey,
+  pageUserWriteRelays,
   openNostr,
-) {
+}) {
   if (enabled) {
     const trimNote = shortenNote(500);
 
     const latestNotes = fetchLatestNotes({
-      pubkey: accountPubkey,
-      relays: writeRelays,
+      pubkey: pageUserPubkey,
+      relays: pageUserWriteRelays,
       callback: (event, index) => {
         notesSection.insertBefore(
           html.div({
-            classList: "tw-note",
+            classList: "n-tw-note",
             innerHTML: trimNote(processNoteContent(event.content, openNostr)),
           }),
           notesSection.children[index],
@@ -111,14 +119,19 @@ export async function setNostrMode(
     const notesSection = gui.gebid("n-tw-notes-section");
     notesSection.style.display = "flex";
 
-    latestNotes.forEach((note) => {
-      notesSection.appendChild(
-        html.div({
-          classList: "tw-note",
-          innerHTML: trimNote(processNoteContent(note.content, openNostr)),
-        }),
-      );
-    });
+    latestNotes
+      // filter out notes that are replies to nostr events
+      .filter((e) => !e.tags.some((tag) => tag[0] === "e"))
+      .forEach((note) => {
+        notesSection.appendChild(
+          html.div({
+            classList: "n-tw-note",
+            innerHTML: trimNote(processNoteContent(note.content, openNostr)),
+          }),
+        );
+      });
+
+    attachLoadMoreListeners();
   } else {
     const notesSection = gui.gebid("n-tw-notes-section");
     notesSection.style.display = "none";
