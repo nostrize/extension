@@ -15,20 +15,37 @@
 }
 
 .n-tw-note {
+  position: relative;
+}
+
+.n-tw-note-content {
   background-color: rgb(208, 173, 240);
-  padding: 10px;
+  padding: 15px 10px 10px 10px;
   border-radius: 5px;
   margin: 10px;
   color: black;
 }
 
-.n-tw-note img {
+.n-tw-note .ago {
+  position: absolute;
+  text-decoration: none;
+  top: 12px;
+  right: 22px;
+  font-size: small;
+  color: blueviolet;
+}
+
+.n-tw-note .ago:hover {
+  text-decoration: underline;
+}
+
+.n-tw-note-content img {
   max-width: 100%;
   height: auto;
   margin: 5px 0 5px 0;
 }
 
-.n-tw-note a {
+.n-tw-note-content a {
   color: white;
   text-decoration: underline;
 }

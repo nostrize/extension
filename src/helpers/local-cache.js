@@ -1,7 +1,7 @@
 import { mergeSettings } from "./utils.js";
 
 export const defaultSettings = {
-  version: 1,
+  version: 2,
   debug: {
     log: true,
     namespace: "[N]",
@@ -12,7 +12,7 @@ export const defaultSettings = {
     nip07: {
       useRelays: false,
     },
-    openNostr: "https://nosta.me",
+    openNostr: "https://nost.at",
   },
   lightsatsSettings: {
     apiKey: "",

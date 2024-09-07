@@ -99,6 +99,7 @@ async function settingsPage() {
     state.nostrSettings.nip07.useRelays =
       defaultSettings.nostrSettings.nip07.useRelays;
     state.nostrSettings.relays = [...defaultSettings.nostrSettings.relays];
+    state.nostrSettings.openNostr = defaultSettings.nostrSettings.openNostr;
 
     // Lightsats settings
     state.lightsatsSettings.apiKey = defaultSettings.lightsatsSettings.apiKey;
@@ -152,6 +153,9 @@ async function settingsPage() {
 
     toggleNIP07Settings();
   };
+
+  document.getElementById("open-nostr").onchange = (e) =>
+    (state.nostrSettings.openNostr = e.target.value);
 
   document.getElementById("nip07-relays").onchange = (e) =>
     (state.nostrSettings.nip07.useRelays = e.target.checked);

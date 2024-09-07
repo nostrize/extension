@@ -2,7 +2,10 @@ import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import { setupModal } from "../../components/common.js";
 import { fetchLatestNotes } from "../../helpers/nostr.js";
-import { delay } from "../../helpers/utils.js";
+import { wrapCheckbox } from "../../components/checkbox/checkbox-wrapper.js";
+import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
+import { timeAgo } from "../../helpers/time.js";
+import { nip19 } from "nostr-tools";
 
 export const updateFollowButton = (button, emojiIcon) => {
   button.childNodes[0].childNodes[0].textContent = emojiIcon;
@@ -93,24 +96,19 @@ function processNoteContent(content, openNostr) {
     .replace(/\n/g, "<br />");
 }
 
-export async function setNostrMode({
+async function setNostrMode({
   enabled,
   pageUserPubkey,
   pageUserWriteRelays,
   openNostr,
 }) {
   if (enabled) {
-    const trimNote = shortenNote(500);
-
     const latestNotes = fetchLatestNotes({
       pubkey: pageUserPubkey,
       relays: pageUserWriteRelays,
       callback: (event, index) => {
         notesSection.insertBefore(
-          html.div({
-            classList: "n-tw-note",
-            innerHTML: trimNote(processNoteContent(event.content, openNostr)),
-          }),
+          createNote(event, openNostr),
           notesSection.children[index],
         );
       },
@@ -123,130 +121,111 @@ export async function setNostrMode({
       // filter out notes that are replies to nostr events
       .filter((e) => !e.tags.some((tag) => tag[0] === "e"))
       .forEach((note) => {
-        notesSection.appendChild(
-          html.div({
-            classList: "n-tw-note",
-            innerHTML: trimNote(processNoteContent(note.content, openNostr)),
-          }),
-        );
+        notesSection.appendChild(createNote(note, openNostr));
       });
 
     attachLoadMoreListeners();
   } else {
     const notesSection = gui.gebid("n-tw-notes-section");
     notesSection.style.display = "none";
-
-    // TODO: set twitter section display to flex
   }
 }
 
-export async function addAccountNotesTab(
-  accountPubkey,
-  writeRelays,
-  openNostr,
-) {
-  const tablist = document.querySelector(
-    "[data-testid='ScrollSnap-SwipeableList']",
-  ).childNodes[0];
+const createNote = (event, openNostr) => {
+  const eventId = nip19.noteEncode(event.id);
 
-  // deselect posts tab
-  const posts = tablist.childNodes[0];
-  posts.querySelector("span").nextElementSibling.style.backgroundColor =
-    "unset";
-
-  // reset account notes tab
-  const accountNotes = posts.cloneNode(true);
-  accountNotes.id = "n-tw-account-notes";
-
-  // remove link
-  accountNotes.childNodes[0].setAttribute("href", "javascript:void(0);");
-
-  gui.prepend(tablist, accountNotes);
-
-  const notesTitle = accountNotes.querySelector("span");
-  notesTitle.textContent = "Notes";
-
-  const selectionIndicator = notesTitle.nextElementSibling;
-  selectionIndicator.style.backgroundColor = "unset";
-
-  await notesTabClicked();
-
-  const trimNote = shortenNote(500);
-
-  let toHide = document.querySelector('[aria-labelledby="accessible-list-1"]');
-
-  while (!toHide) {
-    await delay(100);
-    toHide = document.querySelector('[aria-labelledby="accessible-list-1"]');
-  }
-
-  toHide.style.display = "none";
-
-  const notesSection = html.div({
-    id: "n-tw-notes-section",
-    classList: "n-tw-notes-section",
+  return html.div({
+    classList: "n-tw-note",
+    children: [
+      html.div({
+        classList: "n-tw-note-content",
+        innerHTML: shortenNote(500)(
+          processNoteContent(event.content, openNostr),
+        ),
+      }),
+      html.link({
+        classList: "ago",
+        text: timeAgo(event.created_at),
+        href: `${openNostr}/${eventId}`,
+        targetBlank: true,
+      }),
+    ],
   });
+};
 
-  toHide.insertAdjacentElement("afterend", notesSection);
-
-  const latestNotes = fetchLatestNotes({
-    pubkey: accountPubkey,
-    relays: writeRelays,
-    callback: (event, index) => {
-      if (isAccountNotesTabSelected) {
-        notesSection.insertBefore(
-          html.div({
-            classList: "tw-note",
-            innerHTML: trimNote(processNoteContent(event.content, openNostr)),
-          }),
-          notesSection.children[index],
-        );
-      }
-    },
-  });
-
-  let isAccountNotesTabSelected = false;
-
-  tablist.childNodes.forEach((node) => {
-    if (node.id === "n-tw-account-notes") {
-      return;
+export function setupNostrMode({
+  timelineNavbar,
+  pageUserPubkey,
+  pageUserWriteRelays,
+  settings,
+}) {
+  const nostrModeOnclick = async (checked) => {
+    if (checked) {
+      timelineNavbar.style.display = "none";
+    } else {
+      timelineNavbar.style.display = "flex";
     }
 
-    node.addEventListener("click", () => {
-      isAccountNotesTabSelected = false;
-      notesSection.style.display = "none";
-      selectionIndicator.style.backgroundColor = "unset";
-      toHide.style.display = "flex";
-    });
-  });
-
-  const notesTabClicked = async (e) => {
-    e?.preventDefault();
-
-    isAccountNotesTabSelected = true;
-
-    selectionIndicator.style.backgroundColor = "rgb(130, 80, 223)";
-
-    // clear notes section
-    notesSection.innerHTML = "";
-
-    latestNotes.forEach((note) => {
-      notesSection.appendChild(
-        html.div({
-          classList: "tw-note",
-          innerHTML: trimNote(processNoteContent(note.content, openNostr)),
-        }),
-      );
+    await setNostrMode({
+      enabled: checked,
+      pageUserPubkey,
+      pageUserWriteRelays,
+      openNostr: settings.nostrSettings.openNostr,
     });
   };
 
-  accountNotes.addEventListener("click", notesTabClicked);
-
-  accountNotes.addEventListener("mouseenter", () => {
-    accountNotes.style.backgroundColor = "rgb(130, 80, 223)";
+  const enableNostrModeCheckbox = wrapCheckbox({
+    input: html.input({
+      type: "checkbox",
+      id: "n-tw-enable-nostr-mode",
+      checked: true,
+    }),
+    onclick: nostrModeOnclick,
+    text: "Enable Nostr Mode",
   });
 
-  accountNotes.addEventListener("mouseleave", () => {
-    accountNotes.style.backgroundColor = "unset";
+  timelineNavbar.insertAdjacentElement("beforebegin", enableNostrModeCheckbox);
+
+  const notesSection = html.div({
+    id: "n-tw-notes-section",
+    style: [["display", "none"]],
   });
+
+  enableNostrModeCheckbox.insertAdjacentElement("afterend", notesSection);
+
+  // nostr mode is on by default
+  nostrModeOnclick(true);
+
+  return { enableNostrModeCheckbox, notesSection };
+}
+
+export function setupNostrProfileLink(settings, pageUserPubkey) {
+  const usernamePanel = document.querySelector("div[data-testid='UserName']");
+  const handleContainer =
+    usernamePanel?.childNodes[0]?.childNodes[0]?.childNodes[0]?.childNodes[1];
+  const handle = handleContainer?.childNodes[0];
+
+  if (!handle) {
+    return handleContainer;
+  }
+
+  const handleContent = handle.textContent;
+
+  if (handleContainer) {
+    const nostrProfileLink = wrapInputTooltip({
+      id: "n-tw-nostr-profile-button",
+      input: html.link({
+        text: handleContent,
+        href: `${settings.nostrSettings.openNostr}/${pageUserPubkey}`,
+        targetBlank: true,
+      }),
+      tooltipText: `User is on Nostr. Click to open Nostr profile.`,
+    });
+
+    handle.style.display = "none";
+
+    gui.prepend(handleContainer, nostrProfileLink);
+  }
+
+  return handleContainer;
 }

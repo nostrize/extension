@@ -28,10 +28,10 @@ import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
 
 import {
   createTwitterButton,
-  setNostrMode,
+  setupNostrMode,
   updateFollowButton,
 } from "./twitter-helpers.js";
-import { wrapCheckbox } from "../../components/checkbox/checkbox-wrapper.js";
+import { setupNostrProfileLink } from "./twitter-helpers.js";
 
 async function twitterProfilePage() {
   const settings = await getLocalSettings();
@@ -161,43 +161,15 @@ async function twitterProfilePage() {
     'nav[aria-label="Profile timelines"]',
   );
 
-  const nostrModeOnclick = async (checked) => {
-    if (checked) {
-      timelineNavbar.style.display = "none";
-    } else {
-      timelineNavbar.style.display = "flex";
-    }
-
-    await setNostrMode({
-      enabled: checked,
-      pageUserPubkey,
-      pageUserWriteRelays,
-      openNostr: settings.nostrSettings.openNostr,
-    });
-  };
-
-  const enableNostrModeCheckbox = wrapCheckbox({
-    input: html.input({
-      type: "checkbox",
-      id: "n-tw-enable-nostr-mode",
-      checked: true,
-    }),
-    onclick: nostrModeOnclick,
-    text: "Enable Nostr Mode",
+  const { enableNostrModeCheckbox, notesSection } = setupNostrMode({
+    timelineNavbar,
+    pageUserPubkey,
+    pageUserWriteRelays,
+    settings,
   });
 
-  timelineNavbar.insertAdjacentElement("beforebegin", enableNostrModeCheckbox);
-
-  enableNostrModeCheckbox.insertAdjacentElement(
-    "afterend",
-    html.div({
-      id: "n-tw-notes-section",
-      style: [["display", "none"]],
-    }),
-  );
-
   // nostr mode is on by default
-  nostrModeOnclick(true);
+  enableNostrModeCheckbox.insertAdjacentElement("afterend", notesSection);
 
   if (pageUserPubkey === nostrizeUserPubkey) {
     log("current page user is the nostrize user");
@@ -213,29 +185,7 @@ async function twitterProfilePage() {
     relays: nostrizeUserRelays,
   });
 
-  // handle container is the div that contains the username and the handle
-  const usernamePanel = document.querySelector("div[data-testid='UserName']");
-  const handleContainer =
-    usernamePanel?.childNodes[0]?.childNodes[0]?.childNodes[0]?.childNodes[1];
-  const handle = handleContainer?.childNodes[0];
-  const handleContent = handle.textContent;
-  handle.style.display = "none";
-
-  // nostr profile link
-  if (handleContainer) {
-    gui.prepend(
-      handleContainer,
-      wrapInputTooltip({
-        id: "n-tw-nostr-profile-button",
-        input: html.link({
-          text: handleContent,
-          href: `${settings.nostrSettings.openNostr}/${pageUserPubkey}`,
-          targetBlank: true,
-        }),
-        tooltipText: `User is on Nostr. Click to open Nostr profile.`,
-      }),
-    );
-  }
+  const handleContainer = setupNostrProfileLink(settings, pageUserPubkey);
 
   // follows of the account
   const pageUserFollowSubscription = getFollowSet({

@@ -306,15 +306,17 @@ export async function requestSigningFromNip07(messageParams) {
  * @param {Object} event - The event to insert
  * @returns {number} - The index where the event was inserted
  */
-function insertEventIntoAscendingList(sortedArray, event) {
+function insertEventIntoDescendingList(sortedArray, event) {
   const [idx, found] = binarySearch(sortedArray, (b) => {
     if (event.id === b.id) {
       return 0;
     }
+
     if (event.created_at === b.created_at) {
       return -1;
     }
-    return event.created_at - b.created_at;
+
+    return b.created_at - event.created_at;
   });
 
   if (!found) {
@@ -355,7 +357,7 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
 
         notesSet.add(event.id);
 
-        const index = insertEventIntoAscendingList(latestNotes, event);
+        const index = insertEventIntoDescendingList(latestNotes, event);
 
         console.log(`inserted at index: ${index}`);
 

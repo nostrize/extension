@@ -6,6 +6,7 @@ import {
 } from "../../helpers/local-cache.js";
 import { getIconComponent } from "../github-connect.js";
 import { logger } from "../../helpers/logger.js";
+import { timeAgo } from "../../helpers/time.js";
 
 import {
   fetchGithubTitle,
@@ -14,7 +15,6 @@ import {
   pickRandomEmoji,
   prIcon,
   spanSpaced,
-  timeAgo,
   typeToReactions,
 } from "./boost-helpers.js";
 
