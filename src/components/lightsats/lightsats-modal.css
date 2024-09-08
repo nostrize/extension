@@ -185,3 +185,7 @@ select.n-ls-modal-input {
   padding: 2px 5px;
   cursor: pointer;
 }
+
+.n-ls-modal-qr {
+  width: 100%;
+}
