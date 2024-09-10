@@ -329,16 +329,11 @@ function insertEventIntoDescendingList(sortedArray, event) {
 const latestNotesCacheKey = (pubkey) => `nostrize-latest-notes-${pubkey}`;
 
 export function fetchLatestNotes({ pubkey, relays, callback }) {
-  const cache = getFromCache(latestNotesCacheKey(pubkey));
-
-  if (cache) {
-    return cache;
-  }
+  const cacheKey = latestNotesCacheKey(pubkey);
+  const cachedNotes = getFromCache(cacheKey) || [];
 
   const pool = new SimplePool();
-
-  const notesSet = new Set();
-  const latestNotes = [];
+  const notesSet = new Set(cachedNotes.map((note) => note.id));
 
   pool.subscribeMany(
     relays,
@@ -347,26 +342,25 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
         kinds: [1],
         authors: [pubkey],
         limit: 100,
+        since: cachedNotes.length > 0 ? cachedNotes[0].created_at : undefined,
       },
     ],
     {
       onevent(event) {
         if (notesSet.has(event.id)) {
-          return;
+          console.log("already have event", event.id);
         }
 
         notesSet.add(event.id);
 
-        const index = insertEventIntoDescendingList(latestNotes, event);
-
-        console.log(`inserted at index: ${index}`);
+        const index = insertEventIntoDescendingList(cachedNotes, event);
 
         callback(event, index);
       },
       oneose() {
         console.log("eose, updating cache");
 
-        insertToCache(latestNotesCacheKey(pubkey), latestNotes);
+        insertToCache(cacheKey, cachedNotes);
       },
       alreadyHaveEvent(id) {
         return notesSet.has(id);
@@ -374,5 +368,5 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
     },
   );
 
-  return latestNotes;
+  return cachedNotes;
 }

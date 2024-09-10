@@ -1,4 +1,4 @@
-# Nostrize Browser Extension (Work In Progress)
+# Nostrize Browser Extension
 
 Welcome to Nostrize - the browser extension that empowers any website with the [Nostr](https://github.com/nostr-protocol/nostr) experience. Nostrize seamlessly integrates tipping and crowdsourcing capabilities through Bitcoin, making every interaction permissionless. Join us in a world where supporting content and collaborative projects is effortless. Elevate your browsing with the power of Nostr and Bitcoin, and become part of the [Value4Value](https://value4value.info/) movement today.
 
@@ -17,6 +17,9 @@ https://github.com/user-attachments/assets/a12b9fa1-e351-462c-b706-d186040ffc6e
 * Do you still need to use X/Twitter because everyone is still there?
 * Good news: you can use nostr via Nostrize on X/Twitter now! 🤯
 * Add your npub or nip05 to your account bio and you are ready to receive zaps
+* Follow other Nostrize users directly from their X/Twitter profile
+* Read Nostr notes of Nostrize users
+* Lightsats integration (Will be a part of our Nostr onboarding) 
 
 ## Youtube
 
@@ -38,7 +41,7 @@ With Nostrize on GitHub, you can:
   * Earn payments for your pull requests that address and resolve issues.
 * And more features are coming...
 
-### Nostrize Booster
+### Nostrize Booster (WIP)
 
 Nostrize Booster is designed for GitHub and may be added for other platforms later.
 

@@ -24,6 +24,7 @@
   border-radius: 5px;
   margin: 10px;
   color: black;
+  scroll-margin-top: 100px;
 }
 
 .n-tw-note .ago {
@@ -46,6 +47,6 @@
 }
 
 .n-tw-note-content a {
-  color: white;
+  color: blueviolet;
   text-decoration: underline;
 }

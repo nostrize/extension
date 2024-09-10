@@ -1,7 +1,8 @@
 import * as html from "../../imgui-dom/html.js";
 
-export function wrapCheckbox({ input, onclick, text }) {
+export function wrapCheckbox({ input, onclick, text, id }) {
   return html.div({
+    id,
     classList: "checkbox-container",
     children: [
       input,

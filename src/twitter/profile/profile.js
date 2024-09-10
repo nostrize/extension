@@ -49,8 +49,8 @@ async function twitterProfilePage() {
     gui.gebid("n-tw-nostr-profile-button")?.remove();
     gui.gebid("n-tw-follow-unfollow-button")?.remove();
     gui.gebid("n-tw-account-notes")?.remove();
-    // TODO: remove the nostr mode checkbox
-    // TODO: remove the notes section
+    gui.gebid("n-tw-enable-nostr-mode-checkbox")?.remove();
+    gui.gebid("n-tw-notes-section")?.remove();
   };
 
   removeNostrButtons();
@@ -70,7 +70,7 @@ async function twitterProfilePage() {
     return;
   }
 
-  log("accountName", pageUsername);
+  log("pageUsername", pageUsername);
 
   let userNameContainer = document.querySelector("div[data-testid='UserName']");
 
@@ -110,13 +110,9 @@ async function twitterProfilePage() {
     "button[data-testid='userActions']",
   );
 
-  if (!buttonTobeCloned) {
-    log("no copy button, probably it is user's account");
+  const isPageUserTwitterAccount = !buttonTobeCloned;
 
-    return;
-  }
-
-  if (!npub && !nip05) {
+  if (!npub && !nip05 && !isPageUserTwitterAccount) {
     log("No Nostr integration found");
 
     if (
@@ -165,19 +161,12 @@ async function twitterProfilePage() {
     timelineNavbar,
     pageUserPubkey,
     pageUserWriteRelays,
+    pageUserReadRelays,
     settings,
   });
 
   // nostr mode is on by default
   enableNostrModeCheckbox.insertAdjacentElement("afterend", notesSection);
-
-  if (pageUserPubkey === nostrizeUserPubkey) {
-    log("current page user is the nostrize user");
-
-    removeNostrButtons();
-
-    return;
-  }
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pageUserPubkey,
@@ -185,77 +174,91 @@ async function twitterProfilePage() {
     relays: nostrizeUserRelays,
   });
 
-  const handleContainer = setupNostrProfileLink(settings, pageUserPubkey);
+  const pageUserIsNostrizeUser = pageUserPubkey === nostrizeUserPubkey;
 
-  // follows of the account
-  const pageUserFollowSubscription = getFollowSet({
-    pubkey: pageUserPubkey,
-    relays: pageUserWriteRelays,
-    callback: ({ followSet }) => {
-      const pageUserFollowsNostrizeUser = followSet.has(nostrizeUserPubkey);
+  const handleContainer = setupNostrProfileLink(
+    settings,
+    pageUserPubkey,
+    pageUserIsNostrizeUser,
+    pageUserWriteRelays,
+  );
 
-      log("pageUserFollowsNostrizeUser", pageUserFollowsNostrizeUser);
+  if (!pageUserIsNostrizeUser) {
+    getFollowSet({
+      pubkey: pageUserPubkey,
+      relays: pageUserWriteRelays,
+      callback: ({ followSet }) => {
+        const pageUserFollowsNostrizeUser = followSet.has(nostrizeUserPubkey);
 
-      if (pageUserFollowsNostrizeUser) {
-        handleContainer?.append(
-          wrapInputTooltip({
-            id: "n-follows-you-indicator",
-            input: html.span({
-              text: "Follows you",
-              classList: "n-follows-you-indicator",
+        log("pageUserFollowsNostrizeUser", pageUserFollowsNostrizeUser);
+
+        if (pageUserFollowsNostrizeUser) {
+          handleContainer?.append(
+            wrapInputTooltip({
+              id: "n-follows-you-indicator",
+              input: html.span({
+                text: "Follows you",
+                classList: "n-follows-you-indicator",
+              }),
+              tooltipText: `${pageUsername} follows you on Nostr.`,
             }),
-            tooltipText: `${pageUsername} follows you on Nostr.`,
-          }),
-        );
-      }
-    },
-  });
+          );
+        }
+      },
+    });
 
-  // follows of the nostrize user
-  // the button to follow/unfollow
-  getFollowSet({
-    pubkey: nostrizeUserPubkey,
-    relays: nostrizeUserRelays,
-    timeout: 1000 * 60 * 10, // 10 minutes
-    callback: ({ followSet, latestEvent }) => {
-      gui.gebid("n-tw-follow-unfollow-button")?.remove();
+    // follows of the nostrize user
+    // the button to follow/unfollow
 
-      let userFollowsNostrizeUser = followSet.has(pageUserPubkey);
+    if (!isPageUserTwitterAccount) {
+      getFollowSet({
+        pubkey: nostrizeUserPubkey,
+        relays: nostrizeUserRelays,
+        timeout: 1000 * 60 * 10, // 10 minutes
+        callback: ({ followSet, latestEvent }) => {
+          gui.gebid("n-tw-follow-unfollow-button")?.remove();
 
-      const button = wrapInputTooltip({
-        id: "n-tw-follow-unfollow-button",
-        input: createTwitterButton(buttonTobeCloned, pageUsername, {
-          emojiIcon: userFollowsNostrizeUser ? "➖" : "➕",
-          modalComponentFn: async () => {
-            const followParams = {
-              pubkey: nostrizeUserPubkey,
-              currentFollowEvent: latestEvent,
-              accountPubkey: pageUserPubkey,
-              relays: [...nostrizeUserRelays, ...pageUserReadRelays],
-              log,
-            };
+          let userFollowsNostrizeUser = followSet.has(pageUserPubkey);
 
-            button.disabled = true;
+          const button = wrapInputTooltip({
+            id: "n-tw-follow-unfollow-button",
+            input: createTwitterButton(buttonTobeCloned, pageUsername, {
+              emojiIcon: userFollowsNostrizeUser ? "➖" : "➕",
+              modalComponentFn: async () => {
+                const followParams = {
+                  pubkey: nostrizeUserPubkey,
+                  currentFollowEvent: latestEvent,
+                  accountPubkey: pageUserPubkey,
+                  relays: [...nostrizeUserRelays, ...pageUserReadRelays],
+                  log,
+                };
 
-            updateFollowButton(gui.gebid("n-tw-follow-unfollow-button"), "⏳");
+                button.disabled = true;
 
-            try {
-              if (userFollowsNostrizeUser) {
-                await unfollowAccount(followParams);
-              } else {
-                await followAccount(followParams);
-              }
-            } catch (err) {
-              alert("Nostrize error on follow/unfollow: " + err);
-            }
-          },
-        }),
-        tooltipText: `${userFollowsNostrizeUser ? "Unfollow" : "Follow"} ${pageUsername} on Nostr`,
+                updateFollowButton(
+                  gui.gebid("n-tw-follow-unfollow-button"),
+                  "⏳",
+                );
+
+                try {
+                  if (userFollowsNostrizeUser) {
+                    await unfollowAccount(followParams);
+                  } else {
+                    await followAccount(followParams);
+                  }
+                } catch (err) {
+                  alert("Nostrize error on follow/unfollow: " + err);
+                }
+              },
+            }),
+            tooltipText: `${userFollowsNostrizeUser ? "Unfollow" : "Follow"} ${pageUsername} on Nostr`,
+          });
+
+          gui.insertAfter(button, buttonTobeCloned);
+        },
       });
-
-      gui.insertAfter(button, buttonTobeCloned);
-    },
-  });
+    }
+  }
 
   const lnurlData = await getOrInsertCache({
     key: `nostrize-lnurldata-${metadataEvent.id}`,
@@ -265,27 +268,27 @@ async function twitterProfilePage() {
       }),
   });
 
-  const zapButton = wrapInputTooltip({
-    id: "n-tw-zap-button",
-    input: createTwitterButton(buttonTobeCloned, pageUsername, {
+  if (!isPageUserTwitterAccount) {
+    const zapButton = wrapInputTooltip({
       id: "n-tw-zap-button",
-      emojiIcon: "⚡️",
-      modalComponentFn: () =>
-        zapModalComponent({
-          user: pageUsername,
-          metadataEvent,
-          relays: nostrizeUserRelays,
-          lnurlData,
-          log,
-          settings,
-        }),
-    }),
-    tooltipText: `Zap ${pageUsername}`,
-  });
+      input: createTwitterButton(buttonTobeCloned, pageUsername, {
+        id: "n-tw-zap-button",
+        emojiIcon: "⚡️",
+        modalComponentFn: () =>
+          zapModalComponent({
+            user: pageUsername,
+            metadataEvent,
+            relays: nostrizeUserRelays,
+            lnurlData,
+            log,
+            settings,
+          }),
+      }),
+      tooltipText: `Zap ${pageUsername}`,
+    });
 
-  gui.insertAfter(zapButton, buttonTobeCloned);
-
-  pageUserFollowSubscription.close();
+    gui.insertAfter(zapButton, buttonTobeCloned);
+  }
 }
 
 twitterProfilePage().catch((e) => console.error(e));
