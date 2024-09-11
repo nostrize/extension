@@ -14,6 +14,11 @@ async function settingsPage() {
 
     // Load Debug Settings
     document.getElementById("log").checked = state.debug.log;
+    if (state.debug.log) {
+      document
+        .getElementById("log")
+        .nextElementSibling.classList.add("checked");
+    }
     document.getElementById("namespace").value = state.debug.namespace;
 
     // Load Nostr Settings
@@ -22,6 +27,12 @@ async function settingsPage() {
     document.getElementById("mode").value = state.nostrSettings.mode;
     document.getElementById("nip07-relays").checked =
       state.nostrSettings.nip07.useRelays;
+
+    if (state.nostrSettings.nip07.useRelays) {
+      document
+        .getElementById("nip07-relays")
+        .nextElementSibling.classList.add("checked");
+    }
 
     const relaysList = document.getElementById("relays-list");
     relaysList.innerHTML = ""; // Clear existing list
@@ -123,6 +134,36 @@ async function settingsPage() {
     loadState();
   }
 
+  // Load custom checkbox: Debug
+  const debugCheckbox = document.getElementById("log");
+
+  const wrappedLogCheckbox = wrapCheckbox({
+    input: debugCheckbox,
+    text: "Enable Logging",
+    onclick: (checked) => {
+      state.debug.log = checked;
+    },
+  });
+
+  document
+    .getElementById("debug-settings-logging")
+    .appendChild(wrappedLogCheckbox);
+
+  // Load custom checkbox: Use NIP07 Relays
+  const nip07RelaysCheckbox = document.getElementById("nip07-relays");
+
+  const wrappedNip07RelaysCheckbox = wrapCheckbox({
+    input: nip07RelaysCheckbox,
+    text: "Use relays from NIP07 extension",
+    onclick: (checked) => {
+      state.nostrSettings.nip07.useRelays = checked;
+    },
+  });
+
+  document
+    .getElementById("nip07-settings")
+    .appendChild(wrappedNip07RelaysCheckbox);
+
   // Load custom checkbox: Lightsats integration
   const lightsatsCheckbox = document.getElementById("lightsats-enable");
 
@@ -141,9 +182,6 @@ async function settingsPage() {
 
   // Attach event listeners
   // Debug settings
-  document.getElementById("log").onchange = (e) =>
-    (state.debug.log = e.target.checked);
-
   document.getElementById("namespace").onchange = (e) =>
     (state.debug.namespace = e.target.value);
 
@@ -156,9 +194,6 @@ async function settingsPage() {
 
   document.getElementById("open-nostr").onchange = (e) =>
     (state.nostrSettings.openNostr = e.target.value);
-
-  document.getElementById("nip07-relays").onchange = (e) =>
-    (state.nostrSettings.nip07.useRelays = e.target.checked);
 
   document.getElementById("add-relay").onclick = addRelay;
 

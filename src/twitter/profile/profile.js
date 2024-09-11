@@ -161,7 +161,6 @@ async function twitterProfilePage() {
     timelineNavbar,
     pageUserPubkey,
     pageUserWriteRelays,
-    pageUserReadRelays,
     settings,
   });
 

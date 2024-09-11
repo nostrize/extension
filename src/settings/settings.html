@@ -30,16 +30,12 @@
           <span class="help-icon">❓</span>
           <span class="tooltip">You can specify a URL to open nostr links in.</span>
         </label>
-        <input type="input" id="open-nostr" />
+        <input type="text" id="open-nostr" />
       </fieldset>
 
       <fieldset id="nip07-settings">
         <legend>NIP07 Settings</legend>
-        <label class="checkbox-container">
-          <input type="checkbox" id="nip07-relays" /> 
-          <span class="custom-checkbox"></span>
-          <span>Use relays from NIP07 extension</span>
-        </label>
+        <input type="checkbox" id="nip07-relays" />
       </fieldset>
 
       <fieldset>
@@ -88,13 +84,9 @@
     <h2>Debug Settings</h2>
 
     <div class="input-container collapsed">
-      <fieldset>
+      <fieldset id="debug-settings-logging">
         <legend>Logging</legend>
-        <label class="checkbox-container">
-          <input type="checkbox" id="log" /> 
-          <span class="custom-checkbox"></span>
-          <span>Enable Logging</span>
-        </label>
+        <input type="checkbox" id="log" />
       </fieldset>
 
       <fieldset>

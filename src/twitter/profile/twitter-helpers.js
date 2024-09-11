@@ -207,7 +207,6 @@ async function setNostrMode({
   enabled,
   pageUserPubkey,
   pageUserWriteRelays,
-  pageUserReadRelays,
   openNostr,
 }) {
   if (enabled) {
@@ -215,7 +214,7 @@ async function setNostrMode({
       pubkey: pageUserPubkey,
       relays: pageUserWriteRelays,
       callback: async (event, index) => {
-        const note = await createNote(event, openNostr, pageUserReadRelays);
+        const note = await createNote(event, openNostr, pageUserWriteRelays);
 
         notesSection.insertBefore(note, notesSection.children[index]);
 
@@ -232,10 +231,11 @@ async function setNostrMode({
     );
 
     for (const note of filteredNotes) {
-      const noteElement = await createNote(note, openNostr, [
-        ...pageUserReadRelays,
-        ...pageUserWriteRelays,
-      ]);
+      const noteElement = await createNote(
+        note,
+        openNostr,
+        pageUserWriteRelays,
+      );
 
       notesSection.appendChild(noteElement);
     }
@@ -287,7 +287,6 @@ export function setupNostrMode({
   timelineNavbar,
   pageUserPubkey,
   pageUserWriteRelays,
-  pageUserReadRelays,
   settings,
 }) {
   const nostrModeOnclick = async (checked) => {
@@ -303,7 +302,6 @@ export function setupNostrMode({
       enabled: checked,
       pageUserPubkey,
       pageUserWriteRelays,
-      pageUserReadRelays,
       openNostr: settings.nostrSettings.openNostr,
     });
   };

@@ -342,15 +342,10 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
         kinds: [1],
         authors: [pubkey],
         limit: 100,
-        since: cachedNotes.length > 0 ? cachedNotes[0].created_at : undefined,
       },
     ],
     {
       onevent(event) {
-        if (notesSet.has(event.id)) {
-          console.log("already have event", event.id);
-        }
-
         notesSet.add(event.id);
 
         const index = insertEventIntoDescendingList(cachedNotes, event);
