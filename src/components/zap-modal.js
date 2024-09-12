@@ -7,6 +7,8 @@ import * as gui from "../imgui-dom/gui.js";
 import { milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
 import { createKeyPair } from "../helpers/crypto.js";
 import { getMetadataEvent, requestSigningFromNip07 } from "../helpers/nostr.js";
+import { getLocalSettings, saveLocalSettings } from "../helpers/local-cache.js";
+
 import { centerModal } from "./common.js";
 
 export async function zapModalComponent({
@@ -228,7 +230,8 @@ async function getPubkeyFromNip07() {
   });
 
   return new Promise((resolve) => {
-    window.addEventListener("message", function (event) {
+    // TODO: remove async when we have a way to get pubkey from bunker
+    window.addEventListener("message", async function (event) {
       if (event.source !== window) {
         return;
       }
@@ -244,6 +247,12 @@ async function getPubkeyFromNip07() {
       ) {
         return;
       }
+
+      // save pubkey into settings
+      // TODO: remove code when we have a way to get pubkey from bunker
+      const settings = await getLocalSettings();
+      settings.nostrSettings.nip07.pubkey = pubkey;
+      await saveLocalSettings({ settings });
 
       return resolve(pubkey);
     });

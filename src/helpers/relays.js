@@ -1,6 +1,6 @@
 import { SimplePool } from "nostr-tools";
 
-import { getFromCache, insertToCache } from "./local-cache.js";
+import { saveLocalSettings } from "./local-cache.js";
 
 export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
   const shouldGetNip07Relays =
@@ -17,7 +17,8 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
         setTimeout(() => resolve(localRelays), timeout);
       }
 
-      window.addEventListener("message", (event) => {
+      // TODO: remove async when we have a way to get relays the from bunker
+      window.addEventListener("message", async (event) => {
         if (event.source !== window) {
           return;
         }
@@ -32,6 +33,13 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
           return;
         }
 
+        // update relays into settings
+        // TODO: remove code when we have a way to get relays the from bunker
+        settings.nostrSettings.nip07.writeRelays = writeRelays;
+        settings.nostrSettings.nip07.readRelays = readRelays;
+
+        await saveLocalSettings({ settings });
+
         return resolve({ readRelays, writeRelays });
       });
     });
@@ -40,25 +48,18 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
   return { readRelays: localRelays, writeRelays: localRelays };
 }
 
-export async function getPageUserRelays({ pubkey, relays, timeout = 1000 }) {
-  const cacheKey = `nostrize-pageuser-relay-list-metadata-${pubkey}`;
-  const cache = getFromCache(cacheKey);
-  const since = cache ? cache.created_at : undefined;
-
+export async function getPageUserRelays({ pubkey, relays }) {
   const filter = {
     kinds: [10002],
     authors: [pubkey],
     limit: 1,
-    since,
   };
 
   const pool = new SimplePool();
 
-  const latestEvent = await pool.get(relays, filter, { maxWait: timeout });
+  const latestEvent = await pool.get(relays, filter);
 
   if (latestEvent) {
-    insertToCache(cacheKey, latestEvent.created_at);
-
     const pageUserReadRelays = [];
     const pageUserWriteRelays = [];
 
@@ -78,8 +79,8 @@ export async function getPageUserRelays({ pubkey, relays, timeout = 1000 }) {
       }
     });
 
-    return { pageUserReadRelays, pageUserWriteRelays };
+    return { pageUserReadRelays, pageUserWriteRelays, tags: latestEvent.tags };
   }
 
-  return { pageUserReadRelays: [], pageUserWriteRelays: [] };
+  return { pageUserReadRelays: [], pageUserWriteRelays: [], tags: [] };
 }

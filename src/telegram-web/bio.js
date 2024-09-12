@@ -89,8 +89,7 @@ async function telegramBio() {
   const accountRelays = await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () =>
-      getPageUserRelays({ pubkey: accountPubkey, settings, timeout: 4000 }),
+    callback: () => getPageUserRelays({ pubkey: accountPubkey, settings }),
   });
 
   log("relays", accountRelays);

@@ -91,7 +91,6 @@ async function youtubeWatchPage() {
   const pageUserRelays = await getPageUserRelays({
     pubkey: pageUserPubkey,
     relays: nostrizeUserRelays,
-    timeout: 4000,
   });
 
   const metadataEvent = await getMetadataEvent({

@@ -5,8 +5,26 @@ import {
   defaultSettings,
 } from "../helpers/local-cache.js";
 
+import NIP65RelayManager from "./nip65.svelte";
+
 async function settingsPage() {
   const state = await getLocalSettings();
+
+  if (
+    state.nostrSettings.mode === "nip07" &&
+    state.nostrSettings.nip07.useRelays &&
+    state.nostrSettings.nip07.pubkey &&
+    state.nostrSettings.nip07.writeRelays &&
+    state.nostrSettings.nip07.writeRelays.length > 0
+  ) {
+    new NIP65RelayManager({
+      target: document.getElementById("nip65-relay-manager"),
+      props: {
+        pubkey: state.nostrSettings.nip07.pubkey,
+        relays: state.nostrSettings.nip07.writeRelays,
+      },
+    });
+  }
 
   // Load state into UI
   function loadState() {

@@ -21,5 +21,15 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
   },
-  module: {},
+  module: {
+    rules: [
+      {
+        test: /\.svelte$/,
+        use: "svelte-loader",
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".js", ".svelte"],
+  },
 };

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "./build.sh",
-    "watch": "nodemon -w src --ext js,css,html,json --exec 'npm run build'",
+    "watch": "nodemon -w src --ext js,css,html,json,svelte --exec 'npm run build'",
     "lint": "eslint . --fix --ext .js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "release": "./release.sh"
@@ -37,7 +37,9 @@
     "nodemon": "^3.1.4",
     "prettier": "^3.2.5",
     "webpack": "5.92.1",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "svelte": "^4.2.19",
+    "svelte-loader": "^3.2.3"
   },
   "dependencies": {
     "nostr-tools": "^2.7.1",
