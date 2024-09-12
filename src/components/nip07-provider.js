@@ -57,9 +57,24 @@ window.addEventListener("message", async (event) => {
   }
 
   const relaysEntries = await window.nostr.getRelays();
-  const relays = Object.keys(relaysEntries);
 
-  window.postMessage({ from: "nostrize-nip07-provider", type, relays }, "*");
+  const readRelays = [];
+  const writeRelays = [];
+
+  for (const [relayUrl, relay] of Object.entries(relaysEntries)) {
+    if (relay.read) {
+      readRelays.push(relayUrl);
+    }
+
+    if (relay.write) {
+      writeRelays.push(relayUrl);
+    }
+  }
+
+  window.postMessage(
+    { from: "nostrize-nip07-provider", type, readRelays, writeRelays },
+    "*",
+  );
 });
 
 window.addEventListener("message", async (event) => {

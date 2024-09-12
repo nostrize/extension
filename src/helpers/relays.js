@@ -22,7 +22,7 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
           return;
         }
 
-        const { from, type, relays } = event.data;
+        const { from, type, readRelays, writeRelays } = event.data;
 
         if (type !== "nip07-relays-request") {
           return;
@@ -32,12 +32,12 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
           return;
         }
 
-        return resolve([...new Set(relays.concat(localRelays))]);
+        return resolve({ readRelays, writeRelays });
       });
     });
   }
 
-  return localRelays;
+  return { readRelays: localRelays, writeRelays: localRelays };
 }
 
 export async function getPageUserRelays({ pubkey, relays, timeout = 1000 }) {

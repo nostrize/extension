@@ -143,34 +143,34 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
-  const nostrizeUserRelays = await getNip07OrLocalRelays({
+  const {
+    readRelays: nostrizeUserReadRelays,
+    writeRelays: nostrizeUserWriteRelays,
+  } = await getNip07OrLocalRelays({
     settings,
     timeout: 4000,
   });
 
-  const { pageUserReadRelays, pageUserWriteRelays } = await getPageUserRelays({
+  const { pageUserWriteRelays } = await getPageUserRelays({
     pubkey: pageUserPubkey,
-    relays: nostrizeUserRelays,
+    relays: nostrizeUserReadRelays,
   });
 
   const timelineNavbar = document.querySelector(
     'nav[aria-label="Profile timelines"]',
   );
 
-  const { enableNostrModeCheckbox, notesSection } = setupNostrMode({
+  setupNostrMode({
     timelineNavbar,
     pageUserPubkey,
     pageUserWriteRelays,
     settings,
   });
 
-  // nostr mode is on by default
-  enableNostrModeCheckbox.insertAdjacentElement("afterend", notesSection);
-
   const metadataEvent = await getMetadataEvent({
     cacheKey: pageUserPubkey,
     filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
-    relays: nostrizeUserRelays,
+    relays: nostrizeUserReadRelays,
   });
 
   const pageUserIsNostrizeUser = pageUserPubkey === nostrizeUserPubkey;
@@ -212,7 +212,7 @@ async function twitterProfilePage() {
     if (!isPageUserTwitterAccount) {
       getFollowSet({
         pubkey: nostrizeUserPubkey,
-        relays: nostrizeUserRelays,
+        relays: nostrizeUserWriteRelays,
         timeout: 1000 * 60 * 10, // 10 minutes
         callback: ({ followSet, latestEvent }) => {
           gui.gebid("n-tw-follow-unfollow-button")?.remove();
@@ -227,8 +227,8 @@ async function twitterProfilePage() {
                 const followParams = {
                   pubkey: nostrizeUserPubkey,
                   currentFollowEvent: latestEvent,
-                  accountPubkey: pageUserPubkey,
-                  relays: [...nostrizeUserRelays, ...pageUserReadRelays],
+                  pageUserPubkey,
+                  relays: nostrizeUserWriteRelays,
                   log,
                 };
 
@@ -277,7 +277,7 @@ async function twitterProfilePage() {
           zapModalComponent({
             user: pageUsername,
             metadataEvent,
-            relays: nostrizeUserRelays,
+            relays: nostrizeUserWriteRelays,
             lnurlData,
             log,
             settings,

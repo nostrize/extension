@@ -328,8 +328,6 @@ export function setupNostrMode({
 
   // nostr mode is on by default
   nostrModeOnclick(true);
-
-  return { enableNostrModeCheckbox, notesSection };
 }
 
 export function setupNostrProfileLink(

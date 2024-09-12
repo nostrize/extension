@@ -194,7 +194,7 @@ export function getFollowSet({ pubkey, relays, callback, timeout }) {
   return subscription;
 }
 
-async function updateFollowList({ pubkey, tags, relays, log, accountPubkey }) {
+async function updateFollowList({ pubkey, tags, relays, log }) {
   const eventTemplate = {
     kind: 3,
     pubkey,
@@ -217,7 +217,7 @@ async function updateFollowList({ pubkey, tags, relays, log, accountPubkey }) {
   const publishFailedCount = res.filter((r) => r.status === "rejected").length;
 
   log(
-    `accountPubkey: ${accountPubkey}, publishedCount: ${publishedCount}, publishFailedCount: ${publishFailedCount}`,
+    `update follow list: publishedCount: ${publishedCount}, publishFailedCount: ${publishFailedCount}`,
   );
 
   if (publishedCount === 0) {
@@ -235,35 +235,30 @@ async function updateFollowList({ pubkey, tags, relays, log, accountPubkey }) {
 
 export async function followAccount({
   pubkey,
-  accountPubkey,
+  pageUserPubkey,
   currentFollowEvent,
-  accountWriteRelay,
   relays,
   log,
 }) {
-  const tags = [
-    ...currentFollowEvent.tags,
-    ["p", accountPubkey, accountWriteRelay],
-  ];
+  const tags = [...currentFollowEvent.tags, ["p", pageUserPubkey, relays[0]]];
 
   return updateFollowList({
     pubkey,
     tags,
     relays,
     log,
-    accountPubkey,
   });
 }
 
 export async function unfollowAccount({
   pubkey,
-  accountPubkey,
+  pageUserPubkey,
   currentFollowEvent,
   relays,
   log,
 }) {
   const tags = currentFollowEvent.tags.filter(
-    (tag) => tag[1] !== accountPubkey,
+    (tag) => tag[1] !== pageUserPubkey,
   );
 
   return updateFollowList({
@@ -271,7 +266,6 @@ export async function unfollowAccount({
     tags,
     relays,
     log,
-    accountPubkey,
   });
 }
 
