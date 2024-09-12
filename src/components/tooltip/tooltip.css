@@ -4,7 +4,15 @@
 }
 
 .n-tooltip-wrapper a {
-  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    TwitterChirp,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
 }
 
 .n-tooltip-text {
@@ -24,7 +32,15 @@
   max-width: 300px;
   text-align: center;
   pointer-events: none;
-  font-family: TwitterChirp, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    TwitterChirp,
+    -apple-system,
+    "system-ui",
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
 }
 
 .n-tooltip-wrapper .n-tooltip-wrapper-input:hover + .n-tooltip-text,

@@ -6,12 +6,7 @@
   "background": {
     "service_worker": "nostrize-background.js"
   },
-  "permissions": [
-    "activeTab",
-    "storage",
-    "scripting",
-    "tabs"
-  ],
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
   "host_permissions": [
     "*://github.com/*",
     "*://www.github.com/*",
@@ -29,7 +24,12 @@
   "web_accessible_resources": [
     {
       "resources": ["nostrize-nip07-provider.js"],
-      "matches": ["https://*/*", "http://localhost:*/*", "http://127.0.0.1:*/*", "http://*.localhost/*"]
+      "matches": [
+        "https://*/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*",
+        "http://*.localhost/*"
+      ]
     }
   ],
   "options_page": "nostrize-settings.html",

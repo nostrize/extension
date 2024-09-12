@@ -59,7 +59,8 @@
   font-size: medium;
 }
 
-.n-github-pr-icon svg, .n-github-issue-icon svg {
+.n-github-pr-icon svg,
+.n-github-issue-icon svg {
   margin-right: 2px;
 }
 

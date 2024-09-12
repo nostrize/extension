@@ -1,124 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nostrize Settings</title>
-  <link rel="stylesheet" href="nostrize-settings.css">
-  <link rel="stylesheet" href="nostrize-checkbox.css">
-</head>
-<body>
-  <div class="section collapsable" id="nostr-settings">
-    <h2>Nostr Settings</h2>
-    
-    <div class="input-container collapsed">
-      <fieldset>
-        <legend>Mode</legend>
-        <label for="mode">Mode
-          <span class="help-icon">❓</span>
-          <span class="tooltip">Choose the mode for Nostr. 'Anonymous' generates new keys everytime for event signing, while 'NIP-07' gets your nostr public key and signs events using browser extensions like alby or nos2x</span>
-        </label>
-        <select id="mode">
-          <option value="anon">Anonymous</option>
-          <option value="nip07">NIP07</option>
-        </select>
-      </fieldset>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nostrize Settings</title>
+    <link rel="stylesheet" href="nostrize-settings.css" />
+    <link rel="stylesheet" href="nostrize-checkbox.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav class="sidebar">
+        <div class="icon settings-icon active" data-section="settings">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path
+              d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11L12 1zm0 2.311L4.5 7.653v8.694L12 20.689l7.5-4.342V7.653L12 3.311zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
+            />
+          </svg>
+        </div>
+        <div class="icon tools-icon" data-section="tools">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path
+              d="M5.33 3.271a3.5 3.5 0 0 1 4.472 4.474L20.647 18.59l-2.122 2.121L7.68 9.867a3.5 3.5 0 0 1-4.472-4.474L5.444 7.63a1.5 1.5 0 1 0 2.121-2.121L5.329 3.27zm10.367 1.884l3.182-1.768 1.414 1.414-1.768 3.182-1.768.354-2.12 2.121-1.415-1.414 2.121-2.121.354-1.768zm-7.071 7.778l2.121 2.122-4.95 4.95A1.5 1.5 0 0 1 3.58 17.99l.097-.107 4.95-4.95z"
+            />
+          </svg>
+        </div>
+      </nav>
+      <main class="content">
+        <section id="settings-section" class="active">
+          <div class="section collapsable" id="nostr-settings">
+            <h2>Nostr Settings</h2>
 
-      <fieldset>
-        <legend>Open Nostr Links</legend>
-        <label for="open-nostr">URL
-          <span class="help-icon">❓</span>
-          <span class="tooltip">You can specify a URL to open nostr links in.</span>
-        </label>
-        <input type="text" id="open-nostr" />
-      </fieldset>
+            <div class="input-container collapsed">
+              <fieldset>
+                <legend>Mode</legend>
+                <label for="mode"
+                  >Mode
+                  <span class="help-icon">❓</span>
+                  <span class="tooltip"
+                    >Choose the mode for Nostr. 'Anonymous' generates new keys
+                    everytime for event signing, while 'NIP-07' gets your nostr
+                    public key and signs events using browser extensions like
+                    alby or nos2x</span
+                  >
+                </label>
+                <select id="mode">
+                  <option value="anon">Anonymous</option>
+                  <option value="nip07">NIP07</option>
+                </select>
+              </fieldset>
 
-      <fieldset id="nip07-settings">
-        <legend>NIP07 Settings</legend>
-        <input type="checkbox" id="nip07-relays" />
-      </fieldset>
+              <fieldset>
+                <legend>Open Nostr Links</legend>
+                <label for="open-nostr"
+                  >URL
+                  <span class="help-icon">❓</span>
+                  <span class="tooltip"
+                    >You can specify a URL to open nostr links in.</span
+                  >
+                </label>
+                <input type="text" id="open-nostr" />
+              </fieldset>
 
-      <fieldset>
-        <legend>Relays</legend>
-        <label>Relays</label>
-        <ul id="relays-list" style="list-style-type: none; padding-left: 0;"></ul>
-        <button id="add-relay">Add Relay</button>
-      </fieldset>
+              <fieldset id="nip07-settings">
+                <legend>NIP07 Settings</legend>
+                <input type="checkbox" id="nip07-relays" />
+              </fieldset>
 
-      <fieldset id="nip65-fieldset">
-        <legend>NIP-65 Relay Management</legend>
-        <div id="nip65-relay-manager"></div>
-      </fieldset>
+              <fieldset>
+                <legend>Relays</legend>
+                <label>Relays</label>
+                <ul
+                  id="relays-list"
+                  style="list-style-type: none; padding-left: 0"
+                ></ul>
+                <button id="add-relay">Add Relay</button>
+              </fieldset>
+
+              <fieldset id="nip65-fieldset">
+                <legend>NIP-65 Relay Management</legend>
+                <div id="nip65-relay-manager"></div>
+              </fieldset>
+            </div>
+          </div>
+          <div class="section collapsable" id="lightsats-settings">
+            <h2>Lightsats Integration</h2>
+
+            <div class="input-container collapsed">
+              <fieldset>
+                <legend>Registration</legend>
+                <label for="lightsats-registration">
+                  <a href="https://lightsats.com/register" target="_blank"
+                    >Register for Lightsats</a
+                  >
+                  <span class="help-icon">❓</span>
+                  <span class="tooltip"
+                    >This link is for registering a new account on
+                    Lightsats.</span
+                  >
+                </label>
+              </fieldset>
+
+              <fieldset>
+                <legend>API Key</legend>
+                <label for="lightsats-api-key"
+                  >API Key
+                  <span class="help-icon">❓</span>
+                  <span class="tooltip"
+                    >Enter your Lightsats API key here.</span
+                  >
+                </label>
+                <input
+                  type="password"
+                  id="lightsats-api-key"
+                  placeholder="API Key"
+                />
+              </fieldset>
+
+              <fieldset id="lightsats-integration">
+                <legend>Integration</legend>
+                <input type="checkbox" id="lightsats-enable" />
+                <label for="lightsats-enable">
+                  <span class="help-icon">❓</span>
+                  <span class="tooltip"
+                    >When enabled, Nostrize extension will show a Lightsats
+                    button if the user has no Nostr integration.</span
+                  >
+                </label>
+              </fieldset>
+            </div>
+          </div>
+          <div class="section collapsable" id="debug-settings">
+            <h2>Debug Settings</h2>
+
+            <div class="input-container collapsed">
+              <fieldset id="debug-settings-logging">
+                <legend>Logging</legend>
+                <input type="checkbox" id="log" />
+              </fieldset>
+
+              <fieldset>
+                <legend>Namespace</legend>
+                <label for="namespace"
+                  >Namespace
+                  <span class="help-icon">❓</span>
+                  <span class="tooltip"
+                    >This helps in identifying Nostrize logs.</span
+                  >
+                </label>
+                <input type="text" id="namespace" placeholder="Namespace" />
+              </fieldset>
+            </div>
+          </div>
+        </section>
+        <section id="tools-section">
+          <div class="section collapsable">
+            <h2>NIP-65 Relay Manager</h2>
+            <div class="input-container collapsed">
+              <div id="nip65-relay-manager-container"></div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
-  </div>
-
-  <div class="section collapsable" id="lightsats-settings">
-    <h2>Lightsats Integration</h2>
-    
-    <div class="input-container collapsed">
-      <fieldset>
-        <legend>Registration</legend>
-        <label for="lightsats-registration">
-          <a href="https://lightsats.com/register" target="_blank">Register for Lightsats</a>
-          <span class="help-icon">❓</span>
-          <span class="tooltip">This link is for registering a new account on Lightsats.</span>
-        </label>
-      </fieldset>
-  
-      <fieldset>
-        <legend>API Key</legend>
-        <label for="lightsats-api-key">API Key
-          <span class="help-icon">❓</span>
-          <span class="tooltip">Enter your Lightsats API key here.</span>
-        </label>
-        <input type="password" id="lightsats-api-key" placeholder="API Key" />
-      </fieldset>
-  
-      <fieldset id="lightsats-integration">
-        <legend>Integration</legend>
-        <input type="checkbox" id="lightsats-enable" />
-        <label for="lightsats-enable">
-          <span class="help-icon">❓</span>
-          <span class="tooltip">When enabled, Nostrize extension will show a Lightsats button if the user has no Nostr integration.</span>
-        </label>
-      </fieldset>
-    </div>
-  </div>
-
-  <div class="section collapsable" id="debug-settings">
-    <h2>Debug Settings</h2>
-
-    <div class="input-container collapsed">
-      <fieldset id="debug-settings-logging">
-        <legend>Logging</legend>
-        <input type="checkbox" id="log" />
-      </fieldset>
-
-      <fieldset>
-        <legend>Namespace</legend>
-        <label for="namespace">Namespace
-          <span class="help-icon">❓</span>
-          <span class="tooltip">This helps in identifying Nostrize logs.</span>
-        </label>
-        <input type="text" id="namespace" placeholder="Namespace" />
-      </fieldset>
-    </div>
-  </div>
-
-  <div class="sections" id="misc-container">
-    <div class="input-container" id="misc-container">
-      <div>
-        <button id="reset-settings">Reset settings</button>
-        <button id="save-settings">Save settings</button>
-        <span id="saved-notification">Saved</span>
+    <div class="sections" id="misc-container">
+      <div class="input-container" id="misc-container">
+        <div>
+          <button id="reset-settings">Reset settings</button>
+          <button id="save-settings">Save settings</button>
+          <span id="saved-notification">Saved</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="version-container">
-    <div class="version">Settings Version: <span id="version-number"></span></div>
-  </div>
+    <div class="version-container">
+      <div class="version">
+        Settings Version: <span id="version-number"></span>
+      </div>
+    </div>
 
-  <script src="nostrize-settings.js" type="module" defer></script>
-</body>
+    <script src="nostrize-settings.js" type="module" defer></script>
+  </body>
 </html>

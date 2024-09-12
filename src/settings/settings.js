@@ -10,22 +10,6 @@ import NIP65RelayManager from "./nip65.svelte";
 async function settingsPage() {
   const state = await getLocalSettings();
 
-  if (
-    state.nostrSettings.mode === "nip07" &&
-    state.nostrSettings.nip07.useRelays &&
-    state.nostrSettings.nip07.pubkey &&
-    state.nostrSettings.nip07.writeRelays &&
-    state.nostrSettings.nip07.writeRelays.length > 0
-  ) {
-    new NIP65RelayManager({
-      target: document.getElementById("nip65-relay-manager"),
-      props: {
-        pubkey: state.nostrSettings.nip07.pubkey,
-        relays: state.nostrSettings.nip07.writeRelays,
-      },
-    });
-  }
-
   // Load state into UI
   function loadState() {
     document.getElementById("version-number").textContent = state.version;
@@ -250,6 +234,36 @@ async function settingsPage() {
       }
     });
   });
+
+  const icons = document.querySelectorAll(".sidebar .icon");
+  const sections = document.querySelectorAll("main section");
+
+  icons.forEach((icon) => {
+    icon.addEventListener("click", function () {
+      const sectionName = this.dataset.section;
+
+      // Remove active class from all icons and sections
+      icons.forEach((i) => i.classList.remove("active"));
+      sections.forEach((s) => s.classList.remove("active"));
+
+      // Add active class to clicked icon and corresponding section
+      this.classList.add("active");
+      document.getElementById(`${sectionName}-section`).classList.add("active");
+    });
+  });
+
+  // Load NIP-65 Manager into tools section
+  const nip65Container = document.getElementById(
+    "nip65-relay-manager-container",
+  );
+
+  if (nip65Container) {
+    new NIP65RelayManager({
+      target: nip65Container,
+    });
+  } else {
+    console.error("NIP-65 Relay Manager container not found");
+  }
 
   // Collapsable sections
   document.querySelectorAll(".section.collapsable").forEach((collapsable) => {

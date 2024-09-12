@@ -23,7 +23,7 @@
 
 /* Checkmark for the checked state */
 .checkbox-container .custom-checkbox.checked::before {
-  content: '';
+  content: "";
   width: 12px;
   height: 12px;
   background-color: #8250df;

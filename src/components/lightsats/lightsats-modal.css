@@ -76,14 +76,20 @@ legend {
   cursor: not-allowed;
 }
 
-.n-ls-modal-step-0, .n-ls-modal-step-1, .n-ls-modal-step-2, .n-ls-modal-step-3, .n-ls-modal-step-4 {
+.n-ls-modal-step-0,
+.n-ls-modal-step-1,
+.n-ls-modal-step-2,
+.n-ls-modal-step-3,
+.n-ls-modal-step-4 {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
 
-.n-ls-modal-step-1, .n-ls-modal-step-3, .n-ls-modal-step-4 {
+.n-ls-modal-step-1,
+.n-ls-modal-step-3,
+.n-ls-modal-step-4 {
   display: none;
 }
 

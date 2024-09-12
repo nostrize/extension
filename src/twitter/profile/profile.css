@@ -5,11 +5,20 @@
   border: 2px solid white;
   border-radius: 7px;
   padding: 5px;
-  background-color:  rgb(130, 80, 223);
+  background-color: rgb(130, 80, 223);
 }
 
-.n-follows-you-indicator, .n-nostr-profile-button {
-  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+.n-follows-you-indicator,
+.n-nostr-profile-button {
+  font-family:
+    TwitterChirp,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   background-color: rgb(130, 80, 223);
   font-weight: 500;
   font-size: 11px;

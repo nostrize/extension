@@ -82,7 +82,7 @@ label span {
 }
 
 .section h2::before {
-  content: '▶'; /* The default arrow indicator */
+  content: "▶"; /* The default arrow indicator */
   position: absolute;
   left: 10px; /* Adjust this value to position the indicator inside the section */
   transition: transform 0.3s ease-out;
@@ -108,8 +108,7 @@ label span {
   margin-bottom: 5px;
 }
 
-.input-container 
-input[type="text"],
+.input-container input[type="text"],
 input[type="password"],
 select {
   width: 100%;
@@ -222,4 +221,54 @@ legend {
   width: 100%;
   align-items: flex-end;
   padding-top: 20px;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 60px;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.icon:hover,
+.icon.active {
+  background-color: rgba(130, 80, 223, 0.2);
+}
+
+.icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+section {
+  display: none;
+}
+
+section.active {
+  display: block;
 }
