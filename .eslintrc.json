@@ -13,7 +13,7 @@
     "no-unused-vars": ["error", { "varsIgnorePattern": "^_" }],
     "curly": "error"
   },
-  "ignorePatterns": ["/dist/**"],
+  "ignorePatterns": ["/dist/**", "*.css"],
   "globals": {
     "chrome": "readonly"
   },
