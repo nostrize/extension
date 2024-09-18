@@ -1,4 +1,4 @@
-import { wrapCheckbox } from "../components/checkbox/checkbox-wrapper.js";
+import * as html from "../imgui-dom/html.js";
 import {
   getLocalSettings,
   saveLocalSettings,
@@ -6,6 +6,9 @@ import {
 } from "../helpers/local-cache.js";
 
 import NIP65RelayManager from "./nip65.svelte";
+import DebugSettings from "./debug.svelte";
+import LightsatsSettings from "./lightsats.svelte";
+import NostrSettings from "./nostr.svelte";
 
 async function settingsPage() {
   const state = await getLocalSettings();
@@ -13,95 +16,12 @@ async function settingsPage() {
   // Load state into UI
   function loadState() {
     document.getElementById("version-number").textContent = state.version;
-
-    // Load Debug Settings
-    document.getElementById("log").checked = state.debug.log;
-    if (state.debug.log) {
-      document
-        .getElementById("log")
-        .nextElementSibling.classList.add("checked");
-    }
-    document.getElementById("namespace").value = state.debug.namespace;
-
-    // Load Nostr Settings
-    document.getElementById("open-nostr").value = state.nostrSettings.openNostr;
-
-    document.getElementById("mode").value = state.nostrSettings.mode;
-    document.getElementById("nip07-relays").checked =
-      state.nostrSettings.nip07.useRelays;
-
-    if (state.nostrSettings.nip07.useRelays) {
-      document
-        .getElementById("nip07-relays")
-        .nextElementSibling.classList.add("checked");
-    }
-
-    const relaysList = document.getElementById("relays-list");
-    relaysList.innerHTML = ""; // Clear existing list
-
-    state.nostrSettings.relays.forEach((relay, index) => {
-      const relayItem = createRelayItem(relay, index);
-      relaysList.appendChild(relayItem);
-    });
-
-    toggleNIP07Settings();
-
-    // Load Lightsats Settings
-    document.getElementById("lightsats-api-key").value =
-      state.lightsatsSettings.apiKey;
-    document.getElementById("lightsats-enable").checked =
-      state.lightsatsSettings.enabled;
-
-    if (state.lightsatsSettings.enabled) {
-      document
-        .getElementById("lightsats-enable")
-        .nextElementSibling.classList.add("checked");
-    }
-  }
-
-  // Create a relay item element
-  function createRelayItem(relay, index) {
-    const li = document.createElement("li");
-    li.classList.add("relay-item");
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = relay;
-    input.onchange = (e) =>
-      (state.nostrSettings.relays[index] = e.target.value);
-
-    const button = document.createElement("button");
-    button.textContent = "Remove";
-    button.classList.add("remove-relay");
-    button.onclick = () => removeRelay(index);
-
-    li.appendChild(input);
-    li.appendChild(button);
-
-    return li;
-  }
-
-  function removeRelay(index) {
-    state.nostrSettings.relays.splice(index, 1);
-
-    loadState();
-  }
-
-  function addRelay() {
-    state.nostrSettings.relays.push("");
-
-    loadState();
-  }
-
-  function toggleNIP07Settings() {
-    const nip07Settings = document.getElementById("nip07-settings");
-
-    nip07Settings.style.display =
-      state.nostrSettings.mode === "nip07" ? "flex" : "none";
   }
 
   // Reset settings to default
   function resetSettings() {
+    // TODO: do it in svelte way
+
     // Debug settings
     state.debug.log = defaultSettings.debug.log;
     state.debug.namespace = defaultSettings.debug.namespace;
@@ -113,10 +33,6 @@ async function settingsPage() {
       defaultSettings.nostrSettings.nip07.useRelays;
     state.nostrSettings.relays = [...defaultSettings.nostrSettings.relays];
     state.nostrSettings.openNostr = defaultSettings.nostrSettings.openNostr;
-
-    // Lightsats settings
-    state.lightsatsSettings.apiKey = defaultSettings.lightsatsSettings.apiKey;
-    state.lightsatsSettings.enabled = defaultSettings.lightsatsSettings.enabled;
 
     loadState();
   }
@@ -135,74 +51,6 @@ async function settingsPage() {
 
     loadState();
   }
-
-  // Load custom checkbox: Debug
-  const debugCheckbox = document.getElementById("log");
-
-  const wrappedLogCheckbox = wrapCheckbox({
-    input: debugCheckbox,
-    text: "Enable Logging",
-    onclick: (checked) => {
-      state.debug.log = checked;
-    },
-  });
-
-  document
-    .getElementById("debug-settings-logging")
-    .appendChild(wrappedLogCheckbox);
-
-  // Load custom checkbox: Use NIP07 Relays
-  const nip07RelaysCheckbox = document.getElementById("nip07-relays");
-
-  const wrappedNip07RelaysCheckbox = wrapCheckbox({
-    input: nip07RelaysCheckbox,
-    text: "Use relays from NIP07 extension",
-    onclick: (checked) => {
-      state.nostrSettings.nip07.useRelays = checked;
-    },
-  });
-
-  document
-    .getElementById("nip07-settings")
-    .appendChild(wrappedNip07RelaysCheckbox);
-
-  // Load custom checkbox: Lightsats integration
-  const lightsatsCheckbox = document.getElementById("lightsats-enable");
-
-  const wrappedCheckbox = wrapCheckbox({
-    input: lightsatsCheckbox,
-    text: "Enable Lightsats",
-    onclick: (checked) => {
-      state.lightsatsSettings.enabled = checked;
-    },
-  });
-
-  document
-    .getElementById("lightsats-integration")
-    .appendChild(wrappedCheckbox)
-    .appendChild(document.querySelector("label[for='lightsats-enable']"));
-
-  // Attach event listeners
-  // Debug settings
-  document.getElementById("namespace").onchange = (e) =>
-    (state.debug.namespace = e.target.value);
-
-  // Nostr settings
-  document.getElementById("mode").onchange = (e) => {
-    state.nostrSettings.mode = e.target.value;
-
-    toggleNIP07Settings();
-  };
-
-  document.getElementById("open-nostr").onchange = (e) =>
-    (state.nostrSettings.openNostr = e.target.value);
-
-  document.getElementById("add-relay").onclick = addRelay;
-
-  // Lightsats settings
-  document.getElementById("lightsats-api-key").onchange = (e) =>
-    (state.lightsatsSettings.apiKey = e.target.value);
-
   // Save/Reset settings
   document.getElementById("reset-settings").onclick = resetSettings;
   document.getElementById("save-settings").onclick = saveSettings;
@@ -257,7 +105,15 @@ async function settingsPage() {
     "nip65-relay-manager-container",
   );
 
-  if (nip65Container) {
+  if (state.nostrSettings.mode === "nip07") {
+    nip65Container.append(
+      html.link({
+        href: "https://nostrize.me/pages/nip65-manager.html",
+        targetBlank: true,
+        text: "Click to edit NIP-65 relays",
+      }),
+    );
+  } else if (state.nostrSettings.mode === "nostrconnect") {
     new NIP65RelayManager({
       target: nip65Container,
       props: {
@@ -265,7 +121,43 @@ async function settingsPage() {
       },
     });
   } else {
-    console.error("NIP-65 Relay Manager container not found");
+    nip65Container.append(
+      html.span({
+        text: `Cannot edit NIP-65 relays when in ${state.nostrSettings.mode} mode`,
+      }),
+    );
+  }
+
+  // Load Debug Settings
+  const debugContainer = document.getElementById("debug-settings-container");
+
+  if (debugContainer) {
+    new DebugSettings({
+      target: debugContainer,
+      props: { debugSettings: state.debug },
+    });
+  }
+
+  // Load Lightsats Settings
+  const lightsatsContainer = document.getElementById(
+    "lightsats-settings-container",
+  );
+
+  if (lightsatsContainer) {
+    new LightsatsSettings({
+      target: lightsatsContainer,
+      props: { lightsatsSettings: state.lightsatsSettings },
+    });
+  }
+
+  // Load Nostr Settings
+  const nostrContainer = document.getElementById("nostr-settings-container");
+
+  if (nostrContainer) {
+    new NostrSettings({
+      target: nostrContainer,
+      props: { nostrSettings: state.nostrSettings },
+    });
   }
 
   // Collapsable sections

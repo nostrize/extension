@@ -161,6 +161,7 @@ select {
   flex-grow: 1;
   max-width: 100%;
   padding: 5px;
+  margin-bottom: 5px;
 }
 
 .relay-item button {
@@ -180,20 +181,12 @@ button {
   margin-top: 5px;
 }
 
-#namespace {
-  max-width: 96%;
-}
-
 #reset-settings {
   background-color: darkred;
 }
 
 #save-settings {
   background-color: green;
-}
-
-#nip07-settings {
-  display: none;
 }
 
 fieldset {

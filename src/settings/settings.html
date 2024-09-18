@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nostrize Settings</title>
     <link rel="stylesheet" href="nostrize-settings.css" />
-    <link rel="stylesheet" href="nostrize-checkbox.css" />
   </head>
   <body>
+    <div id="settings-container"></div>
     <div class="container">
       <nav class="sidebar">
         <div class="icon settings-icon active" data-section="settings">
@@ -37,126 +37,28 @@
           </svg>
         </div>
       </nav>
+      
       <main class="content">
         <section id="settings-section" class="active">
           <div class="section collapsable" id="nostr-settings">
             <h2>Nostr Settings</h2>
 
             <div class="input-container collapsed">
-              <fieldset>
-                <legend>Mode</legend>
-                <label for="mode"
-                  >Mode
-                  <span class="help-icon">❓</span>
-                  <span class="tooltip"
-                    >Choose the mode for Nostr. 'Anonymous' generates new keys
-                    everytime for event signing, while 'NIP-07' gets your nostr
-                    public key and signs events using browser extensions like
-                    alby or nos2x. Use NostrConnect to select providers</span
-                  >
-                </label>
-                <select id="mode">
-                  <option value="anon">Anonymous</option>
-                  <option value="nip07">NIP07</option>
-                  <option value="nostrconnect">NostrConnect</option>
-                </select>
-              </fieldset>
-
-              <fieldset id="nip07-settings">
-                <legend>NIP07 Settings</legend>
-                <input type="checkbox" id="nip07-relays" />
-              </fieldset>
-
-              <fieldset>
-                <legend>Open Nostr Links</legend>
-                <label for="open-nostr"
-                  >URL
-                  <span class="help-icon">❓</span>
-                  <span class="tooltip"
-                    >You can specify a URL to open nostr links in.</span
-                  >
-                </label>
-                <input type="text" id="open-nostr" />
-              </fieldset>
-
-              <fieldset>
-                <legend>Relays</legend>
-                <label>Relays</label>
-                <ul
-                  id="relays-list"
-                  style="list-style-type: none; padding-left: 0"
-                ></ul>
-                <button id="add-relay">Add Relay</button>
-              </fieldset>
+              <div id="nostr-settings-container"></div>
             </div>
           </div>
           <div class="section collapsable" id="lightsats-settings">
             <h2>Lightsats Integration</h2>
 
             <div class="input-container collapsed">
-              <fieldset>
-                <legend>Registration</legend>
-                <label for="lightsats-registration">
-                  <a href="https://lightsats.com/register" target="_blank"
-                    >Register for Lightsats</a
-                  >
-                  <span class="help-icon">❓</span>
-                  <span class="tooltip"
-                    >This link is for registering a new account on
-                    Lightsats.</span
-                  >
-                </label>
-              </fieldset>
-
-              <fieldset>
-                <legend>API Key</legend>
-                <label for="lightsats-api-key"
-                  >API Key
-                  <span class="help-icon">❓</span>
-                  <span class="tooltip"
-                    >Enter your Lightsats API key here.</span
-                  >
-                </label>
-                <input
-                  type="password"
-                  id="lightsats-api-key"
-                  placeholder="API Key"
-                />
-              </fieldset>
-
-              <fieldset id="lightsats-integration">
-                <legend>Integration</legend>
-                <input type="checkbox" id="lightsats-enable" />
-                <label for="lightsats-enable">
-                  <span class="help-icon">❓</span>
-                  <span class="tooltip"
-                    >When enabled, Nostrize extension will show a Lightsats
-                    button if the user has no Nostr integration.</span
-                  >
-                </label>
-              </fieldset>
+              <div id="lightsats-settings-container"></div>
             </div>
           </div>
           <div class="section collapsable" id="debug-settings">
             <h2>Debug Settings</h2>
 
             <div class="input-container collapsed">
-              <fieldset id="debug-settings-logging">
-                <legend>Logging</legend>
-                <input type="checkbox" id="log" />
-              </fieldset>
-
-              <fieldset>
-                <legend>Namespace</legend>
-                <label for="namespace"
-                  >Namespace
-                  <span class="help-icon">❓</span>
-                  <span class="tooltip"
-                    >This helps in identifying Nostrize logs.</span
-                  >
-                </label>
-                <input type="text" id="namespace" placeholder="Namespace" />
-              </fieldset>
+              <div id="debug-settings-container"></div>
             </div>
           </div>
         </section>
