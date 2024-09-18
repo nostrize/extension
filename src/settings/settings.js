@@ -128,10 +128,10 @@ async function settingsPage() {
 
     await saveLocalSettings({ settings: state });
 
-    const notification = document.getElementById("saved-notification");
-    notification.style.display = "inline";
+    const saveButton = document.getElementById("save-settings");
+    saveButton.textContent = "Saved";
 
-    setTimeout(() => (notification.style.display = "none"), 2000);
+    setTimeout(() => (saveButton.textContent = "Save settings"), 2000);
 
     loadState();
   }
@@ -260,6 +260,9 @@ async function settingsPage() {
   if (nip65Container) {
     new NIP65RelayManager({
       target: nip65Container,
+      props: {
+        state,
+      },
     });
   } else {
     console.error("NIP-65 Relay Manager container not found");

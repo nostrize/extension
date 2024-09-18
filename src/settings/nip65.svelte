@@ -6,24 +6,19 @@
     nip04,
     SimplePool,
   } from "nostr-tools";
+  import { bytesToHex } from "@noble/hashes/utils";
 
   import { getPageUserRelays } from "../helpers/relays.js";
-  import { getLocalSettings } from "../helpers/local-cache.js";
   import { generateRandomHexString } from "../helpers/utils.js";
 
-  let state;
-  let bunkerUrl = "";
+  export let state;
+
   let bunkerRelays = [];
-  let remoteUserPubkey = "";
+  let remotePubkey = "";
   let nip65Relays = [];
   let isLoading = false;
   let error = "";
   let success = "";
-  async function initializeState() {
-    state = await getLocalSettings();
-  }
-
-  initializeState();
 
   async function connectToBunker() {
     isLoading = true;
@@ -32,17 +27,17 @@
 
     try {
       // Parse the bunker URL
-      const url = new URL(bunkerUrl);
+      const url = new URL(state.nostrSettings.bunkerUrl);
 
       if (url.protocol !== "bunker:") {
         throw new Error("Invalid bunker URL: must start with bunker://");
       }
 
-      remoteUserPubkey = url.pathname.slice(2); // Remove the leading '//'
+      remotePubkey = url.pathname.slice(2); // Remove the leading '//'
       bunkerRelays = url.searchParams.getAll("relay");
-      // const secret = url.searchParams.get('secret');
+      const secret = url.searchParams.get("secret");
 
-      if (!remoteUserPubkey) {
+      if (!remotePubkey) {
         throw new Error("Invalid bunker URL: missing remote user pubkey");
       }
 
@@ -50,11 +45,11 @@
         throw new Error("Invalid bunker URL: at least one relay is required");
       }
 
-      console.log("Connecting to bunker:", remoteUserPubkey, bunkerRelays);
+      console.log("Connecting to bunker:", remotePubkey, bunkerRelays);
 
       // After successful connection, fetch the NIP-65 relays
       const { tags } = await getPageUserRelays({
-        pubkey: remoteUserPubkey,
+        pubkey: remotePubkey,
         relays: state.nostrSettings.relays,
       });
 
@@ -65,11 +60,96 @@
           read: !tag[2] || tag[2] === "read",
           write: !tag[2] || tag[2] === "write",
         }));
+
+      // Client creates a local keypair
+      const ephemeralKey = generateSecretKey();
+      const ephemeralPubkey = getPublicKey(ephemeralKey);
+
+      console.log("ephemeralKey", bytesToHex(ephemeralKey));
+      console.log("ephemeralPubkey", ephemeralPubkey);
+
+      const encryptedMessage = await nip04.encrypt(
+        ephemeralKey,
+        remotePubkey,
+        JSON.stringify({
+          id: generateRandomHexString(64),
+          method: "connect",
+          params: secret ? [remotePubkey, secret] : [remotePubkey],
+        }),
+      );
+
+      console.log("encryptedMessage", encryptedMessage);
+
+      // Client creates a NIP-65 event
+      const eventTemplate = {
+        kind: 24133,
+        pubkey: ephemeralPubkey,
+        content: encryptedMessage,
+        tags: [["p", remotePubkey]],
+        created_at: Math.floor(Date.now() / 1000),
+      };
+
+      const signedEvent = finalizeEvent(eventTemplate, ephemeralKey);
+
+      const pool = new SimplePool();
+
+      const publishResult = await Promise.allSettled(
+        pool.publish(bunkerRelays, signedEvent),
+      );
+
+      const rejectedRelays = publishResult.filter(
+        (r) => r.status === "rejected",
+      );
+
+      const fulfilledRelays = publishResult.filter(
+        (r) => r.status === "fulfilled",
+      );
+
+      if (rejectedRelays.length) {
+        error = rejectedRelays.join(", ") + " failed to publish.";
+      }
+
+      if (fulfilledRelays.length) {
+        success = fulfilledRelays.join(", ") + "succeed to publish";
+      }
+
+      // fetch the response
+      const responseEvent = await pool.get(bunkerRelays, {
+        kinds: [24133],
+        authors: [remotePubkey],
+        limit: 1,
+      });
+
+      console.log("event.content", responseEvent.content);
+
+      const decrypted = await nip04.decrypt(
+        ephemeralKey,
+        remotePubkey,
+        responseEvent.content,
+      );
+
+      console.log("decrypted", decrypted);
+
+      let parsed;
+
+      try {
+        parsed = JSON.parse(decrypted);
+
+        if (parsed.result === "ack") {
+          success = "Connected to bunker";
+        } else if (parsed.result === "auth_url") {
+          window.open(parsed.error, "_blank");
+        }
+      } catch (e) {
+        error = error.message;
+      }
+
+      isLoading = false;
     } catch (err) {
       console.error("Error connecting to bunker:", err);
 
       error = err.message;
-    } finally {
+
       isLoading = false;
     }
   }
@@ -100,11 +180,15 @@
       tags: nip65Relays
         .filter((r) => r.read || r.write)
         .map((r) => {
-          return [
-            "r",
-            r.relay,
-            r.read && !r.write ? "read" : !r.read && r.write ? "write" : null,
-          ];
+          if (r.read && !r.write) {
+            return ["r", r.relay, "read"];
+          }
+
+          if (!r.read && r.write) {
+            return ["r", r.relay, "write"];
+          }
+
+          return ["r", r.relay];
         }),
       created_at: Math.floor(Date.now() / 1000),
       content: "",
@@ -112,7 +196,7 @@
 
     const encryptedMessage = await nip04.encrypt(
       ephemeralKey,
-      ephemeralPubkey,
+      remotePubkey,
       JSON.stringify({
         id: generateRandomHexString(64),
         method: "sign_event",
@@ -125,7 +209,7 @@
       kind: 24133,
       pubkey: ephemeralPubkey,
       content: encryptedMessage,
-      tags: [["p", remoteUserPubkey]],
+      tags: [["p", remotePubkey]],
       created_at: Math.floor(Date.now() / 1000),
     };
 
@@ -147,14 +231,24 @@
         success = null;
       }, 5000);
     }
+
+    const reply = await pool.get(bunkerRelays, {
+      authors: [remotePubkey],
+      kinds: [24133],
+      "#p": [ephemeralPubkey],
+    });
+
+    console.log("reply", reply);
   }
+
+  $: shortPubkey = remotePubkey.slice(0, 5) + "..." + remotePubkey.slice(-5);
 </script>
 
 <div class="nip65-relay-manager">
   <div class="row">
     <input
       type="text"
-      bind:value={bunkerUrl}
+      bind:value={state.nostrSettings.bunkerUrl}
       placeholder="Enter bunker:// URL"
     />
     <button on:click={connectToBunker} disabled={isLoading}>
@@ -170,11 +264,9 @@
     <p class="success">{success}</p>
   {/if}
 
-  {#if remoteUserPubkey}
+  {#if remotePubkey}
     <p>
-      Connected as: {remoteUserPubkey.slice(0, 3)}...{remoteUserPubkey.slice(
-        -3,
-      )}
+      Remote pubkey: {shortPubkey}
     </p>
   {/if}
 

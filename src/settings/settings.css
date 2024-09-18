@@ -196,12 +196,6 @@ button {
   display: none;
 }
 
-#saved-notification {
-  display: none;
-  color: green;
-  font-weight: bold;
-}
-
 fieldset {
   border: 1px solid #8250df;
   border-radius: 5px;
@@ -226,7 +220,7 @@ legend {
 .container {
   display: flex;
   width: 100%;
-  min-height: 100vh;
+  min-height: fit-content;
 }
 
 .sidebar {
@@ -271,4 +265,16 @@ section {
 
 section.active {
   display: block;
+}
+
+#misc-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  max-width: 400px;
+}
+
+#misc-container button {
+  width: 106px;
 }

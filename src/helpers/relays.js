@@ -1,7 +1,5 @@
 import { SimplePool } from "nostr-tools";
 
-import { saveLocalSettings } from "./local-cache.js";
-
 export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
   const shouldGetNip07Relays =
     settings.nostrSettings.mode === "nip07" &&
@@ -17,8 +15,7 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
         setTimeout(() => resolve(localRelays), timeout);
       }
 
-      // TODO: remove async when we have a way to get relays the from bunker
-      window.addEventListener("message", async (event) => {
+      window.addEventListener("message", (event) => {
         if (event.source !== window) {
           return;
         }
@@ -32,13 +29,6 @@ export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
         if (from !== "nostrize-nip07-provider") {
           return;
         }
-
-        // update relays into settings
-        // TODO: remove code when we have a way to get relays the from bunker
-        settings.nostrSettings.nip07.writeRelays = writeRelays;
-        settings.nostrSettings.nip07.readRelays = readRelays;
-
-        await saveLocalSettings({ settings });
 
         return resolve({ readRelays, writeRelays });
       });

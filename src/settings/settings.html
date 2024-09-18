@@ -52,13 +52,19 @@
                     >Choose the mode for Nostr. 'Anonymous' generates new keys
                     everytime for event signing, while 'NIP-07' gets your nostr
                     public key and signs events using browser extensions like
-                    alby or nos2x</span
+                    alby or nos2x. Use NostrConnect to select providers</span
                   >
                 </label>
                 <select id="mode">
                   <option value="anon">Anonymous</option>
                   <option value="nip07">NIP07</option>
+                  <option value="nostrconnect">NostrConnect</option>
                 </select>
+              </fieldset>
+
+              <fieldset id="nip07-settings">
+                <legend>NIP07 Settings</legend>
+                <input type="checkbox" id="nip07-relays" />
               </fieldset>
 
               <fieldset>
@@ -73,11 +79,6 @@
                 <input type="text" id="open-nostr" />
               </fieldset>
 
-              <fieldset id="nip07-settings">
-                <legend>NIP07 Settings</legend>
-                <input type="checkbox" id="nip07-relays" />
-              </fieldset>
-
               <fieldset>
                 <legend>Relays</legend>
                 <label>Relays</label>
@@ -86,11 +87,6 @@
                   style="list-style-type: none; padding-left: 0"
                 ></ul>
                 <button id="add-relay">Add Relay</button>
-              </fieldset>
-
-              <fieldset id="nip65-fieldset">
-                <legend>NIP-65 Relay Management</legend>
-                <div id="nip65-relay-manager"></div>
               </fieldset>
             </div>
           </div>
@@ -172,16 +168,11 @@
             </div>
           </div>
         </section>
-      </main>
-    </div>
-    <div class="sections" id="misc-container">
-      <div class="input-container" id="misc-container">
-        <div>
+        <div id="misc-container">
           <button id="reset-settings">Reset settings</button>
           <button id="save-settings">Save settings</button>
-          <span id="saved-notification">Saved</span>
         </div>
-      </div>
+      </main>
     </div>
 
     <div class="version-container">

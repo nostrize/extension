@@ -5,15 +5,13 @@ import {
   getFromCache,
   getOrInsertCache,
   insertToCache,
-  saveLocalSettings,
 } from "./local-cache.js";
 import { Either } from "./utils.js";
 
 export async function getUserPubkey({ settings, timeout = 1000 }) {
   if (settings.nostrSettings.mode === "nip07") {
     return new Promise((resolve) => {
-      // TODO: remove async when we have a way to get pubkey from bunker
-      window.addEventListener("message", async (event) => {
+      window.addEventListener("message", (event) => {
         if (event.source !== window) {
           return;
         }
@@ -28,11 +26,6 @@ export async function getUserPubkey({ settings, timeout = 1000 }) {
         ) {
           return;
         }
-
-        // save pubkey into settings
-        // TODO: remove code when we have a way to get pubkey from bunker
-        settings.nostrSettings.nip07.pubkey = pubkey;
-        await saveLocalSettings({ settings });
 
         return resolve(pubkey);
       });
