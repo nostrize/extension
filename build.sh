@@ -36,4 +36,3 @@ cp src/telegram-web/bio.css dist/telegram-web-bio.css
 
 # copy settings popup files
 cp src/settings/settings.html dist/nostrize-settings.html
-cp src/settings/settings.css dist/nostrize-settings.css

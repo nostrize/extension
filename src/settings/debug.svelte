@@ -1,5 +1,8 @@
 <script>
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
+  import Tooltip from "../components/tooltip/tooltip.svelte";
+
+  import "./common.css";
 
   export let debugSettings;
 </script>
@@ -16,11 +19,11 @@
 
   <fieldset>
     <legend>Namespace</legend>
-    <label for="namespace"
-      >Namespace
-      <span class="help-icon">❓</span>
-      <span class="tooltip">This helps in identifying Nostrize logs.</span>
-    </label>
+    <Tooltip
+      text="This helps in identifying Nostrize logs."
+      title="Namespace"
+    />
+
     <input
       type="text"
       id="namespace"

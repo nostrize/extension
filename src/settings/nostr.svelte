@@ -1,5 +1,6 @@
 <script>
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
+  import Tooltip from "../components/tooltip/tooltip.svelte";
 
   export let nostrSettings;
 
@@ -15,16 +16,15 @@
 <div class="nostr-settings">
   <fieldset>
     <legend>Mode</legend>
-    <label for="mode"
-      >Mode
-      <span class="help-icon">❓</span>
-      <span class="tooltip"
-        >Choose the mode for Nostr. 'Anonymous' generates new keys everytime for
+
+    <Tooltip
+      text="Choose the mode for Nostr. 'Anonymous' generates new keys everytime for
         event signing, while 'NIP-07' gets your nostr public key and signs
         events using browser extensions like alby or nos2x. Use NostrConnect to
-        select providers</span
-      >
-    </label>
+        select providers"
+      title="Mode"
+    />
+
     <select id="mode" bind:value={nostrSettings.mode}>
       <option value="anon">Anonymous</option>
       <option value="nip07">NIP07</option>
@@ -44,11 +44,9 @@
 
   <fieldset>
     <legend>Open Nostr Links</legend>
-    <label for="open-nostr"
-      >URL
-      <span class="help-icon">❓</span>
-      <span class="tooltip">You can specify a URL to open nostr links in.</span>
-    </label>
+
+    <Tooltip text="You can specify a URL to open nostr links" title="URL" />
+
     <input type="text" id="open-nostr" bind:value={nostrSettings.openNostr} />
   </fieldset>
 
@@ -58,10 +56,33 @@
       {#each nostrSettings.relays as relay}
         <li class="relay-item">
           <input type="text" bind:value={relay} />
-          <button on:click={() => removeRelay(relay)}>Remove</button>
+          <button
+            class="remove-relay-button settings-button"
+            on:click={() => removeRelay(relay)}
+          >
+            Remove
+          </button>
         </li>
       {/each}
     </ul>
-    <button id="add-relay" on:click={addRelay}>Add Relay</button>
+    <button class="settings-button" on:click={addRelay}>Add Relay</button>
   </fieldset>
 </div>
+
+<style>
+  .relay-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .relay-item input[type="text"] {
+    flex-grow: 1;
+    min-width: 0;
+    margin-bottom: 4px;
+  }
+
+  .relay-item .remove-relay-button {
+    flex-shrink: 0;
+  }
+</style>

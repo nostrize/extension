@@ -1,6 +1,54 @@
+<script>
+  import {
+    saveLocalSettings,
+    defaultSettings,
+  } from "../helpers/local-cache.js";
+
+  import NostrSettings from "./nostr.svelte";
+  import LightsatsSettings from "./lightsats.svelte";
+  import DebugSettings from "./debug.svelte";
+  import NIP65RelayManager from "./nip65.svelte";
+
+  export let settings;
+
+  let saveLabel = "Save settings";
+
+  async function saveSettings() {
+    settings.nostrSettings.relays = [
+      ...new Set(settings.nostrSettings.relays),
+    ].filter(String);
+
+    await saveLocalSettings({ settings });
+
+    saveLabel = "Saved";
+
+    setTimeout(() => {
+      saveLabel = "Save settings";
+    }, 2000);
+  }
+
+  function resetSettings() {
+    settings = { ...defaultSettings };
+  }
+
+  function setActiveSection(section, icon) {
+    const sections = document.querySelectorAll("main section");
+    const icons = document.querySelectorAll(".sidebar .icon");
+
+    sections.forEach((s) => s.classList.remove("active"));
+    icons.forEach((i) => i.classList.remove("active"));
+
+    document.getElementById(section + "-section").classList.add("active");
+    icon.classList.add("active");
+  }
+</script>
+
 <div class="container">
   <nav class="sidebar">
-    <div class="icon settings-icon active" data-section="settings">
+    <button
+      class="icon active"
+      on:click={(event) => setActiveSection("settings", event.currentTarget)}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -12,8 +60,11 @@
           d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11L12 1zm0 2.311L4.5 7.653v8.694L12 20.689l7.5-4.342V7.653L12 3.311zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
         />
       </svg>
-    </div>
-    <div class="icon tools-icon" data-section="tools">
+    </button>
+    <button
+      class="icon"
+      on:click={(event) => setActiveSection("tools", event.currentTarget)}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -25,7 +76,7 @@
           d="M5.33 3.271a3.5 3.5 0 0 1 4.472 4.474L20.647 18.59l-2.122 2.121L7.68 9.867a3.5 3.5 0 0 1-4.472-4.474L5.444 7.63a1.5 1.5 0 1 0 2.121-2.121L5.329 3.27zm10.367 1.884l3.182-1.768 1.414 1.414-1.768 3.182-1.768.354-2.12 2.121-1.415-1.414 2.121-2.121.354-1.768zm-7.071 7.778l2.121 2.122-4.95 4.95A1.5 1.5 0 0 1 3.58 17.99l.097-.107 4.95-4.95z"
         />
       </svg>
-    </div>
+    </button>
   </nav>
 
   <main class="content">
@@ -34,21 +85,21 @@
         <h2>Nostr Settings</h2>
 
         <div class="input-container collapsed">
-          <div id="nostr-settings-container"></div>
+          <NostrSettings nostrSettings={settings.nostrSettings} />
         </div>
       </div>
       <div class="section collapsable" id="lightsats-settings">
         <h2>Lightsats Integration</h2>
 
         <div class="input-container collapsed">
-          <div id="lightsats-settings-container"></div>
+          <LightsatsSettings lightsatsSettings={settings.lightsatsSettings} />
         </div>
       </div>
       <div class="section collapsable" id="debug-settings">
         <h2>Debug Settings</h2>
 
         <div class="input-container collapsed">
-          <div id="debug-settings-container"></div>
+          <DebugSettings debugSettings={settings.debug} />
         </div>
       </div>
     </section>
@@ -56,20 +107,22 @@
       <div class="section collapsable">
         <h2>NIP-65 Relay Manager</h2>
         <div class="input-container collapsed">
-          <div id="nip65-relay-manager-container"></div>
+          <NIP65RelayManager state={settings} />
         </div>
       </div>
     </section>
     <div id="misc-container">
-      <button id="reset-settings">Reset settings</button>
-      <button id="save-settings">Save settings</button>
+      <button id="reset-settings" on:click={resetSettings}
+        >Reset settings</button
+      >
+      <button id="save-settings" on:click={saveSettings}>{saveLabel}</button>
     </div>
   </main>
 </div>
 
 <div class="version-container">
   <div class="version">
-    Settings Version: <span id="version-number"></span>
+    Settings Version: <span id="version-number">{settings.version}</span>
   </div>
 </div>
 
@@ -93,17 +146,6 @@
     justify-content: flex-start;
   }
 
-  label {
-    color: black;
-    display: flex;
-    align-items: center;
-    position: relative; /* Make label the positioning context for the tooltip */
-  }
-
-  label span {
-    margin-left: 5px;
-  }
-
   .input-container {
     display: flex;
     margin-top: 10px;
@@ -112,20 +154,6 @@
 
   .input-container.collapsed {
     display: none;
-  }
-
-  .input-container.expanded {
-    display: flex;
-  }
-
-  .section .indicator {
-    float: right;
-    font-weight: bold;
-    transition: transform 0.3s ease-out;
-  }
-
-  .section.expanded .indicator {
-    transform: rotate(90deg); /* Rotate the indicator when expanded */
   }
 
   .section h2 {
@@ -149,78 +177,6 @@
     transform: rotate(90deg); /* Indicator points down when expanded */
   }
 
-  .input-container input {
-    width: 100%;
-    max-width: 100%;
-    padding: 5px;
-    margin-top: 5px;
-  }
-
-  .input-container input[type="checkbox"] {
-    width: fit-content;
-    margin-bottom: 5px;
-  }
-
-  .input-container input[type="text"],
-  input[type="password"],
-  select {
-    width: 100%;
-    padding: 5px 0 5px 5px;
-    margin-top: 5px;
-    max-width: 96%;
-  }
-
-  .help-icon {
-    cursor: help;
-    margin-left: 5px;
-    position: relative; /* Make help icon the positioning context for the tooltip */
-  }
-
-  .tooltip {
-    display: none;
-    position: absolute;
-    background-color: black;
-    color: white;
-    padding: 10px; /* Add padding for better readability */
-    border-radius: 5px;
-    bottom: 125%; /* Position the tooltip above the help icon */
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: normal; /* Allow text to wrap */
-    z-index: 10;
-    min-width: 50vw; /* Allow the tooltip to expand based on its content */
-    max-width: 90vw; /* Maximum width to prevent it from being too wide */
-    text-align: center; /* Center align text inside the tooltip */
-    pointer-events: none; /* Prevent the tooltip from interfering with hover */
-  }
-
-  .tooltip.below {
-    bottom: auto;
-    top: 125%; /* Position the tooltip below the help icon */
-  }
-
-  .help-icon:hover + .tooltip {
-    display: block;
-  }
-
-  .relay-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
-  }
-
-  .relay-item input {
-    flex-grow: 1;
-    max-width: 100%;
-    padding: 5px;
-    margin-bottom: 5px;
-  }
-
-  .relay-item button {
-    margin-left: 10px;
-  }
-
   button {
     background-color: rgba(130 80 223 / 75%);
     color: floralwhite;
@@ -230,29 +186,12 @@
     width: fit-content;
   }
 
-  .remove-relay {
-    margin-top: 5px;
-  }
-
   #reset-settings {
     background-color: darkred;
   }
 
   #save-settings {
     background-color: green;
-  }
-
-  fieldset {
-    border: 1px solid #8250df;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 20px;
-  }
-
-  legend {
-    font-weight: bold;
-    color: #8250df;
-    padding: 0 5px;
   }
 
   .version-container {
@@ -286,13 +225,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 0;
     border-radius: 50%;
     transition: background-color 0.3s;
+    background-color: rgba(130, 80, 223, 0.1);
   }
 
-  .icon:hover,
+  .icon:hover {
+    background-color: rgba(130, 80, 223, 0.4);
+  }
+
   .icon.active {
-    background-color: rgba(130, 80, 223, 0.2);
+    background-color: rgba(130, 80, 223, 0.4);
   }
 
   .icon svg {

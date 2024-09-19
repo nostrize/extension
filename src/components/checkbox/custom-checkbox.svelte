@@ -3,7 +3,6 @@
   export let text;
   export let checked;
   export let onclick;
-  export let tooltip;
 
   function handleClick() {
     checked = !checked;
@@ -25,14 +24,9 @@
       }
     }}
   />
-  <label class="custom-checkbox" class:checked for={id}></label>
+  <button class="custom-checkbox" on:click={handleClick} class:checked for={id}
+  ></button>
   <button type="button" on:click={handleClick}>{text}</button>
-  {#if tooltip}
-    <label for={id}>
-      <span class="help-icon">❓</span>
-      <span class="tooltip">{tooltip}</span>
-    </label>
-  {/if}
 </div>
 
 <style>
@@ -40,7 +34,6 @@
   .checkbox-container {
     display: flex;
     align-items: center;
-    margin-top: 10px;
   }
 
   /* Hide the default checkbox */
@@ -72,8 +65,8 @@
   /* Checkmark for the checked state */
   .checkbox-container .custom-checkbox.checked::before {
     content: "";
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     background-color: #8250df;
     position: absolute;
     top: 50%;
@@ -82,9 +75,8 @@
   }
 
   /* Align the span to the left */
-  .checkbox-container label {
+  .checkbox-container button {
     display: flex;
     align-items: center;
-    cursor: pointer;
   }
 </style>

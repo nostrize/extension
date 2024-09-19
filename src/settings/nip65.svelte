@@ -11,6 +11,8 @@
   import { getPageUserRelays } from "../helpers/relays.js";
   import { generateRandomHexString } from "../helpers/utils.js";
 
+  import "../settings/common.css";
+
   export let state;
 
   let bunkerRelays = [];

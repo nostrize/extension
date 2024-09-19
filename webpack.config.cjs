@@ -25,7 +25,16 @@ module.exports = {
     rules: [
       {
         test: /\.svelte$/,
-        use: "svelte-loader",
+        use: {
+          loader: "svelte-loader",
+          options: {
+            emitCss: true,
+          },
+        },
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
       },
     ],
   },

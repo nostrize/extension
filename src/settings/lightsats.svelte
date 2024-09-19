@@ -1,5 +1,6 @@
 <script>
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
+  import Tooltip from "../components/tooltip/tooltip.svelte";
 
   export let lightsatsSettings;
 </script>
@@ -7,22 +8,18 @@
 <div class="lightsats-settings">
   <fieldset>
     <legend>Registration</legend>
-    <label for="lightsats-registration">
-      <a href="https://lightsats.com" target="_blank">Create your first tip</a>
-      <span class="help-icon">❓</span>
-      <span class="tooltip"
-        >This link is for registering a new account on Lightsats.</span
+    <Tooltip text="This link is for registering a new account on Lightsats.">
+      <a href="https://lightsats.com" target="_blank" slot="slotTitle"
+        >Create your first tip</a
       >
-    </label>
+    </Tooltip>
   </fieldset>
 
   <fieldset>
     <legend>API Key</legend>
-    <label for="lightsats-api-key"
-      >API Key
-      <span class="help-icon">❓</span>
-      <span class="tooltip">Enter your Lightsats API key here.</span>
-    </label>
+
+    <Tooltip text="Enter your Lightsats API key here." title="API Key" />
+
     <input
       type="password"
       id="lightsats-api-key"
@@ -33,12 +30,18 @@
 
   <fieldset id="lightsats-integration">
     <legend>Integration</legend>
-    <CustomCheckbox
-      id="lightsats-enable"
-      bind:checked={lightsatsSettings.enabled}
-      text="Enable Lightsats Integration"
-      tooltip="When enabled, Nostrize extension will show a Lightsats button if the
+
+    <div style="display: flex; align-items: center;">
+      <CustomCheckbox
+        id="lightsats-enable"
+        bind:checked={lightsatsSettings.enabled}
+        text="Enable Lightsats Integration"
+      />
+
+      <Tooltip
+        text="When enabled, Nostrize extension will show a Lightsats button if the
         user has no Nostr integration."
-    />
+      />
+    </div>
   </fieldset>
 </div>
