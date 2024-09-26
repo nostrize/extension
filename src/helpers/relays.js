@@ -38,7 +38,10 @@ export async function getNostrizeUserRelays({ settings, pubkey }) {
         useNip65Relays ? nip65Relays.writeRelays : [],
       ),
     };
-  } else if (settings.nostrSettings.mode === "nostrconnect") {
+  } else if (
+    settings.nostrSettings.mode === "nostrconnect" ||
+    settings.nostrSettings.mode === "bunker"
+  ) {
     const nip65Relays = await getNip65Relays({
       pubkey,
       relays: localRelays.writeRelays,

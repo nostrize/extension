@@ -1,13 +1,5 @@
 <script>
-  import {
-    nip04,
-    generateSecretKey,
-    getPublicKey,
-    SimplePool,
-    finalizeEvent,
-    Relay,
-  } from "nostr-tools";
-  import { bytesToHex } from "@noble/hashes/utils";
+  import { nip04, SimplePool, finalizeEvent, Relay } from "nostr-tools";
 
   import { fetchFromNip05 } from "../helpers/nostr";
   import { Either, generateRandomHexString } from "../helpers/utils";
@@ -95,13 +87,10 @@
 
     // Client creates a local keypair
     if (!nostrConnectSettings.ephemeralKey) {
-      console.log("Generating ephemeral key");
+      const { secret, pubkey } = createKeyPair();
 
-      const ephemeralKey = generateSecretKey();
-      const ephemeralPubkey = getPublicKey(ephemeralKey);
-
-      nostrConnectSettings.ephemeralKey = bytesToHex(ephemeralKey);
-      nostrConnectSettings.ephemeralPubkey = ephemeralPubkey;
+      nostrConnectSettings.ephemeralKey = secret;
+      nostrConnectSettings.ephemeralPubkey = pubkey;
     }
 
     nostrConnectSettings.metadata = {
@@ -127,13 +116,10 @@
   async function testNostrConnect() {
     // Client creates a local keypair
     if (!nostrConnectSettings.ephemeralKey) {
-      console.log("Generating ephemeral key");
+      const { secret, pubkey } = createKeyPair();
 
-      const ephemeralKey = generateSecretKey();
-      const ephemeralPubkey = getPublicKey(ephemeralKey);
-
-      nostrConnectSettings.ephemeralKey = bytesToHex(ephemeralKey);
-      nostrConnectSettings.ephemeralPubkey = ephemeralPubkey;
+      nostrConnectSettings.ephemeralKey = secret;
+      nostrConnectSettings.ephemeralPubkey = pubkey;
     }
 
     const id = generateRandomHexString(64);
@@ -397,10 +383,10 @@
 </script>
 
 <fieldset>
-  <legend>NostrConnect Settings</legend>
+  <legend>Remote Signer Settings</legend>
 
   <div>
-    <label for="nostrconnect-provider">NostrConnect Provider</label>
+    <label for="nostrconnect-provider">Remote Signer Provider</label>
     <div class="provider-input-row">
       {#if nostrConnectSettings.provider !== "custom"}
         <input

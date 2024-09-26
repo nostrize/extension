@@ -365,7 +365,7 @@ export async function getNostrizeUserPubkey({ mode, nostrConnectSettings }) {
 
   if (mode === "nip07") {
     return getPubkeyFromNip07();
-  } else if (mode === "nostrconnect") {
+  } else if (mode === "nostrconnect" || mode === "bunker") {
     if (!nostrConnectSettings) {
       throw new Error("nostrconnect settings are required");
     }

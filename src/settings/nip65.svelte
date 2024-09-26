@@ -1,153 +1,24 @@
 <script>
-  import { finalizeEvent, nip04, SimplePool } from "nostr-tools";
-  import { bytesToHex } from "@noble/hashes/utils";
+  import { SimplePool } from "nostr-tools";
 
   import { getNip65Relays } from "../helpers/nip65.js";
-  import { generateRandomHexString } from "../helpers/utils.js";
-  import { createKeyPair } from "../helpers/crypto.js";
+  import { signEvent } from "../helpers/signer.js";
+  import { getNostrizeUserRelays } from "../helpers/relays.js";
 
   import "../settings/common.css";
+  import { getNostrizeUserPubkey } from "../helpers/nostr.js";
+  import Loading from "../components/loading.svelte";
 
-  export let state;
+  export let settings;
 
-  let bunkerRelays = [];
-  let remotePubkey = "";
+  let nostrizeUserPubkey;
+  let nostrizeUserRelays;
   let nip65Relays = [];
   let isLoading = false;
   let error = "";
   let success = "";
 
-  async function connectToBunker() {
-    isLoading = true;
-    error = "";
-    success = "";
-
-    try {
-      // Parse the bunker URL
-      const url = new URL(state.nostrSettings.bunkerUrl);
-
-      if (url.protocol !== "bunker:") {
-        throw new Error("Invalid bunker URL: must start with bunker://");
-      }
-
-      remotePubkey = url.pathname.slice(2); // Remove the leading '//'
-      bunkerRelays = url.searchParams.getAll("relay");
-      const secret = url.searchParams.get("secret");
-
-      if (!remotePubkey) {
-        throw new Error("Invalid bunker URL: missing remote user pubkey");
-      }
-
-      if (bunkerRelays.length === 0) {
-        throw new Error("Invalid bunker URL: at least one relay is required");
-      }
-
-      console.log("Connecting to bunker:", remotePubkey, bunkerRelays);
-
-      // After successful connection, fetch the NIP-65 relays
-      const { readRelays, writeRelays } = await getNip65Relays({
-        pubkey: remotePubkey,
-        relays: state.nostrSettings.relays,
-      });
-
-      nip65Relays = tags
-        .filter((tag) => tag[0] === "r")
-        .map((tag) => ({
-          relay: tag[1],
-          read: !tag[2] || tag[2] === "read",
-          write: !tag[2] || tag[2] === "write",
-        }));
-
-      const { secret: ephemeralKey, pubkey: ephemeralPubkey } = createKeyPair();
-
-      console.log("ephemeralKey", bytesToHex(ephemeralKey));
-      console.log("ephemeralPubkey", ephemeralPubkey);
-
-      const encryptedMessage = await nip04.encrypt(
-        ephemeralKey,
-        remotePubkey,
-        JSON.stringify({
-          id: generateRandomHexString(64),
-          method: "connect",
-          params: secret ? [remotePubkey, secret] : [remotePubkey],
-        }),
-      );
-
-      console.log("encryptedMessage", encryptedMessage);
-
-      // Client creates a NIP-65 event
-      const eventTemplate = {
-        kind: 24133,
-        pubkey: ephemeralPubkey,
-        content: encryptedMessage,
-        tags: [["p", remotePubkey]],
-        created_at: Math.floor(Date.now() / 1000),
-      };
-
-      const signedEvent = finalizeEvent(eventTemplate, ephemeralKey);
-
-      const pool = new SimplePool();
-
-      const publishResult = await Promise.allSettled(
-        pool.publish(bunkerRelays, signedEvent),
-      );
-
-      const rejectedRelays = publishResult.filter(
-        (r) => r.status === "rejected",
-      );
-
-      const fulfilledRelays = publishResult.filter(
-        (r) => r.status === "fulfilled",
-      );
-
-      if (rejectedRelays.length) {
-        error = rejectedRelays.join(", ") + " failed to publish.";
-      }
-
-      if (fulfilledRelays.length) {
-        success = fulfilledRelays.join(", ") + "succeed to publish";
-      }
-
-      // fetch the response
-      const responseEvent = await pool.get(bunkerRelays, {
-        kinds: [24133],
-        authors: [remotePubkey],
-        limit: 1,
-      });
-
-      console.log("event.content", responseEvent.content);
-
-      const decrypted = await nip04.decrypt(
-        ephemeralKey,
-        remotePubkey,
-        responseEvent.content,
-      );
-
-      console.log("decrypted", decrypted);
-
-      let parsed;
-
-      try {
-        parsed = JSON.parse(decrypted);
-
-        if (parsed.result === "ack") {
-          success = "Connected to bunker";
-        } else if (parsed.result === "auth_url") {
-          window.open(parsed.error, "_blank");
-        }
-      } catch (e) {
-        error = error.message;
-      }
-
-      isLoading = false;
-    } catch (err) {
-      console.error("Error connecting to bunker:", err);
-
-      error = err.message;
-
-      isLoading = false;
-    }
-  }
+  loadNip65Relays();
 
   function addRelay() {
     nip65Relays = [...nip65Relays, { relay: "", read: true, write: true }];
@@ -165,10 +36,57 @@
     );
   }
 
+  async function loadNip65Relays() {
+    isLoading = true;
+
+    try {
+      nostrizeUserPubkey = await getNostrizeUserPubkey({
+        mode: settings.nostrSettings.mode,
+        nostrConnectSettings: settings.nostrSettings.nostrConnect,
+      });
+    } catch (e) {
+      error = "Failed to load user pubkey: " + e.message;
+    } finally {
+      isLoading = false;
+    }
+
+    try {
+      nostrizeUserRelays = await getNostrizeUserRelays({
+        settings,
+        pubkey: nostrizeUserPubkey,
+      });
+    } catch (e) {
+      error = "Failed to load user relays: " + e.message;
+    } finally {
+      isLoading = false;
+    }
+
+    try {
+      const response = await getNip65Relays({
+        pubkey: nostrizeUserPubkey,
+        relays: nostrizeUserRelays.writeRelays,
+        updatedCallback: (response) => {
+          isLoading = false;
+
+          nip65Relays = response.flatRelays;
+        },
+      });
+
+      nip65Relays = response.flatRelays;
+    } catch (e) {
+      error = "Failed to load NIP-65 relays: " + e.message;
+    }
+  }
+
   async function publishNIP65Event() {
-    const { secret: ephemeralKey, pubkey: ephemeralPubkey } = createKeyPair();
+    if (!nostrizeUserPubkey) {
+      error = "Failed to load user pubkey";
+
+      return;
+    }
 
     const relayListEvent = {
+      pubkey: nostrizeUserPubkey,
       kind: 10002,
       tags: nip65Relays
         .filter((r) => r.read || r.write)
@@ -187,84 +105,39 @@
       content: "",
     };
 
-    const encryptedMessage = await nip04.encrypt(
-      ephemeralKey,
-      remotePubkey,
-      JSON.stringify({
-        id: generateRandomHexString(64),
-        method: "sign_event",
-        params: [JSON.stringify(relayListEvent)],
-      }),
-    );
-
-    // Create a NIP-65 event
-    const eventTemplate = {
-      kind: 24133,
-      pubkey: ephemeralPubkey,
-      content: encryptedMessage,
-      tags: [["p", remotePubkey]],
-      created_at: Math.floor(Date.now() / 1000),
-    };
-
-    const signedEvent = finalizeEvent(eventTemplate, ephemeralKey);
+    const signedEvent = await signEvent({
+      mode: settings.nostrSettings.mode,
+      eventTemplate: relayListEvent,
+      nostrConnectSettings: settings.nostrSettings.nostrConnect,
+    });
 
     const pool = new SimplePool();
     const res = await Promise.allSettled(
-      pool.publish(bunkerRelays, signedEvent),
+      pool.publish(nostrizeUserRelays.writeRelays, signedEvent),
     );
 
     const publishedCount = res.filter((r) => r.status === "fulfilled").length;
+    const failedRelays = res.filter((r) => r.status === "rejected");
 
     if (publishedCount === 0) {
-      error = "Failed to publish NIP-65 event";
+      error =
+        "Failed to publish NIP-65 event: " +
+        failedRelays.map((r) => r.reason).join(", ");
+      success = "";
     } else {
+      error = "";
       success = "NIP-65 event published successfully";
 
       setTimeout(() => {
-        success = null;
+        success = "";
       }, 5000);
     }
-
-    const reply = await pool.get(bunkerRelays, {
-      authors: [remotePubkey],
-      kinds: [24133],
-      "#p": [ephemeralPubkey],
-    });
-
-    console.log("reply", reply);
   }
-
-  $: shortPubkey = remotePubkey.slice(0, 5) + "..." + remotePubkey.slice(-5);
 </script>
 
 <div class="nip65-relay-manager">
-  <div class="row">
-    <input
-      type="text"
-      bind:value={state.nostrSettings.bunkerUrl}
-      placeholder="Enter bunker:// URL"
-    />
-    <button
-      class="settings-button"
-      on:click={connectToBunker}
-      disabled={isLoading}
-    >
-      {isLoading ? "Connecting..." : "Connect to Bunker"}
-    </button>
-  </div>
-
-  {#if error}
-    <p class="error">{error}</p>
-  {/if}
-
-  {#if success}
-    <p class="success">{success}</p>
-  {/if}
-
-  {#if remotePubkey}
-    <p>
-      Remote pubkey: {shortPubkey}
-    </p>
+  {#if isLoading}
+    <Loading />
   {/if}
 
   {#if nip65Relays.length > 0}
@@ -311,6 +184,14 @@
   </div>
 </div>
 
+{#if error}
+  <div class="error">{error}</div>
+{/if}
+
+{#if success}
+  <div class="success">{success}</div>
+{/if}
+
 <style>
   .nip65-relay-manager {
     margin: 20px;
@@ -320,17 +201,10 @@
     margin-bottom: 10px;
   }
 
-  .relay-row,
-  .row {
+  .relay-row {
     display: flex;
     align-items: center;
     margin-bottom: 3px;
-  }
-
-  .row input,
-  .row button {
-    margin: 5px;
-    padding: 5px;
   }
 
   input[type="text"] {
@@ -356,5 +230,9 @@
 
   .error {
     color: red;
+  }
+
+  .success {
+    color: green;
   }
 </style>

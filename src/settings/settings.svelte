@@ -16,7 +16,7 @@
   async function saveSettings() {
     await saveNostrizeSettings({ settings });
 
-    saveLabel = "Saved";
+    saveLabel = "Saved 💾";
 
     setTimeout(() => {
       saveLabel = "Save settings";
@@ -103,8 +103,8 @@
       <div class="section collapsable">
         <h2>NIP-65 Relay Manager</h2>
         <div class="input-container collapsed">
-          {#if settings.nostrSettings.mode === "nostrconnect"}
-            <NIP65RelayManager state={settings} />
+          {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
+            <NIP65RelayManager {settings} />
           {:else if settings.nostrSettings.mode === "anon"}
             <fieldset>
               <legend>Anonymous mode</legend>
@@ -118,6 +118,11 @@
                 target="_blank"
                 >Open link to manage NIP-65 relays.
               </a>
+            </fieldset>
+          {:else}
+            <fieldset>
+              <legend>{settings.nostrSettings.mode}</legend>
+              <p>Not Implemented for your Nostr mode</p>
             </fieldset>
           {/if}
         </div>

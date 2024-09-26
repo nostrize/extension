@@ -1,5 +1,6 @@
 <script>
   import Tooltip from "../components/tooltip/tooltip.svelte";
+  import Bunker from "./bunker.svelte";
   import NostrConnect from "./nostr-connect.svelte";
   import Relays from "./relays.svelte";
 
@@ -26,7 +27,7 @@
     {
       value: "bunker",
       label: "Bunker",
-      description: "Copy a Bunker URL from a NostrConnect provider.",
+      description: "Copy a Bunker URL from a remote signing provider.",
     },
   ];
 
@@ -89,6 +90,10 @@
       bind:nostrConnectSettings={nostrSettings.nostrConnect}
       {relays}
     />
+  {/if}
+
+  {#if nostrSettings.mode === "bunker"}
+    <Bunker bind:nostrConnectSettings={nostrSettings.nostrConnect} />
   {/if}
 
   <fieldset>

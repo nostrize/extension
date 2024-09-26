@@ -10,16 +10,16 @@ async function signEventWithNostrConnect({
 }) {
   if (!nostrConnectSettings) {
     throw new Error(
-      "NostrConnect settings are required, check NostrConnect settings",
+      "Remote Signer settings are required, check Remote Signer settings",
     );
   }
 
   if (!nostrConnectSettings.userPubkey) {
-    throw new Error("User pubkey is required, check NostrConnect settings");
+    throw new Error("User pubkey is required, check Remote Signer settings");
   }
 
   if (!nostrConnectSettings.providerRelay) {
-    throw new Error("Provider relay is required, check NostrConnect settings");
+    throw new Error("Provider relay is required, check Remote Signer settings");
   }
 
   if (!nostrConnectSettings.ephemeralKey) {
@@ -33,7 +33,7 @@ async function signEventWithNostrConnect({
 
   const { kind, content, tags, created_at } = eventTemplate;
 
-  if (!kind || !content || !tags || !created_at) {
+  if (kind == null || content == null || tags == null || created_at == null) {
     throw new Error("Event template has missing required fields");
   }
 
@@ -139,7 +139,7 @@ export async function signEvent({ mode, eventTemplate, nostrConnectSettings }) {
       type: "nip07-sign-request",
       eventTemplate,
     });
-  } else if (mode === "nostrconnect") {
+  } else if (mode === "nostrconnect" || mode === "bunker") {
     return signEventWithNostrConnect({ eventTemplate, nostrConnectSettings });
   } else {
     throw new Error("not implemented");

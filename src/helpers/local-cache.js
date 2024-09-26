@@ -171,6 +171,7 @@ export async function getOrInsertPageCache({
   insertEmpty = false,
   skipEmpty = false,
   updateCache = false,
+  updatedCallback,
 }) {
   // Check if the key exists in local storage
   const cachedValue = localStorage.getItem(key);
@@ -185,6 +186,10 @@ export async function getOrInsertPageCache({
           insertEmpty,
           skipEmpty,
         });
+
+        if (updatedCallback) {
+          updatedCallback(value);
+        }
       });
     }
 
