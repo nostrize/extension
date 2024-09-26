@@ -1,6 +1,6 @@
 <script>
   import {
-    saveLocalSettings,
+    saveNostrizeSettings,
     defaultSettings,
   } from "../helpers/local-cache.js";
 
@@ -14,11 +14,7 @@
   let saveLabel = "Save settings";
 
   async function saveSettings() {
-    settings.nostrSettings.relays = [
-      ...new Set(settings.nostrSettings.relays),
-    ].filter(String);
-
-    await saveLocalSettings({ settings });
+    await saveNostrizeSettings({ settings });
 
     saveLabel = "Saved";
 
@@ -107,7 +103,23 @@
       <div class="section collapsable">
         <h2>NIP-65 Relay Manager</h2>
         <div class="input-container collapsed">
-          <NIP65RelayManager state={settings} />
+          {#if settings.nostrSettings.mode === "nostrconnect"}
+            <NIP65RelayManager state={settings} />
+          {:else if settings.nostrSettings.mode === "anon"}
+            <fieldset>
+              <legend>Anonymous mode</legend>
+              <p>NIP-65 is disabled in anonymous mode.</p>
+            </fieldset>
+          {:else if settings.nostrSettings.mode === "nip07"}
+            <fieldset>
+              <legend>NIP-07 mode</legend>
+              <a
+                href="https://nostrize.me/pages/nip65-manager.html"
+                target="_blank"
+                >Open link to manage NIP-65 relays.
+              </a>
+            </fieldset>
+          {/if}
         </div>
       </div>
     </section>

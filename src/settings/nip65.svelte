@@ -1,15 +1,10 @@
 <script>
-  import {
-    finalizeEvent,
-    generateSecretKey,
-    getPublicKey,
-    nip04,
-    SimplePool,
-  } from "nostr-tools";
+  import { finalizeEvent, nip04, SimplePool } from "nostr-tools";
   import { bytesToHex } from "@noble/hashes/utils";
 
-  import { getPageUserRelays } from "../helpers/relays.js";
+  import { getNip65Relays } from "../helpers/nip65.js";
   import { generateRandomHexString } from "../helpers/utils.js";
+  import { createKeyPair } from "../helpers/crypto.js";
 
   import "../settings/common.css";
 
@@ -50,7 +45,7 @@
       console.log("Connecting to bunker:", remotePubkey, bunkerRelays);
 
       // After successful connection, fetch the NIP-65 relays
-      const { tags } = await getPageUserRelays({
+      const { readRelays, writeRelays } = await getNip65Relays({
         pubkey: remotePubkey,
         relays: state.nostrSettings.relays,
       });
@@ -63,9 +58,7 @@
           write: !tag[2] || tag[2] === "write",
         }));
 
-      // Client creates a local keypair
-      const ephemeralKey = generateSecretKey();
-      const ephemeralPubkey = getPublicKey(ephemeralKey);
+      const { secret: ephemeralKey, pubkey: ephemeralPubkey } = createKeyPair();
 
       console.log("ephemeralKey", bytesToHex(ephemeralKey));
       console.log("ephemeralPubkey", ephemeralPubkey);
@@ -173,9 +166,7 @@
   }
 
   async function publishNIP65Event() {
-    // Client creates a local keypair
-    const ephemeralKey = generateSecretKey();
-    const ephemeralPubkey = getPublicKey(ephemeralKey);
+    const { secret: ephemeralKey, pubkey: ephemeralPubkey } = createKeyPair();
 
     const relayListEvent = {
       kind: 10002,
@@ -206,7 +197,7 @@
       }),
     );
 
-    // Client creates a NIP-65 event
+    // Create a NIP-65 event
     const eventTemplate = {
       kind: 24133,
       pubkey: ephemeralPubkey,
@@ -253,7 +244,11 @@
       bind:value={state.nostrSettings.bunkerUrl}
       placeholder="Enter bunker:// URL"
     />
-    <button on:click={connectToBunker} disabled={isLoading}>
+    <button
+      class="settings-button"
+      on:click={connectToBunker}
+      disabled={isLoading}
+    >
       {isLoading ? "Connecting..." : "Connect to Bunker"}
     </button>
   </div>
@@ -300,15 +295,20 @@
             />
             Write
           </label>
-          <button on:click={() => removeRelay(index)}>Remove</button>
+          <button class="settings-button" on:click={() => removeRelay(index)}>
+            Remove
+          </button>
         </div>
       {/each}
     </div>
-    <div class="button-container">
-      <button on:click={addRelay}>Add Relay</button>
-      <button on:click={publishNIP65Event}>Publish NIP-65 Event</button>
-    </div>
   {/if}
+
+  <div class="button-container">
+    <button class="settings-button" on:click={addRelay}>Add Relay</button>
+    <button class="settings-button" on:click={publishNIP65Event}>
+      Publish NIP-65 Event
+    </button>
+  </div>
 </div>
 
 <style>

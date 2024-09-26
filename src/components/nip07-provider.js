@@ -58,6 +58,21 @@ window.addEventListener("message", async (event) => {
 
   const relaysEntries = await window.nostr.getRelays();
 
+  const { readRelays, writeRelays } = toReadWriteRelays(relaysEntries);
+
+  window.postMessage(
+    {
+      from: "nostrize-nip07-provider",
+      type,
+      readRelays,
+      writeRelays,
+      relaysEntries,
+    },
+    "*",
+  );
+});
+
+function toReadWriteRelays(relaysEntries) {
   const readRelays = [];
   const writeRelays = [];
 
@@ -71,11 +86,8 @@ window.addEventListener("message", async (event) => {
     }
   }
 
-  window.postMessage(
-    { from: "nostrize-nip07-provider", type, readRelays, writeRelays },
-    "*",
-  );
-});
+  return { readRelays, writeRelays };
+}
 
 window.addEventListener("message", async (event) => {
   if (event.source !== window) {

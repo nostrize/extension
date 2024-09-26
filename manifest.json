@@ -8,6 +8,7 @@
   },
   "permissions": ["activeTab", "storage", "scripting", "tabs"],
   "host_permissions": [
+    "*://nostrize.me/*",
     "*://github.com/*",
     "*://www.github.com/*",
     "*://m.youtube.com/*",

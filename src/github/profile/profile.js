@@ -4,20 +4,20 @@ import * as html from "../../imgui-dom/html.js";
 import * as gui from "../../imgui-dom/gui.js";
 import { logger } from "../../helpers/logger.js";
 import {
-  getLocalSettings,
-  getOrInsertCache,
+  getNostrizeSettings,
+  getOrInsertPageCache,
 } from "../../helpers/local-cache.js";
-import { Either } from "../../helpers/utils.js";
+import { Either, uniqueArrays } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
-import { getNip07OrLocalRelays } from "../../helpers/relays.js";
+import { getNostrizeUserRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { getGithubConnectData } from "../github-connect.js";
 import { parseDescription } from "../../helpers/dom.js";
 import { setupModal } from "../../components/common.js";
 
 async function githubProfilePage() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
   const pathParts = window.location.pathname
     .split("/")
@@ -35,7 +35,7 @@ async function githubProfilePage() {
   const log = logger({ ...settings.debug, namespace: "[N][GH-Profile]" });
   const user = pathParts[0];
 
-  const githubConnectData = await getOrInsertCache({
+  const githubConnectData = await getOrInsertPageCache({
     key: `nostrize-github-connect-${user}`,
     insertCallback: () =>
       getGithubConnectData({ user, log }).then(Either.getOrElse(null)),
@@ -69,21 +69,28 @@ async function githubProfilePage() {
     log("pubkey", pageUserPubkey);
   }
 
-  const nostrizeUserRelays = await html.asyncScript({
+  await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getNip07OrLocalRelays({ settings, timeout: 4000 }),
+  });
+
+  const nostrizeUserRelays = await getNostrizeUserRelays({
+    settings,
+    timeout: 4000,
   });
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pageUserPubkey,
     filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
-    relays: nostrizeUserRelays,
+    relays: uniqueArrays(
+      nostrizeUserRelays.readRelays,
+      nostrizeUserRelays.writeRelays,
+    ),
   });
 
   log("metadataEvent", metadataEvent);
 
-  const lnurlData = await getOrInsertCache({
+  const lnurlData = await getOrInsertPageCache({
     key: `nostrize-metadata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
@@ -102,7 +109,7 @@ async function githubProfilePage() {
       const { modal, closeModal } = await zapModalComponent({
         user,
         metadataEvent,
-        relays: nostrizeUserRelays,
+        nostrizeUserRelays,
         lnurlData,
         settings,
         log,

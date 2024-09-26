@@ -136,3 +136,7 @@ export function mergeSettings(target, source) {
 
   return output;
 }
+
+export function uniqueArrays(...arrays) {
+  return [...new Set(arrays.flat())];
+}

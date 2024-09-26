@@ -1,8 +1,8 @@
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
-  getLocalSettings,
-  getOrInsertCache,
+  getNostrizeSettings,
+  getOrInsertPageCache,
 } from "../../helpers/local-cache.js";
 import { getIconComponent } from "../github-connect.js";
 import { logger } from "../../helpers/logger.js";
@@ -22,7 +22,7 @@ const agoInSeconds = ({ hours }) =>
   Math.floor((Date.now() - 1000 * 60 * 60 * hours) / 1000);
 
 async function githubBoostPanel() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
   const log = logger({ ...settings.debug, namespace: "[N][GH-Booster]" });
 
@@ -91,10 +91,9 @@ async function githubBoostPanel() {
   ];
 
   const getGithubTitle = (url) =>
-    getOrInsertCache({
+    getOrInsertPageCache({
       key: `nostrize-title-${url}`,
       insertCallback: () => fetchGithubTitle(url),
-      removeInDays: 1,
     });
 
   const typesNeedToBeFetch = ["issue", "pr"];

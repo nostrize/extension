@@ -3,18 +3,21 @@ import browser from "webextension-polyfill";
 import * as gui from "../imgui-dom/gui.js";
 import * as html from "../imgui-dom/html.js";
 
-import { getLocalSettings, getOrInsertCache } from "../helpers/local-cache.js";
+import {
+  getNostrizeSettings,
+  getOrInsertPageCache,
+} from "../helpers/local-cache.js";
 import { logger } from "../helpers/logger.js";
-import { getPageUserRelays } from "../helpers/relays.js";
+import { getNostrizeUserRelays } from "../helpers/relays.js";
 import { parseDescription } from "../helpers/dom.js";
 import { getMetadataEvent, getPubkeyFrom } from "../helpers/nostr.js";
-import { Either } from "../helpers/utils.js";
+import { Either, uniqueArrays } from "../helpers/utils.js";
 import { getLnurlData } from "../helpers/lnurl.js";
 import { zapModalComponent } from "../components/zap-modal.js";
 import { setupModal } from "../components/common.js";
 
 async function telegramBio() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
   const log = logger({ ...settings.debug, namespace: "[N][Telegram-Web]" });
 
@@ -77,30 +80,33 @@ async function telegramBio() {
     return;
   }
 
-  const accountPubkey = await getPubkeyFrom({
+  const pageUserPubkey = await getPubkeyFrom({
     nip05,
     npub,
     pageUsername: username,
     cachePrefix: "telegram-web",
   });
 
-  log("pubkey", accountPubkey);
-
-  const accountRelays = await html.asyncScript({
+  await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getPageUserRelays({ pubkey: accountPubkey, settings }),
   });
 
-  log("relays", accountRelays);
+  const nostrizeUserRelays = await getNostrizeUserRelays({
+    settings,
+    timeout: 4000,
+  });
 
   const metadataEvent = await getMetadataEvent({
-    cacheKey: accountPubkey,
-    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
-    relays: accountRelays,
+    cacheKey: pageUserPubkey,
+    filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
+    relays: uniqueArrays(
+      nostrizeUserRelays.readRelays,
+      nostrizeUserRelays.writeRelays,
+    ),
   });
 
-  const lnurlData = await getOrInsertCache({
+  const lnurlData = await getOrInsertPageCache({
     key: `nostrize-lnurldata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
@@ -120,7 +126,7 @@ async function telegramBio() {
         metadataEvent,
         lnurlData,
         log,
-        relays: accountRelays,
+        nostrizeUserRelays,
         settings,
       });
 

@@ -10,7 +10,7 @@
     <legend>Registration</legend>
     <Tooltip text="This link is for registering a new account on Lightsats.">
       <a href="https://lightsats.com" target="_blank" slot="slotTitle"
-        >Create your first tip</a
+        >Create lightsats account</a
       >
     </Tooltip>
   </fieldset>
@@ -18,14 +18,19 @@
   <fieldset>
     <legend>API Key</legend>
 
-    <Tooltip text="Enter your Lightsats API key here." title="API Key" />
+    <div>
+      <Tooltip
+        text="Enter your Lightsats API key here. You can copy your 'Developer API Keys' in your profile page, in the 'Connected accounts & more' section."
+        title="API Key"
+      />
 
-    <input
-      type="password"
-      id="lightsats-api-key"
-      placeholder="API Key"
-      bind:value={lightsatsSettings.apiKey}
-    />
+      <input
+        type="password"
+        id="lightsats-api-key"
+        placeholder="API Key"
+        bind:value={lightsatsSettings.apiKey}
+      />
+    </div>
   </fieldset>
 
   <fieldset id="lightsats-integration">
@@ -33,7 +38,6 @@
 
     <div style="display: flex; align-items: center;">
       <CustomCheckbox
-        id="lightsats-enable"
         bind:checked={lightsatsSettings.enabled}
         text="Enable Lightsats Integration"
       />

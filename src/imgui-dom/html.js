@@ -8,12 +8,7 @@ export function customElement({ tagName, attributes = [] }) {
   return customElement;
 }
 
-export async function asyncScript({
-  src,
-  id,
-  type = "text/javascript",
-  callback,
-}) {
+export async function asyncScript({ src, id, type = "text/javascript" }) {
   const script = document.createElement("script");
   script.setAttribute("src", src);
 
@@ -25,19 +20,7 @@ export async function asyncScript({
   }
 
   return new Promise((resolve, reject) => {
-    script.onload = async () => {
-      try {
-        if (callback) {
-          const res = await callback();
-
-          resolve(res);
-        } else {
-          resolve();
-        }
-      } catch (error) {
-        reject(error);
-      }
-    };
+    script.onload = resolve;
 
     script.onerror = (error) => {
       reject(new Error(`Failed to load script: ${src}. ${error}`));

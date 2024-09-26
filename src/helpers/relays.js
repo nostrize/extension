@@ -1,76 +1,74 @@
-import { SimplePool } from "nostr-tools";
+import { getNip07Relays } from "./nip07.js";
+import { getNip65Relays } from "./nip65.js";
+import { uniqueArrays } from "./utils.js";
 
-export function getNip07OrLocalRelays({ settings, timeout = 4000 }) {
-  const shouldGetNip07Relays =
-    settings.nostrSettings.mode === "nip07" &&
-    settings.nostrSettings.nip07.useRelays;
+export async function getNostrizeUserRelays({ settings, pubkey }) {
+  const useLocalRelays = settings.nostrSettings.relays.local.useRelays;
 
-  const localRelays = settings.nostrSettings.relays;
+  const localRelays = toReadWriteRelays(
+    settings.nostrSettings.relays.local.relays,
+  );
 
-  if (shouldGetNip07Relays) {
-    return new Promise((resolve) => {
-      window.postMessage({ type: "nip07-relays-request", from: "nostrize" });
-
-      if (timeout) {
-        setTimeout(() => resolve(localRelays), timeout);
-      }
-
-      window.addEventListener("message", (event) => {
-        if (event.source !== window) {
-          return;
-        }
-
-        const { from, type, readRelays, writeRelays } = event.data;
-
-        if (type !== "nip07-relays-request") {
-          return;
-        }
-
-        if (from !== "nostrize-nip07-provider") {
-          return;
-        }
-
-        return resolve({ readRelays, writeRelays });
-      });
-    });
+  if (settings.nostrSettings.mode === "anon") {
+    // don't even check useRelays in anon mode
+    return localRelays;
   }
 
-  return { readRelays: localRelays, writeRelays: localRelays };
+  const useNip65Relays = settings.nostrSettings.relays.nip65.useRelays;
+
+  if (settings.nostrSettings.mode === "nip07") {
+    const useNip07Relays = settings.nostrSettings.relays.nip07.useRelays;
+    const nip07Relays = await getNip07Relays();
+
+    const nip65Relays = await getNip65Relays({
+      pubkey,
+      relays: uniqueArrays(
+        useLocalRelays ? localRelays.writeRelays : [],
+        useNip07Relays ? nip07Relays.writeRelays : [],
+      ),
+    });
+
+    return {
+      readRelays: uniqueArrays(
+        useLocalRelays ? localRelays.readRelays : [],
+        useNip65Relays ? nip65Relays.readRelays : [],
+      ),
+      writeRelays: uniqueArrays(
+        useLocalRelays ? localRelays.writeRelays : [],
+        useNip65Relays ? nip65Relays.writeRelays : [],
+      ),
+    };
+  } else if (settings.nostrSettings.mode === "nostrconnect") {
+    const nip65Relays = await getNip65Relays({
+      pubkey,
+      relays: localRelays.writeRelays,
+    });
+
+    return {
+      readRelays: uniqueArrays(
+        useLocalRelays ? localRelays.readRelays : [],
+        useNip65Relays ? nip65Relays.readRelays : [],
+      ),
+      writeRelays: uniqueArrays(
+        useLocalRelays ? localRelays.writeRelays : [],
+        useNip65Relays ? nip65Relays.writeRelays : [],
+      ),
+    };
+  } else {
+    throw new Error("not implemented");
+  }
 }
 
-export async function getPageUserRelays({ pubkey, relays }) {
-  const filter = {
-    kinds: [10002],
-    authors: [pubkey],
-    limit: 1,
-  };
+function toReadWriteRelays(localRelays) {
+  const enabledLocalRelays = localRelays.filter((relay) => relay.enabled);
 
-  const pool = new SimplePool();
+  const writeRelays = enabledLocalRelays
+    .filter((relay) => relay.write)
+    .map((relay) => relay.relay);
 
-  const latestEvent = await pool.get(relays, filter);
+  const readRelays = enabledLocalRelays
+    .filter((relay) => relay.read)
+    .map((relay) => relay.relay);
 
-  if (latestEvent) {
-    const pageUserReadRelays = [];
-    const pageUserWriteRelays = [];
-
-    latestEvent.tags.forEach((tag) => {
-      if (tag[0] === "r") {
-        const relay = tag[1];
-        const canRead = tag[2] ? tag[2] === "read" : true;
-        const canWrite = tag[2] ? tag[2] === "write" : true;
-
-        if (canRead) {
-          pageUserReadRelays.push(relay);
-        }
-
-        if (canWrite) {
-          pageUserWriteRelays.push(relay);
-        }
-      }
-    });
-
-    return { pageUserReadRelays, pageUserWriteRelays, tags: latestEvent.tags };
-  }
-
-  return { pageUserReadRelays: [], pageUserWriteRelays: [], tags: [] };
+  return { writeRelays, readRelays };
 }

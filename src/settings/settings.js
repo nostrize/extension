@@ -1,9 +1,9 @@
-import { getLocalSettings } from "../helpers/local-cache.js";
+import { getNostrizeSettings } from "../helpers/local-cache.js";
 
 import Settings from "./settings.svelte";
 
 async function settingsPage() {
-  const state = await getLocalSettings();
+  const state = await getNostrizeSettings();
 
   const settingsContainer = document.getElementById("settings-container");
 

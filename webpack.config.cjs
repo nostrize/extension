@@ -16,6 +16,7 @@ module.exports = {
     "telegram-web-bio": "./src/telegram-web/bio.js",
     "nostrize-nip07-provider": "./src/components/nip07-provider.js",
     "nostrize-settings": "./src/settings/settings.js",
+    "nostrize-nip07-manager": "./src/nostrize-website/nip07-manager.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),

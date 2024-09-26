@@ -8,51 +8,42 @@ import {
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
-  getFromCache,
-  getLocalSettings,
-  getOrInsertCache,
-  insertToCache,
+  getFromPageCache,
+  getNostrizeSettings,
+  getOrInsertPageCache,
+  insertToPageCache,
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { delay, Either } from "../../helpers/utils.js";
+import { Either, uniqueArrays } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
-import { getPageUserRelays } from "../../helpers/relays.js";
+import { getNostrizeUserRelays } from "../../helpers/relays.js";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { setupModal } from "../../components/common.js";
+import { ensureDomLoaded } from "../../helpers/dom.js";
 
 async function youtubeShortsPage() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
-  const log = logger({ ...settings.debug, namespace: "[N][YT-Shorts]" });
+  const log = logger({ ...settings.debug });
 
-  await delay(2000);
+  const pageQueryForLoaded = "ytd-channel-name";
+
+  await ensureDomLoaded(pageQueryForLoaded);
 
   const zapButtonId = "n-yt-shorts-tip-button";
 
   const { channelName, tipButtonContainer } = await getChannelNameInShorts();
 
-  // TODO: Use the removeNostrButtons way from twitter/profile/profile.js
-  // Remove all nostr buttons in the beginning
-  const existingTipButton = gui.gebid(zapButtonId);
+  const removeNostrButtons = () => {
+    gui.gebid(zapButtonId)?.remove();
+  };
 
-  if (existingTipButton) {
-    log("zap button already there");
+  removeNostrButtons();
 
-    if (existingTipButton.attributes["data-for-account"] !== channelName) {
-      log("button doesn't belong to account", channelName);
+  const channelParamsCacheKey = `nostrize-yt-channel-${channelName}`;
 
-      existingTipButton.parentElement.removeChild(existingTipButton);
-    } else {
-      log("don't need to load");
-
-      return;
-    }
-  }
-
-  const channelParamsCacheKey = `yt-channel-${channelName}`;
-
-  let params = getFromCache(channelParamsCacheKey);
+  let params = getFromPageCache(channelParamsCacheKey);
 
   if (!params) {
     const paramsEither = await loadParamsFromChannelPage({ channelName });
@@ -65,33 +56,38 @@ async function youtubeShortsPage() {
 
     params = Either.getRight(paramsEither);
 
-    insertToCache(channelParamsCacheKey, params);
+    insertToPageCache(channelParamsCacheKey, params);
   }
 
   const { nip05, npub, channel } = params;
 
-  const accountPubkey = await getPubkeyFrom({
+  const pageUserPubkey = await getPubkeyFrom({
     nip05,
     npub,
     pageUsername: channel,
     cachePrefix: "yt",
   });
 
-  const relays = await html.asyncScript({
+  await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getPageUserRelays({ pubkey: accountPubkey, settings }),
   });
 
-  log("relays", relays);
+  const nostrizeUserRelays = await getNostrizeUserRelays({
+    settings,
+    timeout: 4000,
+  });
 
   const metadataEvent = await getMetadataEvent({
-    relays,
-    cacheKey: accountPubkey,
-    filter: { authors: [accountPubkey], kinds: [0], limit: 1 },
+    relays: uniqueArrays(
+      nostrizeUserRelays.readRelays,
+      nostrizeUserRelays.writeRelays,
+    ),
+    cacheKey: pageUserPubkey,
+    filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
   });
 
-  const lnurlData = await getOrInsertCache({
+  const lnurlData = await getOrInsertPageCache({
     key: `nostrize-lnurldata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
@@ -116,7 +112,7 @@ async function youtubeShortsPage() {
         metadataEvent,
         lnurlData,
         log,
-        relays,
+        nostrizeUserRelays,
         settings,
       });
 

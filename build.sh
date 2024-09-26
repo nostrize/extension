@@ -8,7 +8,7 @@ cp src/logo.png dist/logo.png
 
 ./node_modules/.bin/webpack
 
-// TODO: prefix files with nostrize-
+# TODO: prefix files with nostrize-
 
 # copy component specific files
 cp src/components/zap-modal.css dist/zap-modal.css

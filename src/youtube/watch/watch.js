@@ -8,54 +8,47 @@ import {
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
-  getFromCache,
-  getLocalSettings,
-  getOrInsertCache,
-  insertToCache,
+  getFromPageCache,
+  getNostrizeSettings,
+  getOrInsertPageCache,
+  insertToPageCache,
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { delay, Either } from "../../helpers/utils.js";
+import { Either, uniqueArrays } from "../../helpers/utils.js";
 import { zapModalComponent } from "../../components/zap-modal.js";
+import { getNostrizeUserRelays } from "../../helpers/relays.js";
 import {
-  getNip07OrLocalRelays,
-  getPageUserRelays,
-} from "../../helpers/relays.js";
-import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
+  getMetadataEvent,
+  getNostrizeUserPubkey,
+  getPubkeyFrom,
+} from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { setupModal } from "../../components/common.js";
+import { getNip65Relays } from "../../helpers/nip65.js";
+import { ensureDomLoaded } from "../../helpers/dom.js";
 
 async function youtubeWatchPage() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
-  const log = logger({ ...settings.debug, namespace: "[N][YT-Watch]" });
+  const log = logger({ ...settings.debug });
 
-  await delay(2000);
+  const pageQueryForLoaded = "ytd-channel-name";
+
+  await ensureDomLoaded(pageQueryForLoaded);
 
   const zapButtonId = "n-yt-watch-tip-button";
 
   const channelName = await getChannelNameInWatch();
 
-  // TODO: Use the removeNostrButtons way from twitter/profile/profile.js
-  // Remove all nostr buttons in the beginning
-  const existingTipButton = gui.gebid(zapButtonId);
+  const removeNostrButtons = () => {
+    gui.gebid(zapButtonId)?.remove();
+  };
 
-  if (existingTipButton) {
-    log("zap button already there");
+  removeNostrButtons();
 
-    if (existingTipButton.attributes["data-for-account"] !== channelName) {
-      log("button doesn't belong to account", channelName);
+  const channelParamsCacheKey = `nostrize-yt-channel-${channelName}`;
 
-      existingTipButton.parentElement.removeChild(existingTipButton);
-    } else {
-      log("don't need to load");
-
-      return;
-    }
-  }
-
-  const channelParamsCacheKey = `yt-channel-${channelName}`;
-
-  let params = getFromCache(channelParamsCacheKey);
+  let params = getFromPageCache(channelParamsCacheKey);
 
   if (!params) {
     const paramsEither = await loadParamsFromChannelPage({ channelName });
@@ -68,7 +61,7 @@ async function youtubeWatchPage() {
 
     params = Either.getRight(paramsEither);
 
-    insertToCache(channelParamsCacheKey, params);
+    insertToPageCache(channelParamsCacheKey, params);
   }
 
   const { nip05, npub, channel } = params;
@@ -80,26 +73,38 @@ async function youtubeWatchPage() {
     cachePrefix: "yt",
   });
 
-  const nostrizeUserRelays = await html.asyncScript({
+  await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getNip07OrLocalRelays({ settings, timeout: 4000 }),
+  });
+
+  const nostrizeUserPubkey = await getNostrizeUserPubkey({
+    mode: settings.nostrSettings.mode,
+    nostrConnectSettings: settings.nostrSettings.nostrConnect,
+  });
+
+  const nostrizeUserRelays = await getNostrizeUserRelays({
+    settings,
+    pubkey: nostrizeUserPubkey,
   });
 
   log("nostrizeUserRelays", nostrizeUserRelays);
 
-  const pageUserRelays = await getPageUserRelays({
+  const pageUserRelays = await getNip65Relays({
     pubkey: pageUserPubkey,
-    relays: nostrizeUserRelays,
+    relays: uniqueArrays(
+      nostrizeUserRelays.readRelays,
+      nostrizeUserRelays.writeRelays,
+    ),
   });
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pageUserPubkey,
     filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
-    relays: pageUserRelays,
+    relays: pageUserRelays.writeRelays,
   });
 
-  const lnurlData = await getOrInsertCache({
+  const lnurlData = await getOrInsertPageCache({
     key: `nostrize-lnurldata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
@@ -119,7 +124,7 @@ async function youtubeWatchPage() {
         metadataEvent,
         lnurlData,
         log,
-        relays: nostrizeUserRelays,
+        nostrizeUserRelays,
         settings,
       });
 

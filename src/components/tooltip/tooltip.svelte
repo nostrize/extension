@@ -1,6 +1,8 @@
 <script>
   export let text;
   export let title;
+  export let iconText = "❓";
+  export let iconClick = null;
 
   function showTooltip(e) {
     const tooltip = e.target.nextElementSibling;
@@ -34,9 +36,15 @@
     class="help-icon"
     role="button"
     tabindex="0"
+    style="cursor: {iconClick
+      ? // eslint-disable-next-line quotes
+        'pointer'
+      : // eslint-disable-next-line quotes
+        'help'}; margin-left: 5px; position: relative;"
+    on:click={iconClick}
     on:mouseenter={showTooltip}
     on:mouseleave={hideTooltip}
-    on:keydown={(e) => e.key === "Enter" && showTooltip(e)}>❓</span
+    on:keydown={(e) => e.key === "Enter" && showTooltip(e)}>{iconText}</span
   >
   <span class="tooltip below">{text}</span>
 </div>
@@ -49,7 +57,7 @@
   .help-icon {
     cursor: help;
     margin-left: 5px;
-    position: relative; /* Make help icon the positioning context for the tooltip */
+    position: relative;
   }
 
   .tooltip {

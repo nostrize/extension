@@ -1,9 +1,9 @@
 import { div, link, span } from "../../imgui-dom/html.js";
 import { logger } from "../../helpers/logger.js";
-import { getLocalSettings } from "../../helpers/local-cache.js";
+import { getNostrizeSettings } from "../../helpers/local-cache.js";
 
 async function githubIssuesPage() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
   const log = logger(settings.debug);
   const pathParts = window.location.pathname

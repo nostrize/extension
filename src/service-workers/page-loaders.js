@@ -29,6 +29,8 @@ export const pageLoaderListener = (tabId, changeInfo, tab) => {
     injectTwitterScripts({ page, tabId });
   } else if (page.startsWith("telegram/web")) {
     injectTelegramWebScripts({ page, tabId });
+  } else if (page.startsWith("nostrize/nip07-manager")) {
+    injectNip07ManagerScripts({ page, tabId });
   }
 };
 
@@ -79,6 +81,8 @@ function getPageFromUrl(url) {
       // Check for Telegram Web URLs
     } else if (checkHosts("web.telegram.org")) {
       return "telegram/web";
+    } else if (checkHosts("nostrize.me")) {
+      return "nostrize/nip07-manager";
     }
 
     // Return undefined if none of the above conditions match
@@ -87,6 +91,15 @@ function getPageFromUrl(url) {
     log("Invalid URL:", e);
 
     return;
+  }
+}
+
+function injectNip07ManagerScripts({ page, tabId }) {
+  if (page === "nostrize/nip07-manager") {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["nostrize-nip07-manager.js"],
+    });
   }
 }
 

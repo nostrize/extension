@@ -1,19 +1,19 @@
-import { finalizeEvent, SimplePool } from "nostr-tools";
+import { SimplePool } from "nostr-tools";
 import { makeZapRequest } from "nostr-tools/nip57";
 import { toString as qrCode } from "qrcode/lib/browser.js";
 
 import * as html from "../imgui-dom/html.js";
 import * as gui from "../imgui-dom/gui.js";
 import { milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
-import { createKeyPair } from "../helpers/crypto.js";
-import { getMetadataEvent, requestSigningFromNip07 } from "../helpers/nostr.js";
+import { getMetadataEvent, getNostrizeUserPubkey } from "../helpers/nostr.js";
+import { signEvent } from "../helpers/signer.js";
 
 import { centerModal } from "./common.js";
 
 export async function zapModalComponent({
   user,
   metadataEvent,
-  relays,
+  nostrizeUserRelays,
   lnurlData,
   settings,
   log,
@@ -39,23 +39,24 @@ export async function zapModalComponent({
   const getComment = async () => {
     if (settings.nostrSettings.mode === "anon") {
       return `Zapped with Nostrize anonymously`;
-    } else if (settings.nostrSettings.mode === "nip07") {
-      const nip07Pubkey = await getPubkeyFromNip07();
-
-      const nip07Kind0 = await getMetadataEvent({
-        cacheKey: nip07Pubkey,
-        relays,
-        filter: { authors: [nip07Pubkey], kinds: [0], limit: 1 },
-      });
-
-      let { display_name, name } = JSON.parse(nip07Kind0.content);
-
-      const nip07Name = display_name || name;
-
-      return `Zapped with Nostrize by ${nip07Name}`;
     }
 
-    throw new Error("Not implemented");
+    const nostrizeUserPubkey = await getNostrizeUserPubkey({
+      mode: settings.nostrSettings.mode,
+      nostrConnectSettings: settings.nostrSettings.nostrConnect,
+    });
+
+    const nostrizeUserMetadata = await getMetadataEvent({
+      cacheKey: nostrizeUserPubkey,
+      relays: nostrizeUserRelays.writeRelays,
+      filter: { authors: [nostrizeUserPubkey], kinds: [0], limit: 1 },
+    });
+
+    let { display_name, name } = JSON.parse(nostrizeUserMetadata.content);
+
+    const userName = display_name || name;
+
+    return `Zapped with Nostrize by ${userName}`;
   };
 
   const commentInput = html.input({
@@ -94,7 +95,7 @@ export async function zapModalComponent({
         paidMessagePlaceholder,
         qrCode,
         qrCodeContainer,
-        relays,
+        nostrizeUserRelays,
         nostrSettings: settings.nostrSettings,
         user,
       });
@@ -222,35 +223,6 @@ export async function zapModalComponent({
   return { modal: zapModal, closeModal };
 }
 
-async function getPubkeyFromNip07() {
-  window.postMessage({
-    from: "nostrize",
-    type: "nip07-pubkey-request",
-  });
-
-  return new Promise((resolve) => {
-    window.addEventListener("message", function (event) {
-      if (event.source !== window) {
-        return;
-      }
-
-      const { from, type, pubkey } = event.data;
-
-      if (
-        !(
-          from === "nostrize-nip07-provider" &&
-          type === "nip07-pubkey-request" &&
-          !!pubkey
-        )
-      ) {
-        return;
-      }
-
-      return resolve(pubkey);
-    });
-  });
-}
-
 async function generateInvoiceClick({
   sats,
   comment,
@@ -260,7 +232,7 @@ async function generateInvoiceClick({
   paidMessagePlaceholder,
   qrCode,
   qrCodeContainer,
-  relays,
+  nostrizeUserRelays,
   nostrSettings,
   user,
 }) {
@@ -270,24 +242,16 @@ async function generateInvoiceClick({
     profile: metadataEvent.pubkey,
     amount: milliSats,
     comment,
-    relays,
+    relays: nostrizeUserRelays.readRelays,
   });
 
   let zapRequestEvent;
 
-  if (nostrSettings.mode === "anon") {
-    const localNostrKeys = createKeyPair();
-
-    zapRequestEvent = finalizeEvent(eventTemplate, localNostrKeys.secret);
-  } else if (nostrSettings.mode === "nip07") {
-    zapRequestEvent = await requestSigningFromNip07({
-      from: "nostrize",
-      type: "nip07-sign-request",
-      eventTemplate,
-    });
-  } else if (nostrSettings.mode === "bunker") {
-    throw new Error("Not implemented");
-  }
+  zapRequestEvent = await signEvent({
+    mode: nostrSettings.mode,
+    eventTemplate,
+    nostrConnectSettings: nostrSettings.nostrConnect,
+  });
 
   if (!zapRequestEvent) {
     throw new Error("not implemented");
@@ -321,7 +285,7 @@ async function generateInvoiceClick({
   centerModal(document.getElementById("n-zap-modal"));
 
   const zapReceiptEvent = await getZapReceipt({
-    relays,
+    relays: nostrizeUserRelays.readRelays,
     filter: {
       authors: [receiptAuthor],
       kinds: [9735],

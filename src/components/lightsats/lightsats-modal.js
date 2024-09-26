@@ -1,6 +1,9 @@
 import * as html from "../../imgui-dom/html.js";
 import * as gui from "../../imgui-dom/gui.js";
-import { getFromCache, insertToCache } from "../../helpers/local-cache.js";
+import {
+  getFromPageCache,
+  insertToPageCache,
+} from "../../helpers/local-cache.js";
 
 import {
   determineStep,
@@ -97,7 +100,7 @@ function updateModalStep(newStep, tip, qrCodeContainer, apiKey) {
 }
 
 export async function lightsatsModalComponent({ user, settings }) {
-  const tipId = getFromCache(tipIdKey(user));
+  const tipId = getFromPageCache(tipIdKey(user));
   let tip;
   let step = 1;
 
@@ -223,7 +226,7 @@ export async function lightsatsModalComponent({ user, settings }) {
 
             tip = response.data;
 
-            insertToCache(tipIdKey(user), tip.id);
+            insertToPageCache(tipIdKey(user), tip.id);
 
             const fetchTip = setInterval(async () => {
               tip = await getTipInfo(tip.id, settings.lightsatsSettings.apiKey);

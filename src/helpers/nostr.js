@@ -2,42 +2,11 @@ import { nip19, SimplePool } from "nostr-tools";
 import { binarySearch } from "nostr-tools/utils";
 
 import {
-  getFromCache,
-  getOrInsertCache,
-  insertToCache,
+  getFromPageCache,
+  getOrInsertPageCache,
+  insertToPageCache,
 } from "./local-cache.js";
 import { Either } from "./utils.js";
-
-export async function getUserPubkey({ settings, timeout = 1000 }) {
-  if (settings.nostrSettings.mode === "nip07") {
-    return new Promise((resolve) => {
-      window.addEventListener("message", (event) => {
-        if (event.source !== window) {
-          return;
-        }
-
-        const { from, type, pubkey } = event.data;
-
-        if (
-          !(
-            from === "nostrize-nip07-provider" &&
-            type === "nip07-pubkey-request"
-          )
-        ) {
-          return;
-        }
-
-        return resolve(pubkey);
-      });
-
-      window.postMessage({ type: "nip07-pubkey-request", from: "nostrize" });
-
-      setTimeout(() => resolve(null), timeout);
-    });
-  } else {
-    return null;
-  }
-}
 
 export async function getPubkeyFrom({
   npub,
@@ -63,7 +32,7 @@ export async function getPubkeyFrom({
 }
 
 export async function fetchNip05Data({ nip05, cacheKey }) {
-  const { relays, pubkey } = await getOrInsertCache({
+  const { relays, pubkey } = await getOrInsertPageCache({
     key: cacheKey,
     insertCallback: () => {
       const [username, domain] = nip05.split("@");
@@ -110,7 +79,7 @@ export async function fetchFromNip05({ user, fetchUrl }) {
 }
 
 export async function getMetadataEvent({ cacheKey, filter, relays }) {
-  return getOrInsertCache({
+  return getOrInsertPageCache({
     key: `nostrize-kind0-${cacheKey}`,
     insertCallback: () => {
       const pool = new SimplePool();
@@ -123,7 +92,7 @@ export async function getMetadataEvent({ cacheKey, filter, relays }) {
 const getFollowSetCacheKey = (pubkey) => `nostrize-follow-list-${pubkey}`;
 
 const getFollowSetFromCache = (pubkey) => {
-  const cache = getFromCache(getFollowSetCacheKey(pubkey));
+  const cache = getFromPageCache(getFollowSetCacheKey(pubkey));
 
   if (!cache) {
     return null;
@@ -136,7 +105,7 @@ const getFollowSetFromCache = (pubkey) => {
 };
 
 const setFollowSetToCache = (pubkey, latestEvent, followSet) =>
-  insertToCache(getFollowSetCacheKey(pubkey), {
+  insertToPageCache(getFollowSetCacheKey(pubkey), {
     latestEvent,
     followSet: [...followSet],
   });
@@ -324,7 +293,7 @@ const latestNotesCacheKey = (pubkey) => `nostrize-latest-notes-${pubkey}`;
 
 export function fetchLatestNotes({ pubkey, relays, callback }) {
   const cacheKey = latestNotesCacheKey(pubkey);
-  const cachedNotes = getFromCache(cacheKey) || [];
+  const cachedNotes = getFromPageCache(cacheKey) || [];
 
   const pool = new SimplePool();
   const notesSet = new Set(cachedNotes.map((note) => note.id));
@@ -349,7 +318,7 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
       oneose() {
         console.log("eose, updating cache");
 
-        insertToCache(cacheKey, cachedNotes);
+        insertToPageCache(cacheKey, cachedNotes);
       },
       alreadyHaveEvent(id) {
         return notesSet.has(id);
@@ -358,4 +327,57 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
   );
 
   return cachedNotes;
+}
+
+async function getPubkeyFromNip07() {
+  window.postMessage({
+    from: "nostrize",
+    type: "nip07-pubkey-request",
+  });
+
+  return new Promise((resolve) => {
+    window.addEventListener("message", function (event) {
+      if (event.source !== window) {
+        return;
+      }
+
+      const { from, type, pubkey } = event.data;
+
+      if (
+        !(
+          from === "nostrize-nip07-provider" &&
+          type === "nip07-pubkey-request" &&
+          !!pubkey
+        )
+      ) {
+        return;
+      }
+
+      return resolve(pubkey);
+    });
+  });
+}
+
+export async function getNostrizeUserPubkey({ mode, nostrConnectSettings }) {
+  if (mode === "anon") {
+    throw new Error("don't use this method for anonymous mode");
+  }
+
+  if (mode === "nip07") {
+    return getPubkeyFromNip07();
+  } else if (mode === "nostrconnect") {
+    if (!nostrConnectSettings) {
+      throw new Error("nostrconnect settings are required");
+    }
+
+    if (!nostrConnectSettings.userPubkey) {
+      throw new Error(
+        "nostrconnect user pubkey is not set, check nostrconnect settings",
+      );
+    }
+
+    return nostrConnectSettings.userPubkey;
+  } else {
+    throw new Error("not implemented");
+  }
 }

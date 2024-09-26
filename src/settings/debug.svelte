@@ -19,17 +19,19 @@
 
   <fieldset>
     <legend>Namespace</legend>
-    <Tooltip
-      text="This helps in identifying Nostrize logs."
-      title="Namespace"
-    />
+    <div>
+      <Tooltip
+        text="This helps in identifying Nostrize logs."
+        title="Namespace"
+      />
 
-    <input
-      type="text"
-      id="namespace"
-      placeholder="Namespace"
-      bind:value={debugSettings.namespace}
-    />
+      <input
+        type="text"
+        id="namespace"
+        placeholder="Namespace"
+        bind:value={debugSettings.namespace}
+      />
+    </div>
   </fieldset>
 </div>
 

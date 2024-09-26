@@ -1,4 +1,7 @@
 fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   border: 1px solid #8250df;
   border-radius: 5px;
   padding: 10px;
@@ -20,11 +23,8 @@ button.settings-button {
   width: fit-content;
 }
 
-.input-container input {
-  width: 100%;
-  max-width: 100%;
-  padding: 5px;
-  margin-top: 5px;
+button.settings-button:hover {
+  background-color: rgba(130 80 223 / 100%);
 }
 
 .input-container input[type="checkbox"] {
@@ -33,10 +33,37 @@ button.settings-button {
 }
 
 .input-container input[type="text"],
-input[type="password"],
-select {
+.input-container input[type="password"] {
+  font-size: medium;
   width: 100%;
   padding: 5px 0 5px 5px;
   margin-top: 5px;
   max-width: 96%;
+}
+
+.input-container select {
+  font-size: medium;
+  width: 99%;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.flex-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 98%;
+}
+
+.flex-container input[type="text"] {
+  margin-bottom: 4px;
+}
+
+.flex-left {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.flex-right {
+  flex-shrink: 0;
 }

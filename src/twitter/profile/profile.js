@@ -3,8 +3,8 @@ import browser from "webextension-polyfill";
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
-  getLocalSettings,
-  getOrInsertCache,
+  getNostrizeSettings,
+  getOrInsertPageCache,
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
 import { delay, Either } from "../../helpers/utils.js";
@@ -15,13 +15,10 @@ import {
   getFollowSet,
   getMetadataEvent,
   getPubkeyFrom,
-  getUserPubkey,
+  getNostrizeUserPubkey,
   unfollowAccount,
 } from "../../helpers/nostr.js";
-import {
-  getPageUserRelays,
-  getNip07OrLocalRelays,
-} from "../../helpers/relays.js";
+import { getNostrizeUserRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { lightsatsModalComponent } from "../../components/lightsats/lightsats-modal.js";
 import { wrapInputTooltip } from "../../components/tooltip/tooltip-wrapper.js";
@@ -32,9 +29,10 @@ import {
   updateFollowButton,
 } from "./twitter-helpers.js";
 import { setupNostrProfileLink } from "./twitter-helpers.js";
+import { getNip65Relays } from "../../helpers/nip65.js";
 
 async function twitterProfilePage() {
-  const settings = await getLocalSettings();
+  const settings = await getNostrizeSettings();
 
   const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 
@@ -99,10 +97,14 @@ async function twitterProfilePage() {
     log,
   });
 
-  const nostrizeUserPubkey = await html.asyncScript({
+  await html.asyncScript({
     id: "nostrize-nip07-provider",
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
-    callback: () => getUserPubkey({ settings, timeout: 10000 }),
+  });
+
+  const nostrizeUserPubkey = await getNostrizeUserPubkey({
+    settings,
+    timeout: 10000,
   });
 
   // will be used to create zap, follow/unfollow and lightsats buttons
@@ -143,17 +145,14 @@ async function twitterProfilePage() {
     cachePrefix: "tw",
   });
 
-  const {
-    readRelays: nostrizeUserReadRelays,
-    writeRelays: nostrizeUserWriteRelays,
-  } = await getNip07OrLocalRelays({
+  const nostrizeUserRelays = await getNostrizeUserRelays({
     settings,
     timeout: 4000,
   });
 
-  const { pageUserWriteRelays } = await getPageUserRelays({
+  const pageUserRelays = await getNip65Relays({
     pubkey: pageUserPubkey,
-    relays: nostrizeUserReadRelays,
+    relays: nostrizeUserRelays.readRelays,
   });
 
   const timelineNavbar = document.querySelector(
@@ -163,14 +162,14 @@ async function twitterProfilePage() {
   setupNostrMode({
     timelineNavbar,
     pageUserPubkey,
-    pageUserWriteRelays,
+    pageUserWriteRelays: pageUserRelays.writeRelays,
     settings,
   });
 
   const metadataEvent = await getMetadataEvent({
     cacheKey: pageUserPubkey,
     filter: { authors: [pageUserPubkey], kinds: [0], limit: 1 },
-    relays: nostrizeUserReadRelays,
+    relays: nostrizeUserRelays.readRelays,
   });
 
   const pageUserIsNostrizeUser = pageUserPubkey === nostrizeUserPubkey;
@@ -179,13 +178,13 @@ async function twitterProfilePage() {
     settings,
     pageUserPubkey,
     pageUserIsNostrizeUser,
-    pageUserWriteRelays,
+    pageUserRelays.writeRelays,
   );
 
   if (!pageUserIsNostrizeUser) {
     getFollowSet({
       pubkey: pageUserPubkey,
-      relays: pageUserWriteRelays,
+      relays: pageUserRelays.writeRelays,
       callback: ({ followSet }) => {
         const pageUserFollowsNostrizeUser = followSet.has(nostrizeUserPubkey);
 
@@ -212,7 +211,7 @@ async function twitterProfilePage() {
     if (!isPageUserTwitterAccount) {
       getFollowSet({
         pubkey: nostrizeUserPubkey,
-        relays: nostrizeUserWriteRelays,
+        relays: nostrizeUserRelays.writeRelays,
         timeout: 1000 * 60 * 10, // 10 minutes
         callback: ({ followSet, latestEvent }) => {
           gui.gebid("n-tw-follow-unfollow-button")?.remove();
@@ -228,7 +227,7 @@ async function twitterProfilePage() {
                   pubkey: nostrizeUserPubkey,
                   currentFollowEvent: latestEvent,
                   pageUserPubkey,
-                  relays: nostrizeUserWriteRelays,
+                  relays: nostrizeUserRelays.writeRelays,
                   log,
                 };
 
@@ -259,7 +258,7 @@ async function twitterProfilePage() {
     }
   }
 
-  const lnurlData = await getOrInsertCache({
+  const lnurlData = await getOrInsertPageCache({
     key: `nostrize-lnurldata-${metadataEvent.id}`,
     insertCallback: () =>
       Either.getOrElseThrow({
@@ -277,7 +276,7 @@ async function twitterProfilePage() {
           zapModalComponent({
             user: pageUsername,
             metadataEvent,
-            relays: nostrizeUserWriteRelays,
+            nostrizeUserRelays,
             lnurlData,
             log,
             settings,
