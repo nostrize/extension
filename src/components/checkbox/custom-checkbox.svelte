@@ -71,7 +71,7 @@
   .checkbox-container .custom-checkbox {
     width: 20px;
     height: 20px;
-    border: 2px solid #8250df;
+    border: 2px solid rgba(130, 80, 223, 1);
     border-radius: 3px;
     position: relative;
     cursor: pointer;
@@ -83,11 +83,16 @@
     content: "";
     width: 10px;
     height: 10px;
-    background-color: #8250df;
+    background-color: rgba(130, 80, 223, 0.7);
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  /* Change background color on hover */
+  .checkbox-container:hover .custom-checkbox.checked::before {
+    background-color: rgba(130, 80, 223, 1);
   }
 
   /* Align the span to the left */

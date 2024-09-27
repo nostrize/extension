@@ -259,6 +259,24 @@
 <fieldset>
   <legend>Remote Signer Bunker Settings</legend>
 
+  <a
+    href="https://github.com/nostr-protocol/nips/blob/master/46.md"
+    target="_blank"
+    class="simple-tooltip"
+    data-tooltip-text="Click to learn how do Remote Signers work"
+  >
+    What is a Remote Signer?
+  </a>
+
+  <a
+    href="https://github.com/blackcoffeexbt/awesome-nip46-remote-nostr-signing-clients"
+    target="_blank"
+    class="simple-tooltip"
+    data-tooltip-text="Click to learn more about Remote Signers"
+  >
+    Awesome NostrConnect/Remote Signing?
+  </a>
+
   <div>
     <Tooltip
       title="Bunker URL"

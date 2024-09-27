@@ -386,6 +386,28 @@
   <legend>Remote Signer Settings</legend>
 
   <div>
+    <a
+      href="https://github.com/nostr-protocol/nips/blob/master/46.md"
+      target="_blank"
+      class="simple-tooltip"
+      data-tooltip-text="Click to learn how do Remote Signers work"
+    >
+      What is a Remote Signer?
+    </a>
+  </div>
+
+  <div style="margin-bottom: 10px;">
+    <a
+      href="https://github.com/blackcoffeexbt/awesome-nip46-remote-nostr-signing-clients"
+      target="_blank"
+      class="simple-tooltip"
+      data-tooltip-text="Click to learn more about Remote Signers"
+    >
+      Awesome NostrConnect/Remote Signing?
+    </a>
+  </div>
+
+  <div>
     <label for="nostrconnect-provider">Remote Signer Provider</label>
     <div class="provider-input-row">
       {#if nostrConnectSettings.provider !== "custom"}

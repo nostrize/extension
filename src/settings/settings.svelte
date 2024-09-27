@@ -11,10 +11,34 @@
 
   export let settings;
 
+  let lightsatsComponent;
+  let nostrComponent;
+  let debugComponent;
+
+  let isDirtyLightsats = false;
+  let isDirtyNostr = false;
+  let isDirtyDebug = false;
+
+  // won't be included in general isDirty, it doesn't belong to settings
+  let isDirtyNIP65 = false;
+
+  $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyDebug;
+
+  $: isDefaultSettings =
+    settings && JSON.stringify(settings) === JSON.stringify(defaultSettings);
+
+  let lastSavedSettings = JSON.stringify(settings);
+
   let saveLabel = "Save settings";
 
   async function saveSettings() {
     await saveNostrizeSettings({ settings });
+
+    lastSavedSettings = JSON.stringify(settings);
+
+    lightsatsComponent.onSaveSettings();
+    nostrComponent.onSaveSettings();
+    debugComponent.onSaveSettings();
 
     saveLabel = "Saved 💾";
 
@@ -25,6 +49,14 @@
 
   function resetSettings() {
     settings = { ...defaultSettings };
+
+    lightsatsComponent.onSaveSettings();
+    nostrComponent.onSaveSettings();
+    debugComponent.onSaveSettings();
+  }
+
+  function undoSettings() {
+    settings = JSON.parse(lastSavedSettings);
   }
 
   function setActiveSection(section, icon) {
@@ -44,6 +76,7 @@
     <button
       class="icon active"
       on:click={(event) => setActiveSection("settings", event.currentTarget)}
+      data-tooltip="Settings"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -60,6 +93,7 @@
     <button
       class="icon"
       on:click={(event) => setActiveSection("tools", event.currentTarget)}
+      data-tooltip="Tools"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -77,34 +111,62 @@
 
   <main class="content">
     <section id="settings-section" class="active">
-      <div class="section collapsable" id="nostr-settings">
-        <h2>Nostr Settings</h2>
+      <div
+        class="section collapsable"
+        id="nostr-settings"
+        class:dirty={isDirtyNostr}
+      >
+        <h2 class:dirty={isDirtyNostr}>Nostr Settings</h2>
 
         <div class="input-container collapsed">
-          <NostrSettings nostrSettings={settings.nostrSettings} />
+          <NostrSettings
+            nostrSettings={settings.nostrSettings}
+            bind:this={nostrComponent}
+            bind:isDirty={isDirtyNostr}
+          />
         </div>
       </div>
-      <div class="section collapsable" id="lightsats-settings">
-        <h2>Lightsats Integration</h2>
+      <div
+        class="section collapsable"
+        id="lightsats-settings"
+        class:dirty={isDirtyLightsats}
+      >
+        <h2 class:dirty={isDirtyLightsats}>Lightsats Integration</h2>
 
         <div class="input-container collapsed">
-          <LightsatsSettings lightsatsSettings={settings.lightsatsSettings} />
+          <LightsatsSettings
+            lightsatsSettings={settings.lightsatsSettings}
+            bind:this={lightsatsComponent}
+            bind:isDirty={isDirtyLightsats}
+          />
         </div>
       </div>
-      <div class="section collapsable" id="debug-settings">
-        <h2>Debug Settings</h2>
+      <div
+        class="section collapsable"
+        id="debug-settings"
+        class:dirty={isDirtyDebug}
+      >
+        <h2 class:dirty={isDirtyDebug}>Debug Settings</h2>
 
         <div class="input-container collapsed">
-          <DebugSettings debugSettings={settings.debug} />
+          <DebugSettings
+            debugSettings={settings.debug}
+            bind:this={debugComponent}
+            bind:isDirty={isDirtyDebug}
+          />
         </div>
       </div>
     </section>
     <section id="tools-section">
-      <div class="section collapsable">
+      <div
+        class="section collapsable"
+        class:dirty={isDirtyNIP65}
+        id="nip65-settings"
+      >
         <h2>NIP-65 Relay Manager</h2>
         <div class="input-container collapsed">
           {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
-            <NIP65RelayManager {settings} />
+            <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />
           {:else if settings.nostrSettings.mode === "anon"}
             <fieldset>
               <legend>Anonymous mode</legend>
@@ -129,10 +191,31 @@
       </div>
     </section>
     <div id="misc-container">
-      <button id="reset-settings" on:click={resetSettings}
-        >Reset settings</button
+      <button
+        id="undo-settings"
+        on:click={undoSettings}
+        class:dirty={isDirty}
+        disabled={!isDirty}
       >
-      <button id="save-settings" on:click={saveSettings}>{saveLabel}</button>
+        Undo Changes
+      </button>
+
+      <button
+        id="reset-settings"
+        on:click={resetSettings}
+        class:dirty={!isDefaultSettings}
+        disabled={isDefaultSettings}
+      >
+        Reset Factory Settings</button
+      >
+      <button
+        id="save-settings"
+        on:click={saveSettings}
+        class:dirty={isDirty}
+        disabled={!isDirty}
+      >
+        {saveLabel}
+      </button>
     </div>
   </main>
 </div>
@@ -148,6 +231,7 @@
     color: black;
     margin-top: 5px;
     margin-bottom: 5px;
+    cursor: pointer;
   }
 
   .section {
@@ -161,6 +245,11 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+  }
+
+  .section.dirty {
+    position: relative;
+    background-color: rgba(223, 80, 147, 0.1);
   }
 
   .input-container {
@@ -186,6 +275,14 @@
     transition: transform 0.3s ease-out;
   }
 
+  .section h2.dirty::before {
+    content: "▶"; /* The default arrow indicator */
+    color: red;
+    position: absolute;
+    left: 10px; /* Adjust this value to position the indicator inside the section */
+    transition: transform 0.3s ease-out;
+  }
+
   .section:has(.input-container.collapsed) h2::before {
     transform: rotate(0deg); /* Indicator points right when collapsed */
   }
@@ -201,14 +298,6 @@
     cursor: pointer;
     font-weight: bold;
     width: fit-content;
-  }
-
-  #reset-settings {
-    background-color: darkred;
-  }
-
-  #save-settings {
-    background-color: green;
   }
 
   .version-container {
@@ -246,6 +335,7 @@
     border-radius: 50%;
     transition: background-color 0.3s;
     background-color: rgba(130, 80, 223, 0.1);
+    position: relative;
   }
 
   .icon:hover {
@@ -259,6 +349,26 @@
   .icon svg {
     width: 24px;
     height: 24px;
+  }
+
+  .icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    transform: translateY(-5px);
+    background-color: black;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .icon:hover::after {
+    opacity: 1;
+    visibility: visible;
   }
 
   .content {
@@ -284,5 +394,34 @@
 
   #misc-container button {
     width: 106px;
+  }
+
+  #reset-settings {
+    background-color: rgba(139, 0, 0, 0.75);
+  }
+
+  #reset-settings:hover {
+    background-color: rgba(139, 0, 0, 1);
+  }
+
+  #save-settings {
+    background-color: rgba(0, 128, 0, 0.75);
+  }
+
+  #save-settings:hover {
+    background-color: rgba(0, 128, 0, 1);
+  }
+
+  #undo-settings:hover {
+    background-color: rgba(130, 80, 223, 1);
+  }
+
+  #misc-container button.dirty {
+    opacity: 1;
+  }
+
+  #misc-container button:not(.dirty) {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>

@@ -5,7 +5,15 @@
   import Relays from "./relays.svelte";
 
   export let nostrSettings;
-  export let relays;
+  export let isDirty = false;
+
+  const localRelays = nostrSettings.relays.local.relays
+    .filter((relay) => relay.enabled)
+    .map((relay) => relay.relay);
+
+  let nostrSettingsHash = JSON.stringify(nostrSettings);
+
+  $: isDirty = JSON.stringify(nostrSettings) !== nostrSettingsHash;
 
   const nostrModeOptions = [
     {
@@ -31,18 +39,12 @@
     },
   ];
 
-  let selectedOptionDescription = "";
-
-  function setSelectedOptionDescription(index) {
-    selectedOptionDescription = nostrModeOptions[index].description;
-  }
-
-  function clearSelectedOptionDescription() {
-    selectedOptionDescription = "";
-  }
-
   function handleOptionSelect(value) {
     nostrSettings.mode = value;
+  }
+
+  export function onSaveSettings() {
+    nostrSettingsHash = JSON.stringify(nostrSettings);
   }
 </script>
 
@@ -62,16 +64,13 @@
     <div class="custom-select">
       <div class="select-label">Select Mode</div>
       <div class="select-options">
-        {#each nostrModeOptions as option, index}
+        {#each nostrModeOptions as option}
           <button
             type="button"
-            class="select-option"
+            class="select-option simple-tooltip"
+            data-tooltip-text={option.description}
             class:selected={nostrSettings.mode === option.value}
             on:click={() => handleOptionSelect(option.value)}
-            on:mouseover={() => setSelectedOptionDescription(index)}
-            on:focus={() => setSelectedOptionDescription(index)}
-            on:mouseleave={clearSelectedOptionDescription}
-            on:blur={clearSelectedOptionDescription}
             on:keydown={(e) =>
               e.key === "Enter" && handleOptionSelect(option.value)}
           >
@@ -79,16 +78,13 @@
           </button>
         {/each}
       </div>
-      {#if selectedOptionDescription}
-        <div class="selected-tooltip">{selectedOptionDescription}</div>
-      {/if}
     </div>
   </fieldset>
 
   {#if nostrSettings.mode === "nostrconnect"}
     <NostrConnect
       bind:nostrConnectSettings={nostrSettings.nostrConnect}
-      {relays}
+      relays={localRelays}
     />
   {/if}
 
@@ -108,23 +104,6 @@
 </div>
 
 <style>
-  .selected-tooltip {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 92%;
-    background-color: black;
-    color: white;
-    border-radius: 5px;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 0.8em;
-  }
-
-  .select-option:hover {
-    background-color: rgba(130, 80, 223, 0.4);
-  }
-
   .custom-select {
     position: relative;
   }
@@ -145,6 +124,11 @@
     cursor: pointer;
     border: none;
     border-bottom: 1px solid black;
+    position: relative;
+  }
+
+  .select-option:hover {
+    background-color: rgba(130, 80, 223, 0.4);
   }
 
   .select-option:last-child {

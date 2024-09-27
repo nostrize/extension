@@ -5,6 +5,15 @@
   import "./common.css";
 
   export let debugSettings;
+  export let isDirty = false;
+
+  let debugSettingsHash = JSON.stringify(debugSettings);
+
+  $: isDirty = JSON.stringify(debugSettings) !== debugSettingsHash;
+
+  export function onSaveSettings() {
+    debugSettingsHash = JSON.stringify(debugSettings);
+  }
 </script>
 
 <div class="debug-settings">

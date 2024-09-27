@@ -3,16 +3,27 @@
   import Tooltip from "../components/tooltip/tooltip.svelte";
 
   export let lightsatsSettings;
+  export let isDirty = false;
+
+  let lightsatsSettingsHash = JSON.stringify(lightsatsSettings);
+
+  $: isDirty = JSON.stringify(lightsatsSettings) !== lightsatsSettingsHash;
+
+  export function onSaveSettings() {
+    lightsatsSettingsHash = JSON.stringify(lightsatsSettings);
+  }
 </script>
 
 <div class="lightsats-settings">
   <fieldset>
     <legend>Registration</legend>
-    <Tooltip text="This link is for registering a new account on Lightsats.">
-      <a href="https://lightsats.com" target="_blank" slot="slotTitle"
-        >Create lightsats account</a
-      >
-    </Tooltip>
+    <a
+      href="https://lightsats.com"
+      target="_blank"
+      class="simple-tooltip"
+      data-tooltip-text="Click to learn more about Lightsats, also create an account if you don't have one yet."
+      >What is Lightsats?</a
+    >
   </fieldset>
 
   <fieldset>

@@ -10,15 +10,25 @@
   import Loading from "../components/loading.svelte";
 
   export let settings;
+  export let isDirty;
 
   let nostrizeUserPubkey;
   let nostrizeUserRelays;
+
   let nip65Relays = [];
+  let nip65RelaysBackup;
+
+  $: isDirty = nip65RelaysBackup !== JSON.stringify(nip65Relays);
+
   let isLoading = false;
   let error = "";
   let success = "";
 
   loadNip65Relays();
+
+  function undoChanges() {
+    nip65Relays = JSON.parse(nip65RelaysBackup);
+  }
 
   function addRelay() {
     nip65Relays = [...nip65Relays, { relay: "", read: true, write: true }];
@@ -76,6 +86,8 @@
     } catch (e) {
       error = "Failed to load NIP-65 relays: " + e.message;
     }
+
+    nip65RelaysBackup = JSON.stringify(nip65Relays);
   }
 
   async function publishNIP65Event() {
@@ -136,9 +148,22 @@
 </script>
 
 <div class="nip65-relay-manager">
-  {#if isLoading}
-    <Loading />
-  {/if}
+  <div>
+    {#if isLoading}
+      <Loading />
+    {/if}
+  </div>
+
+  <div style="margin-bottom: 10px;">
+    <a
+      href="https://github.com/nostr-protocol/nips/blob/master/65.md"
+      target="_blank"
+      class="simple-tooltip"
+      data-tooltip-text="Click to learn more about NIP-65 Relay Lists"
+    >
+      What is NIP-65?
+    </a>
+  </div>
 
   {#if nip65Relays.length > 0}
     <div class="relay-list">
@@ -178,7 +203,25 @@
 
   <div class="button-container">
     <button class="settings-button" on:click={addRelay}>Add Relay</button>
-    <button class="settings-button" on:click={publishNIP65Event}>
+  </div>
+
+  <div class="button-container">
+    <button
+      id="undo-button"
+      class="settings-button"
+      class:dirty={isDirty}
+      on:click={undoChanges}
+      disabled={!isDirty}
+    >
+      Undo
+    </button>
+    <button
+      id="publish-button"
+      class="settings-button"
+      class:dirty={isDirty}
+      on:click={publishNIP65Event}
+      disabled={!isDirty}
+    >
       Publish NIP-65 Event
     </button>
   </div>
@@ -194,7 +237,7 @@
 
 <style>
   .nip65-relay-manager {
-    margin: 20px;
+    margin: 5px 20px 20px 20px;
   }
 
   .relay-list {
@@ -220,6 +263,32 @@
 
   button {
     margin-left: 3px;
+  }
+
+  #publish-button {
+    background-color: rgba(0, 128, 0, 0.75);
+  }
+
+  #publish-button:hover {
+    background-color: rgba(0, 128, 0, 1);
+  }
+
+  #publish-button.dirty {
+    opacity: 1;
+  }
+
+  #publish-button:not(.dirty) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #undo-button.dirty {
+    opacity: 1;
+  }
+
+  #undo-button:not(.dirty) {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .button-container {
