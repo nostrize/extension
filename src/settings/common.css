@@ -71,11 +71,23 @@ button.settings-button:hover {
 a {
   text-decoration: dotted;
   text-decoration-line: underline;
-  color: rgba(223, 80, 166, 0.75);
+  color: rgba(0, 150, 133, 0.75);
 }
 
 a:hover {
-  color: rgba(223, 80, 166, 1);
+  color: rgba(0, 150, 133, 1);
+}
+
+a[target="_blank"]::before {
+  content: " ";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'%3E%3C/path%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cline x1='10' y1='14' x2='21' y2='3'%3E%3C/line%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 3px;
 }
 
 .simple-tooltip {
@@ -120,4 +132,8 @@ a:hover {
 .simple-tooltip:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+.block {
+  display: block;
 }

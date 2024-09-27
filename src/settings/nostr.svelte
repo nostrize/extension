@@ -78,6 +78,46 @@
           </button>
         {/each}
       </div>
+      {#if nostrSettings.mode === "nip07"}
+        <div>
+          <a
+            href="https://github.com/nostr-protocol/nips/blob/master/07.md"
+            target="_blank"
+            class="block simple-tooltip"
+            data-tooltip-text="What is a NIP-07 browser extension?"
+            style="margin-top: 10px;"
+          >
+            What is NIP-07?
+          </a>
+
+          <a
+            href="https://addons.mozilla.org/en-US/firefox/addon/nos2x-fox/"
+            target="_blank"
+            class="block simple-tooltip"
+            data-tooltip-text="Click to install NIP-07 Firefox Extension"
+          >
+            Install nos2x-fox Firefox Extension
+          </a>
+
+          <a
+            href="https://chromewebstore.google.com/detail/nos2x/kpgefcfmnafjgpblomihpgmejjdanjjp"
+            target="_blank"
+            class="block simple-tooltip"
+            data-tooltip-text="Click to install NIP-07 Chrome Extension"
+          >
+            Install nos2x Chrome Extension
+          </a>
+
+          <a
+            href="https://getalby.com/"
+            target="_blank"
+            class="block simple-tooltip"
+            data-tooltip-text="Alby Lightning Wallet also acts as a NIP-07 browser extension"
+          >
+            Install Alby Lightning Wallet
+          </a>
+        </div>
+      {/if}
     </div>
   </fieldset>
 

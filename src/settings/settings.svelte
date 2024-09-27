@@ -164,7 +164,7 @@
         id="nip65-settings"
       >
         <h2>NIP-65 Relay Manager</h2>
-        <div class="input-container collapsed">
+        <div class="input-container expanded">
           {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
             <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />
           {:else if settings.nostrSettings.mode === "anon"}
@@ -178,7 +178,11 @@
               <a
                 href="https://nostrize.me/pages/nip65-manager.html"
                 target="_blank"
-                >Open link to manage NIP-65 relays.
+                class="simple-tooltip"
+                data-tooltip-text="You can't directly manage NIP-65 relays in Nostrize 
+                when you're in NIP-07 mode. Click here to manage them in https://nostrize.me"
+              >
+                Open link to manage NIP-65 relays
               </a>
             </fieldset>
           {:else}

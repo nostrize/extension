@@ -53,13 +53,18 @@
 </div>
 
 {#if mode === "nip07"}
-  <div class="bold margin10">NIP07 Relays</div>
+  <div class="bold margin10">NIP-07 Relays</div>
   <CustomCheckbox
-    text="Use Relays from NIP07 extension"
+    text="Use Relays from NIP-07 extension"
     bind:checked={relaysSettings.nip07.useRelays}
   />
-  <a href="https://nostrize.me/pages/nip07-manager.html" target="_blank">
-    Add NIP07 Relays to Local Relays
+  <a
+    href="https://nostrize.me/pages/nip07-manager.html"
+    target="_blank"
+    class="simple-tooltip"
+    data-tooltip-text="Click to add NIP-07 Relays to Local Relays if you want to use them as fallback relays."
+  >
+    Add NIP-07 Relays to Local Relays
   </a>
 {/if}
 
