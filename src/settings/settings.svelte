@@ -8,8 +8,22 @@
   import LightsatsSettings from "./lightsats.svelte";
   import DebugSettings from "./debug.svelte";
   import NIP65RelayManager from "./nip65.svelte";
+  import Rightbar from "./rightbar.svelte";
+  import Leftbar from "./leftbar.svelte";
 
   export let settings;
+
+  export let currentAccount = {
+    name: "User",
+    picture: "https://dhalsim.github.io/assets/dhalsim_logo_sq.png",
+  };
+
+  export let otherAccounts = [
+    {
+      name: "Nostrize",
+      picture: "https://nostrize.me/images/logo.png",
+    },
+  ];
 
   let lightsatsComponent;
   let nostrComponent;
@@ -71,161 +85,128 @@
   }
 </script>
 
-<div class="container">
-  <nav class="sidebar">
-    <button
-      class="icon active"
-      on:click={(event) => setActiveSection("settings", event.currentTarget)}
-      data-tooltip="Settings"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="24"
-        height="24"
-      >
-        <path fill="none" d="M0 0h24v24H0z" />
-        <path
-          d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11L12 1zm0 2.311L4.5 7.653v8.694L12 20.689l7.5-4.342V7.653L12 3.311zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
-        />
-      </svg>
-    </button>
-    <button
-      class="icon"
-      on:click={(event) => setActiveSection("tools", event.currentTarget)}
-      data-tooltip="Tools"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="24"
-        height="24"
-      >
-        <path fill="none" d="M0 0h24v24H0z" />
-        <path
-          d="M5.33 3.271a3.5 3.5 0 0 1 4.472 4.474L20.647 18.59l-2.122 2.121L7.68 9.867a3.5 3.5 0 0 1-4.472-4.474L5.444 7.63a1.5 1.5 0 1 0 2.121-2.121L5.329 3.27zm10.367 1.884l3.182-1.768 1.414 1.414-1.768 3.182-1.768.354-2.12 2.121-1.415-1.414 2.121-2.121.354-1.768zm-7.071 7.778l2.121 2.122-4.95 4.95A1.5 1.5 0 0 1 3.58 17.99l.097-.107 4.95-4.95z"
-        />
-      </svg>
-    </button>
-  </nav>
+<div class="settings-container">
+  <div class="content-wrapper">
+    <Leftbar {setActiveSection} />
 
-  <main class="content">
-    <section id="settings-section" class="active">
-      <div
-        class="section collapsable"
-        id="nostr-settings"
-        class:dirty={isDirtyNostr}
-      >
-        <h2 class:dirty={isDirtyNostr}>Nostr Settings</h2>
+    <main class="content">
+      <section id="settings-section" class="active">
+        <div
+          class="section collapsable"
+          id="nostr-settings"
+          class:dirty={isDirtyNostr}
+        >
+          <h2 class:dirty={isDirtyNostr}>Nostr Settings</h2>
 
-        <div class="input-container collapsed">
-          <NostrSettings
-            nostrSettings={settings.nostrSettings}
-            bind:this={nostrComponent}
-            bind:isDirty={isDirtyNostr}
-          />
+          <div class="input-container collapsed">
+            <NostrSettings
+              nostrSettings={settings.nostrSettings}
+              bind:this={nostrComponent}
+              bind:isDirty={isDirtyNostr}
+            />
+          </div>
         </div>
-      </div>
-      <div
-        class="section collapsable"
-        id="lightsats-settings"
-        class:dirty={isDirtyLightsats}
-      >
-        <h2 class:dirty={isDirtyLightsats}>Lightsats Integration</h2>
+        <div
+          class="section collapsable"
+          id="lightsats-settings"
+          class:dirty={isDirtyLightsats}
+        >
+          <h2 class:dirty={isDirtyLightsats}>Lightsats Integration</h2>
 
-        <div class="input-container collapsed">
-          <LightsatsSettings
-            lightsatsSettings={settings.lightsatsSettings}
-            bind:this={lightsatsComponent}
-            bind:isDirty={isDirtyLightsats}
-          />
+          <div class="input-container collapsed">
+            <LightsatsSettings
+              lightsatsSettings={settings.lightsatsSettings}
+              bind:this={lightsatsComponent}
+              bind:isDirty={isDirtyLightsats}
+            />
+          </div>
         </div>
-      </div>
-      <div
-        class="section collapsable"
-        id="debug-settings"
-        class:dirty={isDirtyDebug}
-      >
-        <h2 class:dirty={isDirtyDebug}>Debug Settings</h2>
+        <div
+          class="section collapsable"
+          id="debug-settings"
+          class:dirty={isDirtyDebug}
+        >
+          <h2 class:dirty={isDirtyDebug}>Debug Settings</h2>
 
-        <div class="input-container collapsed">
-          <DebugSettings
-            debugSettings={settings.debug}
-            bind:this={debugComponent}
-            bind:isDirty={isDirtyDebug}
-          />
+          <div class="input-container collapsed">
+            <DebugSettings
+              debugSettings={settings.debug}
+              bind:this={debugComponent}
+              bind:isDirty={isDirtyDebug}
+            />
+          </div>
         </div>
-      </div>
-    </section>
-    <section id="tools-section">
-      <div
-        class="section collapsable"
-        class:dirty={isDirtyNIP65}
-        id="nip65-settings"
-      >
-        <h2>NIP-65 Relay Manager</h2>
-        <div class="input-container expanded">
-          {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
-            <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />
-          {:else if settings.nostrSettings.mode === "anon"}
-            <fieldset>
-              <legend>Anonymous mode</legend>
-              <p>NIP-65 is disabled in anonymous mode.</p>
-            </fieldset>
-          {:else if settings.nostrSettings.mode === "nip07"}
-            <fieldset>
-              <legend>NIP-07 mode</legend>
-              <a
-                href="https://nostrize.me/pages/nip65-manager.html"
-                target="_blank"
-                class="simple-tooltip"
-                data-tooltip-text="You can't directly manage NIP-65 relays in Nostrize 
+      </section>
+      <section id="tools-section">
+        <div
+          class="section collapsable"
+          class:dirty={isDirtyNIP65}
+          id="nip65-settings"
+        >
+          <h2>NIP-65 Relay Manager</h2>
+          <div class="input-container expanded">
+            {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
+              <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />
+            {:else if settings.nostrSettings.mode === "anon"}
+              <fieldset>
+                <legend>Anonymous mode</legend>
+                <p>NIP-65 is disabled in anonymous mode.</p>
+              </fieldset>
+            {:else if settings.nostrSettings.mode === "nip07"}
+              <fieldset>
+                <legend>NIP-07 mode</legend>
+                <a
+                  href="https://nostrize.me/pages/nip65-manager.html"
+                  target="_blank"
+                  class="simple-tooltip"
+                  data-tooltip-text="You can't directly manage NIP-65 relays in Nostrize 
                 when you're in NIP-07 mode. Click here to manage them in https://nostrize.me"
-              >
-                Open link to manage NIP-65 relays
-              </a>
-            </fieldset>
-          {:else}
-            <fieldset>
-              <legend>{settings.nostrSettings.mode}</legend>
-              <p>Not Implemented for your Nostr mode</p>
-            </fieldset>
-          {/if}
+                >
+                  Open link to manage NIP-65 relays
+                </a>
+              </fieldset>
+            {:else}
+              <fieldset>
+                <legend>{settings.nostrSettings.mode}</legend>
+                <p>Not Implemented for your Nostr mode</p>
+              </fieldset>
+            {/if}
+          </div>
         </div>
+      </section>
+      <div id="misc-container">
+        <button
+          id="undo-settings"
+          on:click={undoSettings}
+          class:dirty={isDirty}
+          disabled={!isDirty}
+        >
+          Undo Changes
+        </button>
+
+        <button
+          id="reset-settings"
+          on:click={resetSettings}
+          class:dirty={!isDefaultSettings}
+          disabled={isDefaultSettings}
+        >
+          Reset Factory Settings</button
+        >
+        <button
+          id="save-settings"
+          on:click={saveSettings}
+          class:dirty={isDirty}
+          disabled={!isDirty}
+        >
+          {saveLabel}
+        </button>
       </div>
-    </section>
-    <div id="misc-container">
-      <button
-        id="undo-settings"
-        on:click={undoSettings}
-        class:dirty={isDirty}
-        disabled={!isDirty}
-      >
-        Undo Changes
-      </button>
+    </main>
 
-      <button
-        id="reset-settings"
-        on:click={resetSettings}
-        class:dirty={!isDefaultSettings}
-        disabled={isDefaultSettings}
-      >
-        Reset Factory Settings</button
-      >
-      <button
-        id="save-settings"
-        on:click={saveSettings}
-        class:dirty={isDirty}
-        disabled={!isDirty}
-      >
-        {saveLabel}
-      </button>
-    </div>
-  </main>
-</div>
+    <Rightbar {currentAccount} {otherAccounts} {settings} />
+  </div>
 
-<div class="version-container">
-  <div class="version">
+  <div class="version-container">
     Settings Version: <span id="version-number">{settings.version}</span>
   </div>
 </div>
@@ -304,80 +285,26 @@
     width: fit-content;
   }
 
-  .version-container {
-    display: flex;
-    flex: 1 1 auto;
-    width: 100%;
-    align-items: flex-end;
-    padding-top: 20px;
-  }
-
-  .container {
-    display: flex;
-    width: 100%;
-    min-height: fit-content;
-  }
-
-  .sidebar {
-    width: 60px;
-    background-color: #f0f0f0;
+  .settings-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
+    min-height: 95vh;
   }
 
-  .icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 20px;
-    cursor: pointer;
+  .content-wrapper {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 0;
-    border-radius: 50%;
-    transition: background-color 0.3s;
-    background-color: rgba(130, 80, 223, 0.1);
-    position: relative;
-  }
-
-  .icon:hover {
-    background-color: rgba(130, 80, 223, 0.4);
-  }
-
-  .icon.active {
-    background-color: rgba(130, 80, 223, 0.4);
-  }
-
-  .icon svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .icon::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    transform: translateY(-5px);
-    background-color: black;
-    color: white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-size: 0.8em;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .icon:hover::after {
-    opacity: 1;
-    visibility: visible;
+    flex: 1 0 auto;
+    width: 100%;
   }
 
   .content {
-    flex-grow: 1;
-    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .version-container {
+    flex-shrink: 0;
+    margin-top: 20px;
   }
 
   section {

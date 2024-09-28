@@ -8,6 +8,7 @@
   import "../settings/common.css";
   import { getNostrizeUserPubkey } from "../helpers/nostr.js";
   import Loading from "../components/loading.svelte";
+  import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
 
   export let settings;
   export let isDirty;
@@ -175,24 +176,21 @@
             on:change={(e) =>
               updateRelay(index, e.target.value, relay.read, relay.write)}
           />
-          <label>
-            <input
-              type="checkbox"
-              checked={relay.read}
-              on:change={(e) =>
-                updateRelay(index, relay.relay, e.target.checked, relay.write)}
-            />
-            Read
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={relay.write}
-              on:change={(e) =>
-                updateRelay(index, relay.relay, relay.read, e.target.checked)}
-            />
-            Write
-          </label>
+
+          <CustomCheckbox
+            checked={relay.read}
+            onclick={(e) =>
+              updateRelay(index, relay.relay, e.target.checked, relay.write)}
+            tooltip="Read"
+          />
+
+          <CustomCheckbox
+            checked={relay.write}
+            onclick={(e) =>
+              updateRelay(index, relay.relay, relay.read, e.target.checked)}
+            tooltip="Write"
+          />
+
           <button class="settings-button" on:click={() => removeRelay(index)}>
             Remove
           </button>
@@ -251,14 +249,7 @@
   }
 
   input[type="text"] {
-    width: 150px;
-    margin-right: 3px;
-  }
-
-  label {
-    margin-right: 3px;
-    display: flex;
-    align-items: center;
+    margin-right: 10px;
   }
 
   button {

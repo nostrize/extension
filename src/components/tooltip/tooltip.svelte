@@ -44,8 +44,19 @@
     on:click={iconClick}
     on:mouseenter={showTooltip}
     on:mouseleave={hideTooltip}
-    on:keydown={(e) => e.key === "Enter" && showTooltip(e)}>{iconText}</span
+    on:keydown={(e) => {
+      if (e.key === "Enter") {
+        showTooltip(e);
+      }
+
+      if (e.key === "Escape") {
+        hideTooltip(e);
+      }
+    }}
   >
+    {iconText}
+  </span>
+
   <span class="tooltip below">{text}</span>
 </div>
 

@@ -390,7 +390,7 @@
       href="https://github.com/nostr-protocol/nips/blob/master/46.md"
       target="_blank"
       class="simple-tooltip"
-      data-tooltip-text="Click to learn how do Remote Signers work"
+      data-tooltip-text="Click to learn how Remote Signers work"
     >
       What is a Remote Signer?
     </a>
