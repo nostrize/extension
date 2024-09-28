@@ -6,5 +6,8 @@ export default {
   tabWidth: 2,
   useTabs: false,
   plugins: ["prettier-plugin-svelte"],
-  overrides: [{ files: "*.svelte", options: { parser: "svelte" } }],
+  overrides: [
+    { files: "*.svelte", options: { parser: "svelte" } },
+    { files: "*.ts", options: { parser: "typescript" } },
+  ],
 };

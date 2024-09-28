@@ -142,21 +142,17 @@ async function replaceNoteContent(content, openNostr, relays) {
   const npubRegex = /\b(nostr:)?(npub1[a-zA-Z0-9]+)/g;
   const npubMatches = [...result.matchAll(npubRegex)];
 
-  const decodedPubkeys = npubMatches.reduce(
-    // eslint-disable-next-line no-unused-vars
-    (acc, [match, prefix, npub]) => {
-      try {
-        const { data: pubkey } = nip19.decode(npub);
+  const decodedPubkeys = npubMatches.reduce((acc, [match, _prefix, npub]) => {
+    try {
+      const { data: pubkey } = nip19.decode(npub);
 
-        acc.push({ match, npub, pubkey });
-      } catch (error) {
-        console.info(`Error decoding npub ${npub}:`, error.message);
-      }
+      acc.push({ match, npub, pubkey });
+    } catch (error) {
+      console.info(`Error decoding npub ${npub}:`, error.message);
+    }
 
-      return acc;
-    },
-    [],
-  );
+    return acc;
+  }, []);
 
   const npubReplacements = await Promise.all(
     decodedPubkeys.map(async ({ match, npub, pubkey }) => {
