@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "./build.sh",
-    "watch": "nodemon -w src --ext js,ts,css,html,json,svelte --exec 'npm run build'",
+    "watch": "nodemon -w src --ext js,ts,css,html,json,svelte,svg --exec 'npm run build'",
     "lint": "eslint . --fix --ext .js,.svelte && prettier . --write",
     "test": "echo \"Error: no test specified\" && exit 1",
     "release": "./release.sh"

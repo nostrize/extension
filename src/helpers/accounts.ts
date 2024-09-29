@@ -231,7 +231,7 @@ export async function addNewNostrizeAccount(account: NostrizeAccount) {
 
 /**
  * Deletes a Nostr account from the accounts array, and saves it.
- * If the account is the current account, it will set null as the current account.
+ * If the account is the current account, it will set null as the currentAccountId.
  * @param uuid The uuid of the NostrizeAccount to be deleted
  */
 export async function deleteNostrizeAccount(account: NostrizeAccount) {

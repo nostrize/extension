@@ -9,13 +9,35 @@
   import Rightbar from "./rightbar.svelte";
   import Leftbar from "./leftbar.svelte";
 
+  const nostrModeOptions = {
+    anon: {
+      label: "Anonymous",
+      description: "Generates new keys each time you need to sign an event.",
+    },
+    nip07: {
+      label: "NIP-07",
+      description:
+        "Signs events and gets your nostr relays and public key using browser extensions like alby or nos2x.",
+    },
+    nostrconnect: {
+      label: "NostrConnect",
+      description: "Connect to remote signing providers or create new account.",
+    },
+    bunker: {
+      label: "Bunker",
+      description: "Copy a Bunker URL from a remote signing provider.",
+    },
+  };
+
   export let currentAccount: NostrizeAccount;
   export let accounts: NostrizeAccount[];
 
   export let handleAccountChange;
   export let handleLogout;
+  export let editingAccount: NostrizeAccount | null;
 
   $: settings = currentAccount.settings;
+  $: nostrModeLabel = nostrModeOptions[settings.nostrSettings.mode].label;
 
   let lightsatsComponent: LightsatsSettings;
   let nostrComponent: NostrSettings;
@@ -118,6 +140,7 @@
           <div class="input-container collapsed">
             <NostrSettings
               nostrSettings={settings.nostrSettings}
+              {nostrModeOptions}
               bind:this={nostrComponent}
               bind:isDirty={isDirtyNostr}
             />
@@ -227,14 +250,21 @@
     <Rightbar
       {currentAccount}
       {accounts}
-      {settings}
       {handleAccountChange}
       {handleLogout}
+      bind:editingAccount
     />
   </div>
 
   <div class="version-container">
     Settings Version: <span id="version-number">{settings.version}</span>
+  </div>
+
+  <div class="nostr-mode-container">
+    Nostr Mode:
+    <span id="nostr-mode">
+      {nostrModeLabel}
+    </span>
   </div>
 </div>
 
@@ -336,7 +366,6 @@
 
   .content {
     flex: 1;
-    overflow-y: auto;
   }
 
   .version-container {

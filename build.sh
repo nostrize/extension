@@ -5,6 +5,8 @@ mkdir dist
 
 cp manifest.json dist/manifest.json
 cp src/logo.png dist/logo.png
+cp src/settings/user-icon.svg dist/user-icon.svg
+cp src/settings/user-edit.svg dist/user-edit.svg
 
 ./node_modules/.bin/webpack
 

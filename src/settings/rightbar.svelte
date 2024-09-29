@@ -1,11 +1,13 @@
 <script>
   import { onMount } from "svelte";
 
+  import "./common.css";
+
   export let currentAccount;
   export let accounts;
-  export let settings;
   export let handleAccountChange;
   export let handleLogout;
+  export let editingAccount;
 
   let expanded = false;
 
@@ -44,26 +46,31 @@
     on:click={toggleMenu}
     tabindex="0"
   >
-    {#if currentAccount && currentAccount.picture}
-      <img src={currentAccount.picture} alt={currentAccount.name || "User"} />
-    {:else}
-      <svg viewBox="0 0 24 24">
-        <path
-          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-        />
-      </svg>
-    {/if}
-    <span class="profile-name">
-      {currentAccount ? currentAccount.name : "User"}
-    </span>
+    <div class="simple-tooltip" data-tooltip-text={currentAccount.name}>
+      {#if currentAccount && currentAccount.picture}
+        <img src={currentAccount.picture} alt={currentAccount.name} />
+      {:else}
+        <img src="user-icon.svg" alt={currentAccount.name} />
+      {/if}
+    </div>
   </div>
-  <span class="user-mode">{settings.nostrSettings.mode}</span>
 
   <div class="profile-menu">
+    <button
+      class="menu-item"
+      on:click={() => (editingAccount = currentAccount)}
+    >
+      <img src="user-edit.svg" width="24" height="24" alt="Edit Account" />
+      Edit Account
+    </button>
     {#each accounts.filter((a) => a.uuid !== currentAccount.uuid) as account}
       <button class="menu-item" on:click={() => setCurrentAccount(account)}>
-        <img class="account-icon" src={account.picture} alt={account.name} />
-        {account.name}
+        {#if account.picture}
+          <img class="account-icon" src={account.picture} alt={account.name} />
+        {:else}
+          <img src="user-icon.svg" width="24" height="24" alt={account.name} />
+        {/if}
+        {account.name ? account.name : account.uuid}
       </button>
     {/each}
     <button class="menu-item" on:click={logOut}>
@@ -111,37 +118,15 @@
   }
 
   .profile-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .profile-icon svg {
     width: 24px;
     height: 24px;
     fill: #333;
-  }
-
-  .profile-name {
-    display: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 140px;
-  }
-
-  .expanded .profile-name {
-    display: block;
-  }
-
-  .user-mode {
-    font-size: 0.8em;
-    color: #666;
-    margin-bottom: 10px;
+    object-fit: cover;
   }
 
   .profile-menu {
     display: none;
+    min-width: 150px;
     flex-direction: column;
     width: 100%;
   }

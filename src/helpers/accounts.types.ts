@@ -53,19 +53,22 @@ export type Settings = {
   lightsatsSettings: LightsatsSettings;
 };
 
-export type NostrizeAccount = Account | AnonAccount;
-
-export type Account = {
-  kind: "nostr";
-  uuid: string;
-  pubkey: string;
-  name: string;
-  icon: string;
-  settings: Settings;
-};
+export type NostrizeAccount = AnonAccount | KnownAccount;
+export type AccountKind = "anon" | "known";
 
 export type AnonAccount = {
   kind: "anon";
   uuid: string;
+  name?: string;
+  icon?: string;
+  settings: Settings;
+};
+
+export type KnownAccount = {
+  kind: "known";
+  uuid: string;
+  pubkey: string;
+  name?: string;
+  icon?: string;
   settings: Settings;
 };

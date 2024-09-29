@@ -5,6 +5,7 @@
   import Relays from "./relays.svelte";
 
   export let nostrSettings;
+  export let nostrModeOptions;
   export let isDirty = false;
 
   const localRelays = nostrSettings.relays.local.relays
@@ -14,30 +15,6 @@
   let nostrSettingsHash = JSON.stringify(nostrSettings);
 
   $: isDirty = JSON.stringify(nostrSettings) !== nostrSettingsHash;
-
-  const nostrModeOptions = [
-    {
-      value: "anon",
-      label: "Anonymous",
-      description: "Generates new keys each time you need to sign an event.",
-    },
-    {
-      value: "nip07",
-      label: "NIP-07",
-      description:
-        "Signs events and gets your nostr relays and public key using browser extensions like alby or nos2x.",
-    },
-    {
-      value: "nostrconnect",
-      label: "NostrConnect",
-      description: "Connect to remote signing providers or create new account.",
-    },
-    {
-      value: "bunker",
-      label: "Bunker",
-      description: "Copy a Bunker URL from a remote signing provider.",
-    },
-  ];
 
   function handleOptionSelect(value) {
     nostrSettings.mode = value;
@@ -64,15 +41,14 @@
     <div class="custom-select">
       <div class="select-label">Select Mode</div>
       <div class="select-options">
-        {#each nostrModeOptions as option}
+        {#each Object.entries(nostrModeOptions) as [key, option]}
           <button
             type="button"
             class="select-option simple-tooltip"
             data-tooltip-text={option.description}
-            class:selected={nostrSettings.mode === option.value}
-            on:click={() => handleOptionSelect(option.value)}
-            on:keydown={(e) =>
-              e.key === "Enter" && handleOptionSelect(option.value)}
+            class:selected={nostrSettings.mode === key}
+            on:click={() => handleOptionSelect(key)}
+            on:keydown={(e) => e.key === "Enter" && handleOptionSelect(key)}
           >
             {option.label}
           </button>
