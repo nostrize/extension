@@ -2,14 +2,15 @@ import browser from "webextension-polyfill";
 
 import * as html from "../imgui-dom/html.js";
 
+import { getNip07Relays } from "../helpers/nip07.js";
 import {
   getNostrizeSettings,
   saveNostrizeSettings,
-} from "../helpers/local-cache.js";
-import { getNip07Relays } from "../helpers/nip07.js";
+} from "../helpers/accounts.ts";
+import { Either } from "../helpers/either.ts";
 
 async function nip07ManagerPage() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   await html.asyncScript({
     id: "nostrize-nip07-provider",

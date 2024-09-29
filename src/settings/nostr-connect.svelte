@@ -2,15 +2,16 @@
   import { nip04, SimplePool, finalizeEvent, Relay } from "nostr-tools";
 
   import { fetchFromNip05 } from "../helpers/nostr";
-  import { Either, generateRandomHexString } from "../helpers/utils";
+  import { generateRandomHexString } from "../helpers/utils";
+  import { Either } from "../helpers/either.ts";
+  import { createKeyPair } from "../helpers/crypto";
   import {
     getNostrizeSettings,
     saveNostrizeSettings,
-  } from "../helpers/local-cache";
+  } from "../helpers/accounts.ts";
   import Tooltip from "../components/tooltip/tooltip.svelte";
   import QrCode from "../components/qrCode.svelte";
   import Loading from "../components/loading.svelte";
-  import { createKeyPair } from "../helpers/crypto";
 
   export let nostrConnectSettings;
   export let relays;
@@ -266,7 +267,7 @@
   }
 
   async function saveNostrConnectData(e) {
-    const settings = await getNostrizeSettings();
+    const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
     await saveNostrizeSettings({
       settings: {

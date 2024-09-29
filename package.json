@@ -48,7 +48,9 @@
     "@typescript-eslint/parser": "^8.7.0",
     "prettier-plugin-svelte": "^3.2.6",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "@tsconfig/svelte": "^5.0.4",
+    "svelte-preprocess": "^6.0.3"
   },
   "dependencies": {
     "nostr-tools": "^2.7.1",

@@ -1,12 +1,11 @@
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
-import {
-  getNostrizeSettings,
-  getOrInsertPageCache,
-} from "../../helpers/local-cache.js";
+import { getOrInsertPageCache } from "../../helpers/local-cache.js";
+import { getNostrizeSettings } from "../../helpers/accounts.ts";
 import { getIconComponent } from "../github-connect.js";
 import { logger } from "../../helpers/logger.js";
 import { timeAgo } from "../../helpers/time.js";
+import { Either } from "../../helpers/either.ts";
 
 import {
   fetchGithubTitle,
@@ -22,7 +21,7 @@ const agoInSeconds = ({ hours }) =>
   Math.floor((Date.now() - 1000 * 60 * 60 * hours) / 1000);
 
 async function githubBoostPanel() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const log = logger({ ...settings.debug, namespace: "[N][GH-Booster]" });
 

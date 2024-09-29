@@ -1,4 +1,5 @@
-import { getNostrizeSettings } from "../../helpers/local-cache.js";
+import { getNostrizeSettings } from "../../helpers/accounts.ts";
+import { Either } from "../../helpers/either.ts";
 import { logger } from "../../helpers/logger.js";
 import { button, div, hr, link, span } from "../../imgui-dom/html.js";
 import IssueTemplate from "./issue-template.js";
@@ -18,7 +19,7 @@ function querySelectorOr(selector1, selector2) {
 }
 
 async function githubIssuePage() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const log = logger(settings.debug);
 

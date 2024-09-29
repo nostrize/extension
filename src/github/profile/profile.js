@@ -3,21 +3,20 @@ import browser from "webextension-polyfill";
 import * as html from "../../imgui-dom/html.js";
 import * as gui from "../../imgui-dom/gui.js";
 import { logger } from "../../helpers/logger.js";
-import {
-  getNostrizeSettings,
-  getOrInsertPageCache,
-} from "../../helpers/local-cache.js";
-import { Either, uniqueArrays } from "../../helpers/utils.js";
-import { zapModalComponent } from "../../components/zap-modal.js";
+import { getOrInsertPageCache } from "../../helpers/local-cache.js";
+import { Either } from "../../helpers/either.ts";
 import { getMetadataEvent, getPubkeyFrom } from "../../helpers/nostr.js";
 import { getNostrizeUserRelays } from "../../helpers/relays.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { getGithubConnectData } from "../github-connect.js";
 import { parseDescription } from "../../helpers/dom.js";
+import { getNostrizeSettings } from "../../helpers/accounts.ts";
 import { setupModal } from "../../components/common.js";
+import { zapModalComponent } from "../../components/zap-modal.js";
+import { uniqueArrays } from "../../helpers/utils.js";
 
 async function githubProfilePage() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const pathParts = window.location.pathname
     .split("/")

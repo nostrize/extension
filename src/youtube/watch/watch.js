@@ -9,12 +9,12 @@ import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
 import {
   getFromPageCache,
-  getNostrizeSettings,
   getOrInsertPageCache,
   insertToPageCache,
 } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { Either, uniqueArrays } from "../../helpers/utils.js";
+import { uniqueArrays } from "../../helpers/utils.js";
+import { Either } from "../../helpers/either.ts";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { getNostrizeUserRelays } from "../../helpers/relays.js";
 import {
@@ -26,9 +26,10 @@ import { getLnurlData } from "../../helpers/lnurl.js";
 import { setupModal } from "../../components/common.js";
 import { getNip65Relays } from "../../helpers/nip65.js";
 import { ensureDomLoaded } from "../../helpers/dom.js";
+import { getNostrizeSettings } from "../../helpers/accounts.ts";
 
 async function youtubeWatchPage() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const log = logger({ ...settings.debug });
 

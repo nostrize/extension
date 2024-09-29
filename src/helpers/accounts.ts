@@ -1,10 +1,6 @@
 import { mergeSettings } from "./utils.js";
-import {
-  GetNostrizeAccountsReturn,
-  NostrizeAccount,
-  SaveNostrizeSettingsParams,
-  Settings,
-} from "./accounts.types";
+import type { NostrizeAccount, Settings } from "./accounts.types";
+import { Either } from "./either";
 
 export const defaultSettings: Settings = {
   version: 4,
@@ -65,29 +61,25 @@ export const defaultSettings: Settings = {
   },
 };
 
-export async function saveNostrizeSettings(
-  params: SaveNostrizeSettingsParams,
-): Promise<void> {
-  const { settings } = params;
+/**
+ * Saves the Nostr settings for the current account.
+ * @param settings The Nostr settings to be saved
+ */
+export async function saveNostrizeSettings(settings: Settings): Promise<void> {
+  const currentAccountEither = await getCurrentNostrizeAccount();
 
-  const { currentAccountId, accounts } = await getNostrizeAccounts();
-
-  if (!currentAccountId) {
-    return;
+  if (Either.isLeft(currentAccountEither)) {
+    throw new Error(Either.getLeft(currentAccountEither));
   }
 
-  const account = accounts.find((account) => account.uuid === currentAccountId);
+  const currentAccount = Either.getRight(currentAccountEither);
 
-  if (!account) {
-    throw new Error("Could not find current account in accounts array");
-  }
+  currentAccount.settings = settings;
 
-  account.settings = settings;
-
-  await chrome.storage.local.set({ accounts });
+  await saveCurrentNostrizeAccount(currentAccount);
 }
 
-export async function getNostrizeSettings(): Promise<Settings> {
+export async function getNostrizeSettings(): Promise<Either<string, Settings>> {
   const {
     accounts,
     currentAccountId,
@@ -95,7 +87,7 @@ export async function getNostrizeSettings(): Promise<Settings> {
     await chrome.storage.local.get(["accounts", "currentAccountId"]);
 
   if (!accounts || !currentAccountId || accounts.length === 0) {
-    throw new Error("No accounts found");
+    return Either.left("No accounts found");
   }
 
   const currentAccount = accounts.find(
@@ -103,7 +95,7 @@ export async function getNostrizeSettings(): Promise<Settings> {
   );
 
   if (!currentAccount) {
-    throw new Error("Could not find current account in accounts array");
+    return Either.left("Could not find current account in accounts array");
   }
 
   if (!currentAccount.settings) {
@@ -111,7 +103,7 @@ export async function getNostrizeSettings(): Promise<Settings> {
 
     await chrome.storage.local.set({ accounts });
 
-    return defaultSettings;
+    return Either.right(defaultSettings);
   }
 
   if (currentAccount.settings.version !== defaultSettings.version) {
@@ -125,43 +117,103 @@ export async function getNostrizeSettings(): Promise<Settings> {
 
     await chrome.storage.local.set({ accounts });
 
-    return mergedSettings;
+    return Either.right(mergedSettings);
   }
 
-  return currentAccount.settings;
+  return Either.right(currentAccount.settings);
 }
 
-export async function getNostrizeAccounts(): Promise<GetNostrizeAccountsReturn> {
-  const { accounts, currentAccountId }: GetNostrizeAccountsReturn =
-    await chrome.storage.local.get(["accounts", "currentAccountId"]);
+export async function getCurrentNostrizeAccount(): Promise<
+  Either<string, NostrizeAccount>
+> {
+  const { currentAccountId } = await chrome.storage.local.get([
+    "currentAccountId",
+  ]);
 
-  if (!accounts || !currentAccountId || accounts.length === 0) {
-    return {
-      accounts: [],
-      currentAccountId: null,
-    };
+  if (!currentAccountId) {
+    return Either.left("Current account is not set");
   }
+
+  const accountsEither = await getNostrizeAccounts();
+
+  if (Either.isLeft(accountsEither)) {
+    return accountsEither;
+  }
+
+  const accounts = Either.getRight(accountsEither);
 
   const currentAccount = accounts.find(
     (account) => account.uuid === currentAccountId,
   );
 
   if (!currentAccount) {
-    throw new Error("Could not find current account in accounts array");
+    return Either.left("Could not find current account in accounts array");
   }
 
-  return {
-    accounts,
-    currentAccountId,
-  };
+  return Either.right(currentAccount);
 }
 
 /**
- * Adds a new Nostr account to the accounts array. Selects the new account as the current account.
+ * Saves the current Nostrize account.
+ * Saves the accounts array and the currentAccountId.
+ * @param account The NostrizeAccount to be saved
+ */
+export async function saveCurrentNostrizeAccount(account: NostrizeAccount) {
+  const accountsEither = await getNostrizeAccounts();
+
+  if (Either.isLeft(accountsEither)) {
+    await chrome.storage.local.set({
+      accounts: [account],
+      currentAccountId: account.uuid,
+    });
+
+    return;
+  }
+
+  const accounts = Either.getRight(accountsEither);
+
+  const index = accounts.findIndex((a) => a.uuid === account.uuid);
+
+  if (index === -1) {
+    throw new Error("Could not find current account in accounts array");
+  }
+
+  accounts[index] = account;
+
+  await chrome.storage.local.set({ accounts, currentAccountId: account.uuid });
+}
+
+export async function getNostrizeAccounts(): Promise<
+  Either<string, NostrizeAccount[]>
+> {
+  const { accounts }: { accounts: NostrizeAccount[] } =
+    await chrome.storage.local.get(["accounts"]);
+
+  if (!accounts || accounts.length === 0) {
+    return Either.left("No accounts found");
+  }
+
+  return Either.right(accounts);
+}
+
+/**
+ * Adds a new Nostr account to the accounts array, and saves it.
+ * Saves the new account as the current account.
  * @param account The NostrizeAccount to be added
  */
 export async function addNewNostrizeAccount(account: NostrizeAccount) {
-  const { accounts } = await getNostrizeAccounts();
+  const accountsEither = await getNostrizeAccounts();
+
+  if (Either.isLeft(accountsEither)) {
+    await chrome.storage.local.set({
+      accounts: [account],
+      currentAccountId: account.uuid,
+    });
+
+    return;
+  }
+
+  const accounts = Either.getRight(accountsEither);
 
   const existingAccount = accounts.find((a) => a.uuid === account.uuid);
 
@@ -177,10 +229,39 @@ export async function addNewNostrizeAccount(account: NostrizeAccount) {
   });
 }
 
-export async function setCurrentNostrizeAccount(account: NostrizeAccount) {
-  await chrome.storage.local.set({ currentAccount: account.uuid });
+/**
+ * Deletes a Nostr account from the accounts array, and saves it.
+ * If the account is the current account, it will set null as the current account.
+ * @param uuid The uuid of the NostrizeAccount to be deleted
+ */
+export async function deleteNostrizeAccount(account: NostrizeAccount) {
+  const accountsEither = await getNostrizeAccounts();
+
+  if (Either.isLeft(accountsEither)) {
+    throw new Error(Either.getLeft(accountsEither));
+  }
+
+  const accounts = Either.getRight(accountsEither);
+
+  const index = accounts.findIndex((a) => a.uuid === account.uuid);
+
+  if (index === -1) {
+    throw new Error("Could not find account in accounts array");
+  }
+
+  const newAccounts = accounts.filter((_, i) => i !== index);
+
+  const { currentAccountId } = await chrome.storage.local.get([
+    "currentAccountId",
+  ]);
+
+  if (currentAccountId === account.uuid) {
+    await chrome.storage.local.set({ currentAccountId: null });
+  }
+
+  await chrome.storage.local.set({ accounts: newAccounts });
 }
 
 export async function logOut() {
-  await chrome.storage.local.set({ currentAccount: null });
+  await chrome.storage.local.set({ currentAccountId: null });
 }

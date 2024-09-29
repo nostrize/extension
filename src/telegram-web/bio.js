@@ -3,21 +3,20 @@ import browser from "webextension-polyfill";
 import * as gui from "../imgui-dom/gui.js";
 import * as html from "../imgui-dom/html.js";
 
-import {
-  getNostrizeSettings,
-  getOrInsertPageCache,
-} from "../helpers/local-cache.js";
+import { getOrInsertPageCache } from "../helpers/local-cache.js";
 import { logger } from "../helpers/logger.js";
 import { getNostrizeUserRelays } from "../helpers/relays.js";
 import { parseDescription } from "../helpers/dom.js";
 import { getMetadataEvent, getPubkeyFrom } from "../helpers/nostr.js";
-import { Either, uniqueArrays } from "../helpers/utils.js";
+import { uniqueArrays } from "../helpers/utils.js";
+import { Either } from "../helpers/either.ts";
 import { getLnurlData } from "../helpers/lnurl.js";
+import { getNostrizeSettings } from "../helpers/accounts.ts";
 import { zapModalComponent } from "../components/zap-modal.js";
 import { setupModal } from "../components/common.js";
 
 async function telegramBio() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const log = logger({ ...settings.debug, namespace: "[N][Telegram-Web]" });
 

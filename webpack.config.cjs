@@ -29,6 +29,7 @@ module.exports = {
         use: {
           loader: "svelte-loader",
           options: {
+            preprocess: require("svelte-preprocess")(),
             emitCss: true,
           },
         },
@@ -45,6 +46,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: [".js", ".svelte", ".ts"],
+    extensions: [".mjs", ".js", ".svelte", ".ts"],
+    mainFields: ["svelte", "browser", "module", "main"],
   },
 };

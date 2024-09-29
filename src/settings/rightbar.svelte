@@ -2,8 +2,10 @@
   import { onMount } from "svelte";
 
   export let currentAccount;
-  export let otherAccounts;
+  export let accounts;
   export let settings;
+  export let handleAccountChange;
+  export let handleLogout;
 
   let expanded = false;
 
@@ -17,20 +19,20 @@
     }
   }
 
+  function logOut() {
+    handleLogout();
+  }
+
+  function setCurrentAccount(account) {
+    handleAccountChange(account);
+  }
+
   onMount(() => {
     document.addEventListener("click", handleClickOutside);
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
   });
-
-  function logOut() {
-    console.log("logOut");
-  }
-
-  function setCurrentAccount(account) {
-    console.log("setCurrentAccount", account);
-  }
 </script>
 
 <nav class="profile-sidebar" class:expanded>
@@ -58,7 +60,7 @@
   <span class="user-mode">{settings.nostrSettings.mode}</span>
 
   <div class="profile-menu">
-    {#each otherAccounts as account}
+    {#each accounts.filter((a) => a.uuid !== currentAccount.uuid) as account}
       <button class="menu-item" on:click={() => setCurrentAccount(account)}>
         <img class="account-icon" src={account.picture} alt={account.name} />
         {account.name}

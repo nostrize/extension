@@ -6,14 +6,19 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "jsx": "preserve",
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "outDir": "./ts-output",
+    "verbatimModuleSyntax": true
   },
-  "include": ["src/**/*.ts", "src/**/*.js"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.svelte"
+  ],
   "exclude": ["node_modules"]
 }

@@ -6,7 +6,7 @@ import {
   getOrInsertPageCache,
   insertToPageCache,
 } from "./local-cache.js";
-import { Either } from "./utils.js";
+import { Either } from "./either.ts";
 
 export async function getPubkeyFrom({
   npub,

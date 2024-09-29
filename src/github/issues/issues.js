@@ -1,9 +1,10 @@
 import { div, link, span } from "../../imgui-dom/html.js";
 import { logger } from "../../helpers/logger.js";
-import { getNostrizeSettings } from "../../helpers/local-cache.js";
+import { getNostrizeSettings } from "../../helpers/accounts.ts";
+import { Either } from "../../helpers/either.ts";
 
 async function githubIssuesPage() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const log = logger(settings.debug);
   const pathParts = window.location.pathname

@@ -1,6 +1,6 @@
 import * as html from "../imgui-dom/html.js";
 import { fetchFromNip05 } from "../helpers/nostr.js";
-import { Either } from "../helpers/utils.js";
+import { Either } from "../helpers/either.ts";
 import { getOrInsertPageCache } from "../helpers/local-cache.js";
 import { pickRandomEmoji } from "./feed/boost-helpers.js";
 

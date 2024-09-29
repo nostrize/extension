@@ -2,12 +2,10 @@ import browser from "webextension-polyfill";
 
 import * as gui from "../../imgui-dom/gui.js";
 import * as html from "../../imgui-dom/html.js";
-import {
-  getNostrizeSettings,
-  getOrInsertPageCache,
-} from "../../helpers/local-cache.js";
+import { getOrInsertPageCache } from "../../helpers/local-cache.js";
 import { logger } from "../../helpers/logger.js";
-import { delay, Either } from "../../helpers/utils.js";
+import { delay } from "../../helpers/utils.js";
+import { Either } from "../../helpers/either.ts";
 import { zapModalComponent } from "../../components/zap-modal.js";
 import { parseDescription } from "../../helpers/dom.js";
 import {
@@ -30,9 +28,10 @@ import {
 } from "./twitter-helpers.js";
 import { setupNostrProfileLink } from "./twitter-helpers.js";
 import { getNip65Relays } from "../../helpers/nip65.js";
+import { getNostrizeSettings } from "../../helpers/accounts.ts";
 
 async function twitterProfilePage() {
-  const settings = await getNostrizeSettings();
+  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
 
   const log = logger({ ...settings.debug, namespace: "[N][X-Profile]" });
 

@@ -35,8 +35,12 @@
     {
       "files": ["*.svelte"],
       "parser": "svelte-eslint-parser",
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      },
       "rules": {
-        "quotes": ["error", "double"]
+        "quotes": ["error", "double"],
+        "missing-declaration": "off"
       }
     },
     {

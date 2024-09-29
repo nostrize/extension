@@ -1,4 +1,5 @@
-import { delay, Either } from "../helpers/utils.js";
+import { delay } from "../helpers/utils.js";
+import { Either } from "../helpers/either.ts";
 import { parseDescription } from "../helpers/dom.js";
 
 export async function getChannelNameInShorts() {

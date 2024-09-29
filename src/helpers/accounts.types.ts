@@ -69,12 +69,3 @@ export type AnonAccount = {
   uuid: string;
   settings: Settings;
 };
-
-export type SaveNostrizeSettingsParams = {
-  settings: Settings;
-};
-
-export type GetNostrizeAccountsReturn = {
-  accounts: NostrizeAccount[];
-  currentAccountId: string | null;
-};

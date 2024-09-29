@@ -1,8 +1,6 @@
-<script>
-  import {
-    saveNostrizeSettings,
-    defaultSettings,
-  } from "../helpers/local-cache.js";
+<script lang="ts">
+  import { defaultSettings, saveNostrizeSettings } from "../helpers/accounts";
+  import type { NostrizeAccount } from "../helpers/accounts.types";
 
   import NostrSettings from "./nostr.svelte";
   import LightsatsSettings from "./lightsats.svelte";
@@ -11,23 +9,17 @@
   import Rightbar from "./rightbar.svelte";
   import Leftbar from "./leftbar.svelte";
 
-  export let settings;
+  export let currentAccount: NostrizeAccount;
+  export let accounts: NostrizeAccount[];
 
-  export let currentAccount = {
-    name: "User",
-    picture: "https://dhalsim.github.io/assets/dhalsim_logo_sq.png",
-  };
+  export let handleAccountChange;
+  export let handleLogout;
 
-  export let otherAccounts = [
-    {
-      name: "Nostrize",
-      picture: "https://nostrize.me/images/logo.png",
-    },
-  ];
+  $: settings = currentAccount.settings;
 
-  let lightsatsComponent;
-  let nostrComponent;
-  let debugComponent;
+  let lightsatsComponent: LightsatsSettings;
+  let nostrComponent: NostrSettings;
+  let debugComponent: DebugSettings;
 
   let isDirtyLightsats = false;
   let isDirtyNostr = false;
@@ -39,16 +31,18 @@
   $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyDebug;
 
   $: isDefaultSettings =
-    settings && JSON.stringify(settings) === JSON.stringify(defaultSettings);
+    currentAccount.settings &&
+    JSON.stringify(currentAccount.settings) === JSON.stringify(defaultSettings);
 
-  let lastSavedSettings = JSON.stringify(settings);
+  let lastSavedSettings = JSON.stringify(currentAccount.settings);
 
   let saveLabel = "Save settings";
 
   async function saveSettings() {
-    await saveNostrizeSettings({ settings });
+    // TODO: a bug
+    await saveNostrizeSettings(currentAccount.settings);
 
-    lastSavedSettings = JSON.stringify(settings);
+    lastSavedSettings = JSON.stringify(currentAccount.settings);
 
     lightsatsComponent.onSaveSettings();
     nostrComponent.onSaveSettings();
@@ -73,15 +67,36 @@
     settings = JSON.parse(lastSavedSettings);
   }
 
-  function setActiveSection(section, icon) {
+  function setActiveSection(section: string, icon: HTMLElement) {
     const sections = document.querySelectorAll("main section");
     const icons = document.querySelectorAll(".sidebar .icon");
 
     sections.forEach((s) => s.classList.remove("active"));
     icons.forEach((i) => i.classList.remove("active"));
 
-    document.getElementById(section + "-section").classList.add("active");
+    const s = document.getElementById(section + "-section");
+
+    if (!s) {
+      throw new Error("Section not found");
+    }
+
+    s.classList.add("active");
     icon.classList.add("active");
+  }
+
+  function toggleCollapsible(event: MouseEvent) {
+    const header = event.currentTarget as HTMLElement;
+    const section = header.closest(".section.collapsable");
+    if (section) {
+      header.classList.toggle("collapsed");
+      header.classList.toggle("expanded");
+
+      const inputContainer = section.querySelector(".input-container");
+      if (inputContainer) {
+        inputContainer.classList.toggle("collapsed");
+        inputContainer.classList.toggle("expanded");
+      }
+    }
   }
 </script>
 
@@ -96,7 +111,9 @@
           id="nostr-settings"
           class:dirty={isDirtyNostr}
         >
-          <h2 class:dirty={isDirtyNostr}>Nostr Settings</h2>
+          <button class="collapsible-header" on:click={toggleCollapsible}>
+            <h2 class:dirty={isDirtyNostr}>Nostr Settings</h2>
+          </button>
 
           <div class="input-container collapsed">
             <NostrSettings
@@ -111,7 +128,9 @@
           id="lightsats-settings"
           class:dirty={isDirtyLightsats}
         >
-          <h2 class:dirty={isDirtyLightsats}>Lightsats Integration</h2>
+          <button class="collapsible-header" on:click={toggleCollapsible}>
+            <h2 class:dirty={isDirtyLightsats}>Lightsats Integration</h2>
+          </button>
 
           <div class="input-container collapsed">
             <LightsatsSettings
@@ -126,7 +145,9 @@
           id="debug-settings"
           class:dirty={isDirtyDebug}
         >
-          <h2 class:dirty={isDirtyDebug}>Debug Settings</h2>
+          <button class="collapsible-header" on:click={toggleCollapsible}>
+            <h2 class:dirty={isDirtyDebug}>Debug Settings</h2>
+          </button>
 
           <div class="input-container collapsed">
             <DebugSettings
@@ -203,7 +224,13 @@
       </div>
     </main>
 
-    <Rightbar {currentAccount} {otherAccounts} {settings} />
+    <Rightbar
+      {currentAccount}
+      {accounts}
+      {settings}
+      {handleAccountChange}
+      {handleLogout}
+    />
   </div>
 
   <div class="version-container">
@@ -241,6 +268,16 @@
     display: flex;
     margin-top: 10px;
     flex-direction: column;
+  }
+
+  .collapsible-header {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
   }
 
   .input-container.collapsed {

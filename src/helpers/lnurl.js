@@ -1,4 +1,4 @@
-import { Either } from "./utils.js";
+import { Either } from "./either.ts";
 
 export async function getLnurlData({ metadataEvent, log }) {
   try {
