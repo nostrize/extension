@@ -1,52 +1,138 @@
-<script>
-  export let setActiveSection;
+<script lang="ts">
+  import browser from "webextension-polyfill";
+
+  import type { NostrizeAccount } from "../helpers/accounts.types";
+  import Account from "./account.svelte";
+
+  export let setActiveSection: (section: string, icon: HTMLElement) => void;
+  export let currentAccount: NostrizeAccount | null;
+  export let accounts: NostrizeAccount[];
+  export let handleAccountChange;
+  export let handleLogout;
+  export let editingAccount: NostrizeAccount | null;
+  export let expanded = false;
+
+  let showOpenInTab = true;
+  let settingsUrl = browser.runtime.getURL("nostrize-settings.html");
+
+  // Function to check if the current tab is the settings page
+  async function checkCurrentTab() {
+    const tabs = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tabs[0] && tabs[0].url === settingsUrl) {
+      showOpenInTab = false;
+    }
+  }
+
+  // Call the function when the component is mounted
+  checkCurrentTab();
+
+  function toggleAccountMenu() {
+    expanded = !expanded;
+  }
+
+  const iconClick = (section: string) => (event: MouseEvent) => {
+    toggleAccountMenu();
+
+    setActiveSection(section, event.currentTarget as HTMLElement);
+  };
 </script>
 
-<nav class="sidebar">
-  <button
-    class="icon active"
-    on:click={(event) => setActiveSection("settings", event.currentTarget)}
-    data-tooltip="Settings"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="24"
-      height="24"
-    >
-      <path fill="none" d="M0 0h24v24H0z" />
-      <path
-        d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11L12 1zm0 2.311L4.5 7.653v8.694L12 20.689l7.5-4.342V7.653L12 3.311zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
+<nav class="sidebar" class:expanded>
+  <div class="sidebar-content">
+    <div class="account-container account" id="account">
+      <Account
+        {currentAccount}
+        {accounts}
+        {handleAccountChange}
+        {handleLogout}
+        bind:editingAccount
+        {expanded}
+        toggleMenu={toggleAccountMenu}
       />
-    </svg>
-  </button>
-  <button
-    class="icon"
-    on:click={(event) => setActiveSection("tools", event.currentTarget)}
-    data-tooltip="Tools"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="24"
-      height="24"
+    </div>
+
+    <div class="icon-container">
+      <button
+        class="icon settings active simple-tooltip"
+        data-tooltip-text="Settings"
+        data-show-tooltip-right="true"
+        on:click={iconClick("settings")}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path
+            d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11L12 1zm0 2.311L4.5 7.653v8.694L12 20.689l7.5-4.342V7.653L12 3.311zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
+          />
+        </svg>
+      </button>
+      <button
+        class="icon tools simple-tooltip"
+        on:click={iconClick("tools")}
+        data-tooltip-text="Tools"
+        data-show-tooltip-right="true"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path
+            d="M5.33 3.271a3.5 3.5 0 0 1 4.472 4.474L20.647 18.59l-2.122 2.121L7.68 9.867a3.5 3.5 0 0 1-4.472-4.474L5.444 7.63a1.5 1.5 0 1 0 2.121-2.121L5.329 3.27zm10.367 1.884l3.182-1.768 1.414 1.414-1.768 3.182-1.768.354-2.12 2.121-1.415-1.414 2.121-2.121.354-1.768zm-7.071 7.778l2.121 2.122-4.95 4.95A1.5 1.5 0 0 1 3.58 17.99l.097-.107 4.95-4.95z"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {#if showOpenInTab}
+    <a
+      href={settingsUrl}
+      title="Open Nostrize Settings in a tab"
+      class="no-icon icon simple-tooltip"
+      data-tooltip-text="Won't you like to see and edit the settings in a separate tab?"
+      data-show-tooltip-right="true"
+      target="_blank"
     >
-      <path fill="none" d="M0 0h24v24H0z" />
-      <path
-        d="M5.33 3.271a3.5 3.5 0 0 1 4.472 4.474L20.647 18.59l-2.122 2.121L7.68 9.867a3.5 3.5 0 0 1-4.472-4.474L5.444 7.63a1.5 1.5 0 1 0 2.121-2.121L5.329 3.27zm10.367 1.884l3.182-1.768 1.414 1.414-1.768 3.182-1.768.354-2.12 2.121-1.415-1.414 2.121-2.121.354-1.768zm-7.071 7.778l2.121 2.122-4.95 4.95A1.5 1.5 0 0 1 3.58 17.99l.097-.107 4.95-4.95z"
+      <img
+        src="open-link.svg"
+        height="24"
+        width="24"
+        alt="Open Nostrize Settings"
       />
-    </svg>
-  </button>
+    </a>
+  {/if}
 </nav>
 
 <style>
   .sidebar {
-    width: 40px;
+    width: 50px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px;
     margin-right: 10px;
+    transition: width 0.3s ease;
+  }
+
+  .sidebar.expanded {
+    width: 150px;
+  }
+
+  .sidebar-content {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 15px;
   }
 
   .icon {
@@ -77,23 +163,8 @@
     height: 24px;
   }
 
-  .icon::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    transform: translateY(-5px);
-    background-color: black;
-    color: white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-size: 0.8em;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .icon:hover::after {
-    opacity: 1;
-    visibility: visible;
+  .account-container {
+    width: 100%;
+    margin-bottom: 10px;
   }
 </style>

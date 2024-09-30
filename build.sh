@@ -7,6 +7,7 @@ cp manifest.json dist/manifest.json
 cp src/logo.png dist/logo.png
 cp src/settings/user-icon.svg dist/user-icon.svg
 cp src/settings/user-edit.svg dist/user-edit.svg
+cp src/settings/open-link.svg dist/open-link.svg
 
 ./node_modules/.bin/webpack
 

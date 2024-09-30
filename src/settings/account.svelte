@@ -8,16 +8,12 @@
   export let handleAccountChange;
   export let handleLogout;
   export let editingAccount;
-
-  let expanded = false;
-
-  function toggleMenu() {
-    expanded = !expanded;
-  }
+  export let expanded;
+  export let toggleMenu;
 
   function handleClickOutside(event) {
-    if (expanded && !event.target.closest(".profile-sidebar")) {
-      expanded = false;
+    if (expanded && !event.target.closest(".account-sidebar")) {
+      toggleMenu();
     }
   }
 
@@ -31,28 +27,29 @@
 
   onMount(() => {
     document.addEventListener("click", handleClickOutside);
+
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
   });
 </script>
 
-<nav class="profile-sidebar" class:expanded>
+<nav class="account-sidebar" class:expanded>
   <div
-    class="profile-icon"
+    class="account-icon simple-tooltip"
+    data-tooltip-text="Account Preferences"
+    data-show-tooltip-right="true"
     role="button"
     class:expanded
     on:keydown={(e) => e.key === "Enter" && toggleMenu()}
     on:click={toggleMenu}
     tabindex="0"
   >
-    <div class="simple-tooltip" data-tooltip-text={currentAccount.name}>
-      {#if currentAccount && currentAccount.picture}
-        <img src={currentAccount.picture} alt={currentAccount.name} />
-      {:else}
-        <img src="user-icon.svg" alt={currentAccount.name} />
-      {/if}
-    </div>
+    {#if currentAccount && currentAccount.picture}
+      <img src={currentAccount.picture} alt={currentAccount.name} />
+    {:else}
+      <img src="user-icon.svg" alt={currentAccount.name} />
+    {/if}
   </div>
 
   <div class="profile-menu">
@@ -85,26 +82,18 @@
 </nav>
 
 <style>
-  .profile-sidebar {
-    width: 40px;
+  .account-sidebar {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 0;
-    transition: width 0.3s ease;
-    overflow: hidden;
-    margin-left: 10px;
+    transition: height 0.3s ease;
   }
 
-  .profile-sidebar.expanded {
-    width: 200px;
-  }
-
-  .profile-icon {
+  .account-icon {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    overflow: hidden;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -113,11 +102,12 @@
     margin-bottom: 10px;
   }
 
-  .profile-icon.expanded {
+  .account-icon.expanded {
     background-color: rgba(130, 80, 223, 0.4);
   }
 
-  .profile-icon img {
+  .account-icon img {
+    margin-top: 4px;
     width: 24px;
     height: 24px;
     fill: #333;
@@ -126,9 +116,9 @@
 
   .profile-menu {
     display: none;
-    min-width: 150px;
+    min-width: 100px;
     flex-direction: column;
-    width: 100%;
+    width: 100px;
   }
 
   .expanded .profile-menu {

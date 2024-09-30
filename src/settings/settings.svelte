@@ -6,7 +6,6 @@
   import LightsatsSettings from "./lightsats.svelte";
   import DebugSettings from "./debug.svelte";
   import NIP65RelayManager from "./nip65.svelte";
-  import Rightbar from "./rightbar.svelte";
   import Leftbar from "./leftbar.svelte";
 
   const nostrModeOptions = {
@@ -124,7 +123,14 @@
 
 <div class="settings-container">
   <div class="content-wrapper">
-    <Leftbar {setActiveSection} />
+    <Leftbar
+      {setActiveSection}
+      {currentAccount}
+      {accounts}
+      {handleAccountChange}
+      {handleLogout}
+      bind:editingAccount
+    />
 
     <main class="content">
       <section id="settings-section" class="active">
@@ -246,14 +252,6 @@
         </button>
       </div>
     </main>
-
-    <Rightbar
-      {currentAccount}
-      {accounts}
-      {handleAccountChange}
-      {handleLogout}
-      bind:editingAccount
-    />
   </div>
 
   <div class="version-container">

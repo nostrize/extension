@@ -78,12 +78,12 @@ a:hover {
   color: rgba(0, 150, 133, 1);
 }
 
-a[target="_blank"]::before {
+a[target="_blank"]:not(.no-icon)::before {
   content: " ";
   display: inline-block;
   width: 10px;
   height: 10px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'%3E%3C/path%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cline x1='10' y1='14' x2='21' y2='3'%3E%3C/line%3E%3C/svg%3E");
+  background-image: url("open-link.svg");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -122,10 +122,29 @@ a[target="_blank"]::before {
 }
 
 /* Show above when data-show-above is true */
-.simple-tooltip[data-show-above="true"]::after {
+.simple-tooltip[data-show-tooltip-above="true"]::after {
   bottom: 100%;
   top: auto;
   transform: translate(-50%, calc(var(--tooltip-margin) * -1));
+}
+
+.simple-tooltip[data-show-tooltip-right="true"]::after {
+  left: 100%;
+  top: 50%;
+  transform: translate(var(--tooltip-margin), -50%);
+}
+
+.simple-tooltip[data-show-tooltip-left="true"]::after {
+  right: 100%;
+  left: auto;
+  top: 50%;
+  transform: translate(calc(var(--tooltip-margin) * -1), -50%);
+}
+
+.simple-tooltip[data-show-tooltip-below="true"]::after {
+  top: 100%;
+  bottom: auto;
+  transform: translate(-50%, var(--tooltip-margin));
 }
 
 /* Show on hover */

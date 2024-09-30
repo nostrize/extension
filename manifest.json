@@ -31,6 +31,15 @@
         "http://127.0.0.1:*/*",
         "http://*.localhost/*"
       ]
+    },
+    {
+      "resources": ["nostrize-settings.html"],
+      "matches": [
+        "https://*/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*",
+        "http://*.localhost/*"
+      ]
     }
   ],
   "options_page": "nostrize-settings.html",
