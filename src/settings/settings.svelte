@@ -2,6 +2,7 @@
   import { defaultSettings } from "../helpers/accounts";
   import type { NostrizeAccount } from "../helpers/accounts.types";
 
+  import SectionItem from "./section-item.svelte";
   import NostrSettings from "./nostr.svelte";
   import LightsatsSettings from "./lightsats.svelte";
   import DebugSettings from "./debug.svelte";
@@ -46,10 +47,7 @@
   let isDirtyLightsats = false;
   let isDirtyNostr = false;
   let isDirtyDebug = false;
-
-  // won't be included in general isDirty, it doesn't belong to settings
   let isDirtyNIP65 = false;
-
   $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyDebug;
 
   let lastSavedSettings = JSON.stringify(currentAccount.settings);
@@ -126,67 +124,52 @@
 
     <main class="content">
       <section id="settings-section" class="active">
-        <div
-          class="section collapsable"
-          id="nostr-settings"
-          class:dirty={isDirtyNostr}
+        <SectionItem
+          title="Nostr Settings"
+          isDirty={isDirtyNostr}
+          {toggleCollapsible}
         >
-          <button class="collapsible-header" on:click={toggleCollapsible}>
-            <h2 class:dirty={isDirtyNostr}>Nostr Settings</h2>
-          </button>
+          <NostrSettings
+            slot="content"
+            bind:nostrSettings={settings.nostrSettings}
+            {nostrModeOptions}
+            bind:this={nostrComponent}
+            bind:isDirty={isDirtyNostr}
+          />
+        </SectionItem>
 
-          <div class="input-container collapsed">
-            <NostrSettings
-              bind:nostrSettings={settings.nostrSettings}
-              {nostrModeOptions}
-              bind:this={nostrComponent}
-              bind:isDirty={isDirtyNostr}
-            />
-          </div>
-        </div>
-        <div
-          class="section collapsable"
-          id="lightsats-settings"
-          class:dirty={isDirtyLightsats}
+        <SectionItem
+          title="Lightsats Integration"
+          isDirty={isDirtyLightsats}
+          {toggleCollapsible}
         >
-          <button class="collapsible-header" on:click={toggleCollapsible}>
-            <h2 class:dirty={isDirtyLightsats}>Lightsats Integration</h2>
-          </button>
+          <LightsatsSettings
+            slot="content"
+            bind:lightsatsSettings={settings.lightsatsSettings}
+            bind:isDirty={isDirtyLightsats}
+          />
+        </SectionItem>
 
-          <div class="input-container collapsed">
-            <LightsatsSettings
-              lightsatsSettings={settings.lightsatsSettings}
-              bind:this={lightsatsComponent}
-              bind:isDirty={isDirtyLightsats}
-            />
-          </div>
-        </div>
-        <div
-          class="section collapsable"
-          id="debug-settings"
-          class:dirty={isDirtyDebug}
+        <SectionItem
+          title="Debug Settings"
+          isDirty={isDirtyDebug}
+          {toggleCollapsible}
         >
-          <button class="collapsible-header" on:click={toggleCollapsible}>
-            <h2 class:dirty={isDirtyDebug}>Debug Settings</h2>
-          </button>
-
-          <div class="input-container collapsed">
-            <DebugSettings
-              debugSettings={settings.debug}
-              bind:this={debugComponent}
-              bind:isDirty={isDirtyDebug}
-            />
-          </div>
-        </div>
+          <DebugSettings
+            slot="content"
+            debugSettings={settings.debug}
+            bind:this={debugComponent}
+            bind:isDirty={isDirtyDebug}
+          />
+        </SectionItem>
       </section>
       <section id="tools-section">
-        <div
-          class="section collapsable"
-          class:dirty={isDirtyNIP65}
-          id="nip65-settings"
+        <SectionItem
+          title="NIP-65 Relay Manager"
+          isDirty={isDirtyNIP65}
+          {toggleCollapsible}
         >
-          <h2>NIP-65 Relay Manager</h2>
-          <div class="input-container expanded">
+          <div slot="content">
             {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
               <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />
             {:else if settings.nostrSettings.mode === "anon"}
@@ -214,7 +197,7 @@
               </fieldset>
             {/if}
           </div>
-        </div>
+        </SectionItem>
       </section>
 
       {#if showSaveResetButtons}
@@ -244,87 +227,12 @@
 </div>
 
 <style>
-  h2 {
-    color: black;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    cursor: pointer;
-  }
-
-  .section {
-    background-color: rgba(130, 80, 223, 0.1);
-    padding: 10px;
-    margin-bottom: 20px;
-    min-width: 400px;
-    max-width: 400px;
-    width: 100%; /* Make sure it doesn't exceed max-width */
-    box-sizing: border-box; /* Include padding in width calculation */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-
-  .section.dirty {
-    position: relative;
-    background-color: rgba(223, 80, 147, 0.1);
-  }
-
-  .input-container {
-    display: flex;
-    margin-top: 10px;
-    flex-direction: column;
-  }
-
-  .collapsible-header {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    cursor: pointer;
-    text-align: left;
-    width: 100%;
-  }
-
-  .input-container.collapsed {
+  section {
     display: none;
   }
 
-  .section h2 {
-    margin: 0;
-    padding: 10px 10px 10px 40px;
-    position: relative;
-  }
-
-  .section h2::before {
-    content: "▶"; /* The default arrow indicator */
-    position: absolute;
-    left: 10px; /* Adjust this value to position the indicator inside the section */
-    transition: transform 0.3s ease-out;
-  }
-
-  .section h2.dirty::before {
-    content: "▶"; /* The default arrow indicator */
-    color: red;
-    position: absolute;
-    left: 10px; /* Adjust this value to position the indicator inside the section */
-    transition: transform 0.3s ease-out;
-  }
-
-  .section:has(.input-container.collapsed) h2::before {
-    transform: rotate(0deg); /* Indicator points right when collapsed */
-  }
-
-  .section:has(.input-container.expanded) h2::before {
-    transform: rotate(90deg); /* Indicator points down when expanded */
-  }
-
-  button {
-    background-color: rgba(130 80 223 / 75%);
-    color: floralwhite;
-    padding: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    width: fit-content;
+  section.active {
+    display: block;
   }
 
   .settings-container {
@@ -357,13 +265,5 @@
   .version-container {
     flex-shrink: 0;
     margin-top: 20px;
-  }
-
-  section {
-    display: none;
-  }
-
-  section.active {
-    display: block;
   }
 </style>

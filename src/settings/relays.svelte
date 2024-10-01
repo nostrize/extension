@@ -29,7 +29,7 @@
     />
 
     <Tooltip
-      text="Local relays are helpful when you are in anonymous mode or when you are changing your nostr mode. Keep them enabled and they will be used on every nostr mode."
+      text="Local relays are helpful when you are in anonymous mode or when you are changing your nostr mode. Keep them enabled and they can be used on every nostr mode."
     />
   </div>
 
