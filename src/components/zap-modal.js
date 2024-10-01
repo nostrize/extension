@@ -7,6 +7,7 @@ import * as gui from "../imgui-dom/gui.js";
 import { milliSatsToSats, satsToMilliSats } from "../helpers/utils.js";
 import { getMetadataEvent, getNostrizeUserPubkey } from "../helpers/nostr.js";
 import { signEvent } from "../helpers/signer.js";
+import { Either } from "../helpers/either.ts";
 
 import { centerModal } from "./common.js";
 
@@ -41,10 +42,16 @@ export async function zapModalComponent({
       return `Zapped with Nostrize anonymously`;
     }
 
-    const nostrizeUserPubkey = await getNostrizeUserPubkey({
+    const nostrizeUserPubkeyEither = await getNostrizeUserPubkey({
       mode: settings.nostrSettings.mode,
       nostrConnectSettings: settings.nostrSettings.nostrConnect,
     });
+
+    if (Either.isLeft(nostrizeUserPubkeyEither)) {
+      return `Zapped with Nostrize anonymously`;
+    }
+
+    const nostrizeUserPubkey = Either.getRight(nostrizeUserPubkeyEither);
 
     const nostrizeUserMetadata = await getMetadataEvent({
       cacheKey: nostrizeUserPubkey,

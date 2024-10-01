@@ -360,23 +360,23 @@ async function getPubkeyFromNip07() {
 
 export async function getNostrizeUserPubkey({ mode, nostrConnectSettings }) {
   if (mode === "anon") {
-    throw new Error("don't use this method for anonymous mode");
+    return Either.left("don't use this method for anonymous mode");
   }
 
   if (mode === "nip07") {
-    return getPubkeyFromNip07();
+    return Either.right(await getPubkeyFromNip07());
   } else if (mode === "nostrconnect" || mode === "bunker") {
     if (!nostrConnectSettings) {
-      throw new Error("nostrconnect settings are required");
+      return Either.left("nostrconnect settings are required");
     }
 
     if (!nostrConnectSettings.userPubkey) {
-      throw new Error(
+      return Either.left(
         "nostrconnect user pubkey is not set, check nostrconnect settings",
       );
     }
 
-    return nostrConnectSettings.userPubkey;
+    return Either.right(nostrConnectSettings.userPubkey);
   } else {
     throw new Error("not implemented");
   }

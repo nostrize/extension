@@ -1,14 +1,17 @@
 <script>
   import { SimplePool } from "nostr-tools";
+  import { onMount } from "svelte";
 
   import { getNip65Relays } from "../helpers/nip65.js";
   import { signEvent } from "../helpers/signer.js";
   import { getNostrizeUserRelays } from "../helpers/relays.js";
 
-  import "../settings/common.css";
   import { getNostrizeUserPubkey } from "../helpers/nostr.js";
   import Loading from "../components/loading.svelte";
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
+  import { Either } from "../helpers/either.ts";
+
+  import "../settings/common.css";
 
   export let settings;
   export let isDirty;
@@ -25,7 +28,9 @@
   let error = "";
   let success = "";
 
-  loadNip65Relays();
+  onMount(() => {
+    loadNip65Relays();
+  });
 
   function undoChanges() {
     nip65Relays = JSON.parse(nip65RelaysBackup);
@@ -50,16 +55,22 @@
   async function loadNip65Relays() {
     isLoading = true;
 
-    try {
-      nostrizeUserPubkey = await getNostrizeUserPubkey({
-        mode: settings.nostrSettings.mode,
-        nostrConnectSettings: settings.nostrSettings.nostrConnect,
-      });
-    } catch (e) {
-      error = "Failed to load user pubkey: " + e.message;
-    } finally {
+    const nostrizeUserPubkeyEither = await getNostrizeUserPubkey({
+      mode: settings.nostrSettings.mode,
+      nostrConnectSettings: settings.nostrSettings.nostrConnect,
+    });
+
+    if (Either.isLeft(nostrizeUserPubkeyEither)) {
+      error =
+        "Failed to load user pubkey: " +
+        Either.getLeft(nostrizeUserPubkeyEither);
+
       isLoading = false;
+
+      return;
     }
+
+    nostrizeUserPubkey = Either.getRight(nostrizeUserPubkeyEither);
 
     try {
       nostrizeUserRelays = await getNostrizeUserRelays({

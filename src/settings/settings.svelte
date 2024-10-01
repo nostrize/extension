@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { defaultSettings, saveNostrizeSettings } from "../helpers/accounts";
+  import { defaultSettings } from "../helpers/accounts";
   import type { NostrizeAccount } from "../helpers/accounts.types";
 
   import NostrSettings from "./nostr.svelte";
@@ -7,6 +7,7 @@
   import DebugSettings from "./debug.svelte";
   import NIP65RelayManager from "./nip65.svelte";
   import Leftbar from "./leftbar.svelte";
+  import SaveResetButtons from "./save-reset-buttons.svelte";
 
   const nostrModeOptions = {
     anon: {
@@ -51,42 +52,27 @@
 
   $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyDebug;
 
-  $: isDefaultSettings =
-    currentAccount.settings &&
-    JSON.stringify(currentAccount.settings) === JSON.stringify(defaultSettings);
-
   let lastSavedSettings = JSON.stringify(currentAccount.settings);
 
-  let saveLabel = "Save settings";
-
-  async function saveSettings() {
-    // TODO: a bug
-    await saveNostrizeSettings(currentAccount.settings);
-
+  function handleSave() {
     lastSavedSettings = JSON.stringify(currentAccount.settings);
-
     lightsatsComponent.onSaveSettings();
     nostrComponent.onSaveSettings();
     debugComponent.onSaveSettings();
-
-    saveLabel = "Saved 💾";
-
-    setTimeout(() => {
-      saveLabel = "Save settings";
-    }, 2000);
   }
 
-  function resetSettings() {
+  function handleReset() {
     settings = { ...defaultSettings };
-
     lightsatsComponent.onSaveSettings();
     nostrComponent.onSaveSettings();
     debugComponent.onSaveSettings();
   }
 
-  function undoSettings() {
+  function handleUndo() {
     settings = JSON.parse(lastSavedSettings);
   }
+
+  let showSaveResetButtons = true;
 
   function setActiveSection(section: string, icon: HTMLElement) {
     const sections = document.querySelectorAll("main section");
@@ -103,6 +89,12 @@
 
     s.classList.add("active");
     icon.classList.add("active");
+
+    if (section === "tools") {
+      showSaveResetButtons = false;
+    } else {
+      showSaveResetButtons = true;
+    }
   }
 
   function toggleCollapsible(event: MouseEvent) {
@@ -145,7 +137,7 @@
 
           <div class="input-container collapsed">
             <NostrSettings
-              nostrSettings={settings.nostrSettings}
+              bind:nostrSettings={settings.nostrSettings}
               {nostrModeOptions}
               bind:this={nostrComponent}
               bind:isDirty={isDirtyNostr}
@@ -224,36 +216,21 @@
           </div>
         </div>
       </section>
-      <div id="misc-container">
-        <button
-          id="undo-settings"
-          on:click={undoSettings}
-          class:dirty={isDirty}
-          disabled={!isDirty}
-        >
-          Undo Changes
-        </button>
 
-        <button
-          id="reset-settings"
-          on:click={resetSettings}
-          class:dirty={!isDefaultSettings}
-          disabled={isDefaultSettings}
-        >
-          Reset Factory Settings</button
-        >
-        <button
-          id="save-settings"
-          on:click={saveSettings}
-          class:dirty={isDirty}
-          disabled={!isDirty}
-        >
-          {saveLabel}
-        </button>
-      </div>
+      {#if showSaveResetButtons}
+        <SaveResetButtons
+          {currentAccount}
+          {isDirty}
+          onSave={handleSave}
+          onReset={handleReset}
+          onUndo={handleUndo}
+        />
+      {/if}
     </main>
   </div>
+</div>
 
+<div class="footer-info">
   <div class="version-container">
     Settings Version: <span id="version-number">{settings.version}</span>
   </div>
@@ -352,18 +329,29 @@
 
   .settings-container {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    min-height: 95vh;
+    min-height: 70vh;
+  }
+
+  .footer-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    margin-top: 50px;
+  }
+
+  .version-container,
+  .nostr-mode-container {
+    flex: 1;
   }
 
   .content-wrapper {
     display: flex;
     flex: 1 0 auto;
+    justify-content: center;
     width: 100%;
-  }
-
-  .content {
-    flex: 1;
   }
 
   .version-container {
@@ -377,46 +365,5 @@
 
   section.active {
     display: block;
-  }
-
-  #misc-container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    justify-content: center;
-    max-width: 400px;
-  }
-
-  #misc-container button {
-    width: 106px;
-  }
-
-  #reset-settings {
-    background-color: rgba(139, 0, 0, 0.75);
-  }
-
-  #reset-settings:hover {
-    background-color: rgba(139, 0, 0, 1);
-  }
-
-  #save-settings {
-    background-color: rgba(0, 128, 0, 0.75);
-  }
-
-  #save-settings:hover {
-    background-color: rgba(0, 128, 0, 1);
-  }
-
-  #undo-settings:hover {
-    background-color: rgba(130, 80, 223, 1);
-  }
-
-  #misc-container button.dirty {
-    opacity: 1;
-  }
-
-  #misc-container button:not(.dirty) {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 </style>

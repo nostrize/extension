@@ -101,9 +101,12 @@ async function twitterProfilePage() {
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
   });
 
-  const nostrizeUserPubkey = await getNostrizeUserPubkey({
-    settings,
-    timeout: 10000,
+  const nostrizeUserPubkey = Either.getOrElseThrow({
+    eitherFn: () =>
+      getNostrizeUserPubkey({
+        mode: settings.nostrSettings.mode,
+        nostrConnectSettings: settings.nostrSettings.nostrConnect,
+      }),
   });
 
   // will be used to create zap, follow/unfollow and lightsats buttons

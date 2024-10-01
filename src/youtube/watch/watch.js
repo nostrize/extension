@@ -79,9 +79,12 @@ async function youtubeWatchPage() {
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
   });
 
-  const nostrizeUserPubkey = await getNostrizeUserPubkey({
-    mode: settings.nostrSettings.mode,
-    nostrConnectSettings: settings.nostrSettings.nostrConnect,
+  const nostrizeUserPubkey = Either.getOrElseThrow({
+    eitherFn: () =>
+      getNostrizeUserPubkey({
+        mode: settings.nostrSettings.mode,
+        nostrConnectSettings: settings.nostrSettings.nostrConnect,
+      }),
   });
 
   const nostrizeUserRelays = await getNostrizeUserRelays({
