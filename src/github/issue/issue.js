@@ -19,7 +19,9 @@ function querySelectorOr(selector1, selector2) {
 }
 
 async function githubIssuePage() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const log = logger(settings.debug);
 

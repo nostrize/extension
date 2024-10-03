@@ -267,7 +267,9 @@
   }
 
   async function saveNostrConnectData(e) {
-    const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+    const settings = await Either.getOrElseThrow({
+      eitherFn: getNostrizeSettings,
+    });
 
     await saveNostrizeSettings({
       settings: {

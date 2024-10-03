@@ -1,12 +1,16 @@
 <script lang="ts">
   import { generateRandomHexString } from "../helpers/utils";
   import type {
-    AnonAccount,
+    UnfetchedAccount,
     NostrizeAccount,
     Settings,
+    NostrMode,
   } from "../helpers/accounts.types";
 
+  import SectionItem from "./section-item.svelte";
+
   import "../settings/common.css";
+  import { getAccountIcon, getAccountName } from "../helpers/accounts";
 
   export let accounts: NostrizeAccount[];
   export let currentAccount: NostrizeAccount | null;
@@ -17,15 +21,23 @@
   export let handleEditAccount: (account: NostrizeAccount) => void;
   export let handleNewAccount: (account: NostrizeAccount) => void;
   export let handleDeleteAccount: (account: NostrizeAccount) => void;
+  export let getNostrModeLabel: (mode: NostrMode) => string;
 
   function createAccount() {
-    const account: AnonAccount = {
-      kind: "anon",
+    const account: UnfetchedAccount = {
+      kind: "unfetched",
       settings: defaultSettings,
       uuid: generateRandomHexString(8),
     };
 
     handleNewAccount(account);
+  }
+
+  function isActiveAccount(account: NostrizeAccount) {
+    return (
+      (currentAccount && currentAccount.uuid === account.uuid) ||
+      (editingAccount && editingAccount.uuid === account.uuid)
+    );
   }
 </script>
 
@@ -52,97 +64,155 @@
       </button>
     </div>
   {:else}
-    <h2>Your Accounts</h2>
-    <ul class="account-list">
-      {#each accounts as account (account.uuid)}
-        <li class="account-item">
-          <button
-            class="account-select-btn"
-            class:active={currentAccount &&
-              currentAccount.uuid === account.uuid}
-            on:click={() => handleAccountChange(account)}
-          >
-            {account.name || `Account ${account.uuid}`}
-          </button>
-          <button
-            class="settings-button account-edit-btn"
-            on:click={() => (editingAccount = account)}
-          >
-            <img
-              src="user-edit.svg"
-              width="16"
-              height="16"
-              alt="Edit Account"
-            />
-          </button>
-          <button
-            class="settings-button account-delete-btn"
-            on:click={() => handleDeleteAccount(account)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+    <SectionItem title="Your Accounts" isExpanded={true}>
+      <ul class="account-list" slot="content">
+        {#each accounts as account (account.uuid)}
+          <li class="account-item">
+            <button
+              class="account-select-btn"
+              class:active={isActiveAccount(account)}
+              on:click={() => handleAccountChange(account)}
             >
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path
-                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-              ></path>
-              <line x1="10" y1="11" x2="10" y2="17"></line>
-              <line x1="14" y1="11" x2="14" y2="17"></line>
-            </svg>
-          </button>
-        </li>
-      {/each}
-    </ul>
+              <div style="margin-top: 1px;">
+                <img
+                  src={getAccountIcon(account)}
+                  width="16"
+                  height="16"
+                  alt={getAccountName(account)}
+                  class="account"
+                  style="margin-right: 4px;"
+                />
+              </div>
+              <div style="margin-top: 2px;">
+                {getAccountName(account)} ({getNostrModeLabel(
+                  account.settings.nostrSettings.mode,
+                )})
+              </div>
+            </button>
+            <button
+              class="settings-button account-edit-btn"
+              on:click={() => (editingAccount = account)}
+            >
+              <img
+                src="edit-icon.svg"
+                width="16"
+                height="16"
+                alt="Edit Account"
+              />
+            </button>
+            <button
+              class="settings-button account-delete-btn"
+              on:click={() => handleDeleteAccount(account)}
+            >
+              <img
+                src="delete-icon.svg"
+                width="16"
+                height="16"
+                alt="Delete Account"
+              />
+            </button>
+          </li>
+        {/each}
+      </ul>
+    </SectionItem>
 
-    {#if editingAccount !== null}
-      <fieldset class="edit-account-form">
-        <legend>Edit Account</legend>
-        <div class="input-container">
-          <label for="name">Name:</label>
-          <input
-            type="text"
-            id="name"
-            bind:value={editingAccount.name}
-            required
-          />
-        </div>
-        {#if editingAccount.kind === "known"}
-          <div class="input-container">
-            <label for="pubkey">Public Key:</label>
-            <input
-              type="text"
-              id="pubkey"
-              bind:value={editingAccount.pubkey}
-              required
-            />
+    {#if editingAccount}
+      <SectionItem title="Edit Account" isExpanded={true}>
+        <fieldset class="edit-account-form" slot="content">
+          <legend>{getAccountName(editingAccount)}</legend>
+
+          {#if editingAccount.kind === "unfetched"}
+            {#if editingAccount.settings.nostrSettings.mode === "anon"}
+              <div class="anon-account-note">
+                Note: This is an anonymous account. The information you provide
+                will only be used within the Nostrize extension to help you
+                differentiate this account from others
+              </div>
+            {/if}
+
+            <div class="input-container">
+              <label for="name">Name:</label>
+              <input
+                type="text"
+                id="name"
+                bind:value={editingAccount.name}
+                required
+              />
+            </div>
+
+            <div class="input-container">
+              <label for="icon">Account Picture URL:</label>
+              <input type="url" id="icon" bind:value={editingAccount.icon} />
+            </div>
+
+            {#if editingAccount.settings.nostrSettings.mode === "nip07"}
+              <a
+                href="https://nostrize.me/pages/nip07-metadata-manager.html"
+                target="_blank"
+                class="simple-tooltip"
+                data-tooltip-text="Nostrize can't directly fetch your profile within itself. Click to open the NIP-07 Metadata Manager."
+              >
+                Fetch your profile
+              </a>
+            {/if}
+          {:else if editingAccount.kind === "fetched"}
+            <div class="input-container">
+              <label for="pubkey">Public Key:</label>
+              <input
+                type="text"
+                id="pubkey"
+                bind:value={editingAccount.pubkey}
+                disabled
+              />
+            </div>
+
+            <div class="input-container">
+              <label for="name">Name:</label>
+              <input
+                type="text"
+                id="name"
+                bind:value={editingAccount.metadata.name}
+                disabled
+              />
+            </div>
+
+            <div class="input-container">
+              <label for="nip05">Nostr Address (NIP-05):</label>
+              <input
+                type="text"
+                id="nip05"
+                bind:value={editingAccount.metadata.nip05}
+                disabled
+              />
+            </div>
+
+            <div class="input-container">
+              <label for="icon">Account Picture URL:</label>
+              <input
+                type="url"
+                id="icon"
+                bind:value={editingAccount.metadata.picture}
+                disabled
+              />
+            </div>
+          {/if}
+
+          <div class="flex-container">
+            <button
+              class="settings-button save-btn"
+              on:click={() =>
+                editingAccount && handleEditAccount(editingAccount)}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              class="settings-button cancel-btn"
+              on:click={() => (editingAccount = null)}>Cancel</button
+            >
           </div>
-        {/if}
-        <div class="input-container">
-          <label for="icon">Icon URL:</label>
-          <input type="url" id="icon" bind:value={editingAccount.icon} />
-        </div>
-        <div class="flex-container">
-          <button
-            class="settings-button save-btn"
-            on:click={() => editingAccount && handleEditAccount(editingAccount)}
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            class="settings-button cancel-btn"
-            on:click={() => (editingAccount = null)}>Cancel</button
-          >
-        </div>
-      </fieldset>
+        </fieldset>
+      </SectionItem>
     {/if}
 
     <button class="settings-button create-account-btn" on:click={createAccount}>
@@ -178,15 +248,22 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    gap: 10px;
+  }
+
+  .account-item > button {
+    cursor: pointer;
+  }
+
+  .account-item > button.active {
+    background-color: rgba(130, 80, 223, 0.4);
   }
 
   .account-select-btn {
+    display: flex;
     flex-grow: 1;
     text-align: left;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    padding: 10px;
-    margin-right: 10px;
+    padding: 6px;
     border: none;
     background-color: transparent;
   }
@@ -195,21 +272,31 @@
     background-color: rgba(130, 80, 223, 0.4);
   }
 
+  img.account {
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
   .account-delete-btn {
-    background-color: rgba(139, 0, 0, 0.75);
+    background-color: rgb(255 0 0 / 75%);
   }
 
   .account-delete-btn:hover {
-    background-color: rgba(139, 0, 0, 1);
+    background-color: rgb(255 0 0 / 100%);
   }
 
   .create-account-btn {
     margin-top: 20px;
-    background-color: rgba(0, 128, 0, 1);
+    background-color: rgba(130, 80, 223, 0.1);
+    color: darkcyan;
   }
 
   .create-account-btn:hover {
-    background-color: rgba(0, 128, 0, 0.7);
+    background-color: rgba(130, 80, 223, 0.25);
+  }
+
+  .anon-account-note {
+    font-size: 0.8em;
   }
 
   .save-btn {

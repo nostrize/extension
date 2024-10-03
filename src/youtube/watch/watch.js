@@ -29,7 +29,9 @@ import { ensureDomLoaded } from "../../helpers/dom.js";
 import { getNostrizeSettings } from "../../helpers/accounts.ts";
 
 async function youtubeWatchPage() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const log = logger({ ...settings.debug });
 
@@ -79,7 +81,7 @@ async function youtubeWatchPage() {
     src: browser.runtime.getURL("nostrize-nip07-provider.js"),
   });
 
-  const nostrizeUserPubkey = Either.getOrElseThrow({
+  const nostrizeUserPubkey = await Either.getOrElseThrow({
     eitherFn: () =>
       getNostrizeUserPubkey({
         mode: settings.nostrSettings.mode,

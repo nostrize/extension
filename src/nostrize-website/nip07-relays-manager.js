@@ -9,8 +9,10 @@ import {
 } from "../helpers/accounts.ts";
 import { Either } from "../helpers/either.ts";
 
-async function nip07ManagerPage() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+async function nip07RelaysManagerPage() {
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   await html.asyncScript({
     id: "nostrize-nip07-provider",
@@ -53,4 +55,4 @@ async function nip07ManagerPage() {
   });
 }
 
-nip07ManagerPage().catch((e) => console.log(e));
+nip07RelaysManagerPage().catch((e) => console.log(e));

@@ -16,7 +16,9 @@ import { zapModalComponent } from "../components/zap-modal.js";
 import { setupModal } from "../components/common.js";
 
 async function telegramBio() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const log = logger({ ...settings.debug, namespace: "[N][Telegram-Web]" });
 

@@ -24,7 +24,9 @@ import { ensureDomLoaded } from "../../helpers/dom.js";
 import { getNostrizeSettings } from "../../helpers/accounts.ts";
 
 async function youtubeShortsPage() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const log = logger({ ...settings.debug });
 

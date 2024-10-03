@@ -5,9 +5,9 @@
   import Account from "./account.svelte";
 
   export let setActiveSection: (section: string, icon: HTMLElement) => void;
-  export let currentAccount: NostrizeAccount | null;
+  export let currentAccount: NostrizeAccount;
   export let accounts: NostrizeAccount[];
-  export let handleAccountChange;
+  export let changeAccount: (account: NostrizeAccount) => void;
   export let handleLogout;
   export let editingAccount: NostrizeAccount | null;
   export let expanded = false;
@@ -46,7 +46,7 @@
       <Account
         {currentAccount}
         {accounts}
-        {handleAccountChange}
+        {changeAccount}
         {handleLogout}
         bind:editingAccount
         {expanded}

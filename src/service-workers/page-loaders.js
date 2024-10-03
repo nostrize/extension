@@ -29,8 +29,8 @@ export const pageLoaderListener = (tabId, changeInfo, tab) => {
     injectTwitterScripts({ page, tabId });
   } else if (page.startsWith("telegram/web")) {
     injectTelegramWebScripts({ page, tabId });
-  } else if (page.startsWith("nostrize/nip07-manager")) {
-    injectNip07ManagerScripts({ page, tabId });
+  } else if (page.startsWith("nostrize")) {
+    injectNostrizeScripts({ page, tabId });
   }
 };
 
@@ -82,7 +82,13 @@ function getPageFromUrl(url) {
     } else if (checkHosts("web.telegram.org")) {
       return "telegram/web";
     } else if (checkHosts("nostrize.me")) {
-      return "nostrize/nip07-manager";
+      if (parsedUrl.pathname.match(/^\/pages\/nip07-relays-manager\.html$/)) {
+        return "nostrize/nip07-relays-manager";
+      } else if (
+        parsedUrl.pathname.match(/^\/pages\/nip07-metadata-manager\.html$/)
+      ) {
+        return "nostrize/nip07-metadata-manager";
+      }
     }
 
     // Return undefined if none of the above conditions match
@@ -94,11 +100,16 @@ function getPageFromUrl(url) {
   }
 }
 
-function injectNip07ManagerScripts({ page, tabId }) {
-  if (page === "nostrize/nip07-manager") {
+function injectNostrizeScripts({ page, tabId }) {
+  if (page === "nostrize/nip07-relays-manager") {
     chrome.scripting.executeScript({
       target: { tabId },
-      files: ["nostrize-nip07-manager.js"],
+      files: ["nostrize-nip07-relays-manager.js"],
+    });
+  } else if (page === "nostrize/nip07-metadata-manager") {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["nostrize-nip07-metadata-manager.js"],
     });
   }
 }

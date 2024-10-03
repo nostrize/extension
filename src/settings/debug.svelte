@@ -11,7 +11,7 @@
 
   $: isDirty = JSON.stringify(debugSettings) !== debugSettingsHash;
 
-  export function onSaveSettings() {
+  export function rehashSettings() {
     debugSettingsHash = JSON.stringify(debugSettings);
   }
 </script>

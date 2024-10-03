@@ -59,7 +59,7 @@
     bind:checked={relaysSettings.nip07.useRelays}
   />
   <a
-    href="https://nostrize.me/pages/nip07-manager.html"
+    href="https://nostrize.me/pages/nip07-relays-manager.html"
     target="_blank"
     class="simple-tooltip"
     data-tooltip-text="Click to add NIP-07 Relays to Local Relays if you want to use them as fallback relays."

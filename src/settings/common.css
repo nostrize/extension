@@ -33,6 +33,7 @@ button.settings-button:hover {
 }
 
 .input-container input[type="text"],
+.input-container input[type="url"],
 .input-container input[type="password"] {
   font-size: medium;
   width: 100%;

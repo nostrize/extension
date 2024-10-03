@@ -7,6 +7,7 @@ import {
   insertToPageCache,
 } from "./local-cache.js";
 import { Either } from "./either.ts";
+import { getPubkeyFromNip07 } from "./nip07.js";
 
 export async function getPubkeyFrom({
   npub,
@@ -327,35 +328,6 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
   );
 
   return cachedNotes;
-}
-
-async function getPubkeyFromNip07() {
-  window.postMessage({
-    from: "nostrize",
-    type: "nip07-pubkey-request",
-  });
-
-  return new Promise((resolve) => {
-    window.addEventListener("message", function (event) {
-      if (event.source !== window) {
-        return;
-      }
-
-      const { from, type, pubkey } = event.data;
-
-      if (
-        !(
-          from === "nostrize-nip07-provider" &&
-          type === "nip07-pubkey-request" &&
-          !!pubkey
-        )
-      ) {
-        return;
-      }
-
-      return resolve(pubkey);
-    });
-  });
 }
 
 export async function getNostrizeUserPubkey({ mode, nostrConnectSettings }) {

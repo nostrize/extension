@@ -9,7 +9,7 @@
 
   $: isDirty = JSON.stringify(lightsatsSettings) !== lightsatsSettingsHash;
 
-  export function onSaveSettings() {
+  export function rehashSettings() {
     lightsatsSettingsHash = JSON.stringify(lightsatsSettings);
   }
 </script>

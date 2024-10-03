@@ -1,6 +1,10 @@
 <script lang="ts">
+  import type {
+    NostrizeAccount,
+    NostrMode,
+    NostrModeOption,
+  } from "../helpers/accounts.types";
   import { defaultSettings } from "../helpers/accounts";
-  import type { NostrizeAccount } from "../helpers/accounts.types";
 
   import SectionItem from "./section-item.svelte";
   import NostrSettings from "./nostr.svelte";
@@ -10,35 +14,16 @@
   import Leftbar from "./leftbar.svelte";
   import SaveResetButtons from "./save-reset-buttons.svelte";
 
-  const nostrModeOptions = {
-    anon: {
-      label: "Anonymous",
-      description: "Generates new keys each time you need to sign an event.",
-    },
-    nip07: {
-      label: "NIP-07",
-      description:
-        "Signs events and gets your nostr relays and public key using browser extensions like alby or nos2x.",
-    },
-    nostrconnect: {
-      label: "NostrConnect",
-      description: "Connect to remote signing providers or create new account.",
-    },
-    bunker: {
-      label: "Bunker",
-      description: "Copy a Bunker URL from a remote signing provider.",
-    },
-  };
-
   export let currentAccount: NostrizeAccount;
   export let accounts: NostrizeAccount[];
 
-  export let handleAccountChange;
+  export let handleAccountChange: (account: NostrizeAccount) => void;
   export let handleLogout;
   export let editingAccount: NostrizeAccount | null;
+  export let getNostrModeLabel: (mode: NostrMode) => string;
+  export let nostrModeOptions: Record<NostrMode, NostrModeOption>;
 
   $: settings = currentAccount.settings;
-  $: nostrModeLabel = nostrModeOptions[settings.nostrSettings.mode].label;
 
   let lightsatsComponent: LightsatsSettings;
   let nostrComponent: NostrSettings;
@@ -48,26 +33,39 @@
   let isDirtyNostr = false;
   let isDirtyDebug = false;
   let isDirtyNIP65 = false;
+
   $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyDebug;
 
   let lastSavedSettings = JSON.stringify(currentAccount.settings);
 
   function handleSave() {
     lastSavedSettings = JSON.stringify(currentAccount.settings);
-    lightsatsComponent.onSaveSettings();
-    nostrComponent.onSaveSettings();
-    debugComponent.onSaveSettings();
+
+    nostrComponent.rehashSettings();
+    lightsatsComponent.rehashSettings();
+    debugComponent.rehashSettings();
   }
 
   function handleReset() {
     settings = { ...defaultSettings };
-    lightsatsComponent.onSaveSettings();
-    nostrComponent.onSaveSettings();
-    debugComponent.onSaveSettings();
+
+    nostrComponent.rehashSettings();
+    lightsatsComponent.rehashSettings();
+    debugComponent.rehashSettings();
   }
 
   function handleUndo() {
     settings = JSON.parse(lastSavedSettings);
+  }
+
+  async function changeAccount(account: NostrizeAccount) {
+    await handleAccountChange(account);
+
+    lastSavedSettings = JSON.stringify(currentAccount.settings);
+
+    nostrComponent.rehashSettings();
+    lightsatsComponent.rehashSettings();
+    debugComponent.rehashSettings();
   }
 
   let showSaveResetButtons = true;
@@ -94,21 +92,6 @@
       showSaveResetButtons = true;
     }
   }
-
-  function toggleCollapsible(event: MouseEvent) {
-    const header = event.currentTarget as HTMLElement;
-    const section = header.closest(".section.collapsable");
-    if (section) {
-      header.classList.toggle("collapsed");
-      header.classList.toggle("expanded");
-
-      const inputContainer = section.querySelector(".input-container");
-      if (inputContainer) {
-        inputContainer.classList.toggle("collapsed");
-        inputContainer.classList.toggle("expanded");
-      }
-    }
-  }
 </script>
 
 <div class="settings-container">
@@ -117,44 +100,33 @@
       {setActiveSection}
       {currentAccount}
       {accounts}
-      {handleAccountChange}
+      {changeAccount}
       {handleLogout}
       bind:editingAccount
     />
 
     <main class="content">
       <section id="settings-section" class="active">
-        <SectionItem
-          title="Nostr Settings"
-          isDirty={isDirtyNostr}
-          {toggleCollapsible}
-        >
+        <SectionItem title="Nostr Settings" isDirty={isDirtyNostr}>
           <NostrSettings
             slot="content"
             bind:nostrSettings={settings.nostrSettings}
-            {nostrModeOptions}
             bind:this={nostrComponent}
             bind:isDirty={isDirtyNostr}
+            {nostrModeOptions}
           />
         </SectionItem>
 
-        <SectionItem
-          title="Lightsats Integration"
-          isDirty={isDirtyLightsats}
-          {toggleCollapsible}
-        >
+        <SectionItem title="Lightsats Integration" isDirty={isDirtyLightsats}>
           <LightsatsSettings
             slot="content"
+            bind:this={lightsatsComponent}
             bind:lightsatsSettings={settings.lightsatsSettings}
             bind:isDirty={isDirtyLightsats}
           />
         </SectionItem>
 
-        <SectionItem
-          title="Debug Settings"
-          isDirty={isDirtyDebug}
-          {toggleCollapsible}
-        >
+        <SectionItem title="Debug Settings" isDirty={isDirtyDebug}>
           <DebugSettings
             slot="content"
             debugSettings={settings.debug}
@@ -164,11 +136,7 @@
         </SectionItem>
       </section>
       <section id="tools-section">
-        <SectionItem
-          title="NIP-65 Relay Manager"
-          isDirty={isDirtyNIP65}
-          {toggleCollapsible}
-        >
+        <SectionItem title="NIP-65 Relay Manager" isDirty={isDirtyNIP65}>
           <div slot="content">
             {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
               <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />
@@ -221,7 +189,7 @@
   <div class="nostr-mode-container">
     Nostr Mode:
     <span id="nostr-mode">
-      {nostrModeLabel}
+      {getNostrModeLabel(settings.nostrSettings.mode)}
     </span>
   </div>
 </div>

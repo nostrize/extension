@@ -4,7 +4,9 @@ import { getNostrizeSettings } from "../../helpers/accounts.ts";
 import { Either } from "../../helpers/either.ts";
 
 async function githubIssuesPage() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const log = logger(settings.debug);
   const pathParts = window.location.pathname

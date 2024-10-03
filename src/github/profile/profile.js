@@ -16,7 +16,9 @@ import { zapModalComponent } from "../../components/zap-modal.js";
 import { uniqueArrays } from "../../helpers/utils.js";
 
 async function githubProfilePage() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const pathParts = window.location.pathname
     .split("/")
@@ -75,7 +77,7 @@ async function githubProfilePage() {
 
   const nostrizeUserRelays = await getNostrizeUserRelays({
     settings,
-    timeout: 4000,
+    pubkey: pageUserPubkey,
   });
 
   const metadataEvent = await getMetadataEvent({

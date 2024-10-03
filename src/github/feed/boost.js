@@ -21,7 +21,9 @@ const agoInSeconds = ({ hours }) =>
   Math.floor((Date.now() - 1000 * 60 * 60 * hours) / 1000);
 
 async function githubBoostPanel() {
-  const settings = Either.getOrElseThrow({ eitherFn: getNostrizeSettings });
+  const settings = await Either.getOrElseThrow({
+    eitherFn: getNostrizeSettings,
+  });
 
   const log = logger({ ...settings.debug, namespace: "[N][GH-Booster]" });
 

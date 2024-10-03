@@ -1,12 +1,23 @@
-<script>
+<script lang="ts">
+  import type {
+    NostrMode,
+    NostrModeOption,
+    NostrSettings,
+  } from "../helpers/accounts.types";
   import Tooltip from "../components/tooltip/tooltip.svelte";
   import Bunker from "./bunker.svelte";
   import NostrConnect from "./nostr-connect.svelte";
   import Relays from "./relays.svelte";
 
-  export let nostrSettings;
-  export let nostrModeOptions;
+  export let nostrSettings: NostrSettings;
+  export let nostrModeOptions: Record<NostrMode, NostrModeOption>;
   export let isDirty = false;
+
+  type NostrModeOptionEntries = [NostrMode, NostrModeOption][];
+
+  const nostrModeOptionsEntries: NostrModeOptionEntries = Object.entries(
+    nostrModeOptions,
+  ) as NostrModeOptionEntries;
 
   const localRelays = nostrSettings.relays.local.relays
     .filter((relay) => relay.enabled)
@@ -16,11 +27,11 @@
 
   $: isDirty = JSON.stringify(nostrSettings) !== nostrSettingsHash;
 
-  function handleOptionSelect(value) {
+  function handleNostrModeSelect(value: NostrMode) {
     nostrSettings.mode = value;
   }
 
-  export function onSaveSettings() {
+  export function rehashSettings() {
     nostrSettingsHash = JSON.stringify(nostrSettings);
   }
 </script>
@@ -41,14 +52,14 @@
     <div class="custom-select">
       <div class="select-label">Select Mode</div>
       <div class="select-options">
-        {#each Object.entries(nostrModeOptions) as [key, option]}
+        {#each nostrModeOptionsEntries as [key, option]}
           <button
             type="button"
             class="select-option simple-tooltip"
             data-tooltip-text={option.description}
             class:selected={nostrSettings.mode === key}
-            on:click={() => handleOptionSelect(key)}
-            on:keydown={(e) => e.key === "Enter" && handleOptionSelect(key)}
+            on:click={() => handleNostrModeSelect(key)}
+            on:keydown={(e) => e.key === "Enter" && handleNostrModeSelect(key)}
           >
             {option.label}
           </button>
@@ -56,6 +67,15 @@
       </div>
       {#if nostrSettings.mode === "nip07"}
         <div>
+          <a
+            href="https://nostrize.me/pages/nip07-metadata-manager.html"
+            target="_blank"
+            class="simple-tooltip"
+            data-tooltip-text="Click to copy your NIP-07 metadata to your Nostrize account (like name, pubkey, icon, about)"
+          >
+            Copy NIP-07 Metadata to Nostrize
+          </a>
+
           <a
             href="https://github.com/nostr-protocol/nips/blob/master/07.md"
             target="_blank"

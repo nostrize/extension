@@ -10,9 +10,13 @@ export type RelayConfig = {
   write: boolean;
 };
 
+export type LocalRelaySettings = {
+  useRelays: boolean;
+  relays: RelayConfig[];
+};
+
 export type RelaySettings = {
   useRelays: boolean;
-  relays?: RelayConfig[];
 };
 
 export type NostrConnectSettings = {
@@ -28,12 +32,13 @@ export type NostrConnectSettings = {
   ephemeralPubkey: string;
 };
 
+export type NostrModeOption = { label: string; description: string };
 export type NostrMode = "anon" | "nip07" | "nostrconnect" | "bunker";
 
 export type NostrSettings = {
   mode: NostrMode;
   relays: {
-    local: RelaySettings;
+    local: LocalRelaySettings;
     nip07: RelaySettings;
     nip65: RelaySettings;
   };
@@ -53,22 +58,35 @@ export type Settings = {
   lightsatsSettings: LightsatsSettings;
 };
 
-export type NostrizeAccount = AnonAccount | KnownAccount;
-export type AccountKind = "anon" | "known";
+export type AccountMetadata = Partial<{
+  nip05: string;
+  lud16: string;
+  lud06: string;
+  website: string;
+  display_name: string;
+  name: string;
+  about: string;
+  picture: string;
+}>;
 
-export type AnonAccount = {
-  kind: "anon";
+export type NostrizeAccount = UnfetchedAccount | FetchedAccount;
+export type AccountKind = "unfetched" | "fetched";
+
+type AbstractAccount = {
   uuid: string;
-  name?: string;
-  icon?: string;
   settings: Settings;
+  // TODO: uncomment this when we have a way to save the editing settings
+  // editingSettings?: Settings;
 };
 
-export type KnownAccount = {
-  kind: "known";
-  uuid: string;
-  pubkey: string;
+export type UnfetchedAccount = AbstractAccount & {
+  kind: "unfetched";
   name?: string;
   icon?: string;
-  settings: Settings;
+};
+
+export type FetchedAccount = AbstractAccount & {
+  kind: "fetched";
+  pubkey: string;
+  metadata: AccountMetadata;
 };

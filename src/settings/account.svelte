@@ -1,18 +1,20 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
 
   import "./common.css";
+  import type { NostrizeAccount } from "../helpers/accounts.types";
+  import { getAccountIcon, getAccountName } from "../helpers/accounts";
 
-  export let currentAccount;
-  export let accounts;
-  export let handleAccountChange;
-  export let handleLogout;
-  export let editingAccount;
-  export let expanded;
-  export let toggleMenu;
+  export let currentAccount: NostrizeAccount;
+  export let accounts: NostrizeAccount[];
+  export let changeAccount: (account: NostrizeAccount) => void;
+  export let handleLogout: () => void;
+  export let editingAccount: NostrizeAccount | null;
+  export let expanded: boolean;
+  export let toggleMenu: () => void;
 
-  function handleClickOutside(event) {
-    if (expanded && !event.target.closest(".account-sidebar")) {
+  function handleClickOutside(event: MouseEvent) {
+    if (expanded && !(event.target as Element).closest(".account-sidebar")) {
       toggleMenu();
     }
   }
@@ -21,8 +23,8 @@
     handleLogout();
   }
 
-  function setCurrentAccount(account) {
-    handleAccountChange(account);
+  function setCurrentAccount(account: NostrizeAccount) {
+    changeAccount(account);
   }
 
   onMount(() => {
@@ -37,7 +39,7 @@
 <nav class="account-sidebar" class:expanded>
   <div
     class="account-icon simple-tooltip"
-    data-tooltip-text="Account Preferences"
+    data-tooltip-text={getAccountName(currentAccount)}
     data-show-tooltip-right="true"
     role="button"
     class:expanded
@@ -45,11 +47,13 @@
     on:click={toggleMenu}
     tabindex="0"
   >
-    {#if currentAccount && currentAccount.picture}
-      <img src={currentAccount.picture} alt={currentAccount.name} />
-    {:else}
-      <img src="user-icon.svg" alt={currentAccount.name} />
-    {/if}
+    <img
+      class="account"
+      src={getAccountIcon(currentAccount)}
+      width="32"
+      height="32"
+      alt={getAccountName(currentAccount)}
+    />
   </div>
 
   <div class="profile-menu">
@@ -57,25 +61,36 @@
       class="menu-item"
       on:click={() => (editingAccount = currentAccount)}
     >
-      <img src="user-edit.svg" width="24" height="24" alt="Edit Account" />
+      <img
+        src="edit-icon.svg"
+        width="24"
+        height="24"
+        style="margin-right: 4px;"
+        alt="Edit Account"
+      />
       Edit Account
     </button>
     {#each accounts.filter((a) => a.uuid !== currentAccount.uuid) as account}
       <button class="menu-item" on:click={() => setCurrentAccount(account)}>
-        {#if account.picture}
-          <img class="account-icon" src={account.picture} alt={account.name} />
-        {:else}
-          <img src="user-icon.svg" width="24" height="24" alt={account.name} />
-        {/if}
-        {account.name ? account.name : account.uuid}
+        <img
+          class="account"
+          width="24"
+          height="24"
+          src={getAccountIcon(account)}
+          alt={getAccountName(account)}
+          style="margin-right: 4px;"
+        />
+        {getAccountName(account)}
       </button>
     {/each}
     <button class="menu-item" on:click={logOut}>
-      <svg class="logout-icon" viewBox="0 0 24 24">
-        <path
-          d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
-        />
-      </svg>
+      <img
+        src="logout-icon.svg"
+        width="24"
+        height="24"
+        style="margin-right: 4px;"
+        alt="Log out"
+      />
       Log out
     </button>
   </div>
@@ -106,11 +121,9 @@
     background-color: rgba(130, 80, 223, 0.4);
   }
 
-  .account-icon img {
-    margin-top: 4px;
-    width: 24px;
-    height: 24px;
+  img.account {
     fill: #333;
+    border-radius: 50%;
     object-fit: cover;
   }
 
@@ -139,19 +152,5 @@
 
   .menu-item:hover {
     background-color: rgba(130, 80, 223, 0.1);
-  }
-
-  .menu-item .account-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-
-  .menu-item .logout-icon {
-    width: 18px;
-    height: 18px;
-    margin-right: 10px;
-    fill: #333;
   }
 </style>

@@ -1,6 +1,7 @@
 import { mergeSettings } from "./utils.js";
 import type { NostrizeAccount, Settings } from "./accounts.types";
 import { Either } from "./either";
+import { Some } from "./some";
 
 export const defaultSettings: Settings = {
   version: 4,
@@ -264,4 +265,24 @@ export async function deleteNostrizeAccount(account: NostrizeAccount) {
 
 export async function logOut() {
   await chrome.storage.local.set({ currentAccountId: null });
+}
+
+export function getAccountName(account: NostrizeAccount) {
+  if (account.kind === "fetched") {
+    return (
+      account.metadata.display_name ||
+      account.metadata.name ||
+      `Account ${account.uuid}`
+    );
+  }
+
+  return account.name || `Account ${account.uuid}`;
+}
+
+export function getAccountIcon(account: NostrizeAccount): string {
+  if (account.kind === "fetched") {
+    return Some(account.metadata.picture).getOrElse("user-icon.svg");
+  }
+
+  return Some(account.icon).getOrElse("user-icon.svg");
 }

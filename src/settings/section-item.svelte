@@ -2,7 +2,21 @@
   export let isDirty: boolean = false;
   export let title: string;
   export let isExpanded: boolean = false;
-  export let toggleCollapsible: (event: MouseEvent) => void;
+
+  function toggleCollapsible(event: MouseEvent) {
+    const header = event.currentTarget as HTMLElement;
+    const section = header.closest(".section.collapsable");
+    if (section) {
+      header.classList.toggle("collapsed");
+      header.classList.toggle("expanded");
+
+      const inputContainer = section.querySelector(".input-container");
+      if (inputContainer) {
+        inputContainer.classList.toggle("collapsed");
+        inputContainer.classList.toggle("expanded");
+      }
+    }
+  }
 </script>
 
 <div class="section collapsable" class:dirty={isDirty}>
