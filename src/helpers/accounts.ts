@@ -4,7 +4,7 @@ import { Either } from "./either";
 import { Some } from "./some";
 
 export const defaultSettings: Settings = {
-  version: 4,
+  version: 5,
   debug: {
     log: true,
     namespace: "[N]",
@@ -59,6 +59,9 @@ export const defaultSettings: Settings = {
   lightsatsSettings: {
     apiKey: "",
     enabled: false,
+  },
+  nostrizeSettings: {
+    alwaysOpenInNewTab: false,
   },
 };
 
@@ -150,6 +153,17 @@ export async function getCurrentNostrizeAccount(): Promise<
   if (!currentAccount) {
     return Either.left("Could not find current account in accounts array");
   }
+
+  if (currentAccount.settings.version !== defaultSettings.version) {
+    currentAccount.settings = mergeSettings(
+      currentAccount.settings,
+      defaultSettings,
+    ) as Settings;
+
+    currentAccount.settings.version = defaultSettings.version;
+  }
+
+  await chrome.storage.local.set({ accounts });
 
   return Either.right(currentAccount);
 }

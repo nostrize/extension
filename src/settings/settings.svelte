@@ -13,6 +13,7 @@
   import NIP65RelayManager from "./nip65.svelte";
   import Leftbar from "./leftbar.svelte";
   import SaveResetButtons from "./save-reset-buttons.svelte";
+  import NostrizeSettings from "./nostrize-settings.svelte";
 
   export let currentAccount: NostrizeAccount;
   export let accounts: NostrizeAccount[];
@@ -28,34 +29,52 @@
   let lightsatsComponent: LightsatsSettings;
   let nostrComponent: NostrSettings;
   let debugComponent: DebugSettings;
+  let nostrizeComponent: NostrizeSettings;
 
   let isDirtyLightsats = false;
   let isDirtyNostr = false;
   let isDirtyDebug = false;
+  let isDirtyNostrize = false;
+
+  $: isDirty =
+    isDirtyLightsats || isDirtyNostr || isDirtyDebug || isDirtyNostrize;
+
   let isDirtyNIP65 = false;
 
-  $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyDebug;
-
   let lastSavedSettings = JSON.stringify(currentAccount.settings);
+
+  const handleUnsavedChanges = (callback?: () => void) => (e: MouseEvent) => {
+    if (!isDirty) {
+      return callback?.();
+    }
+
+    if (
+      !confirm(
+        "Are you sure you want to leave the settings? You will lose your unsaved changes",
+      )
+    ) {
+      e.preventDefault();
+    } else {
+      handleUndo();
+
+      callback?.();
+    }
+  };
 
   function handleSave() {
     lastSavedSettings = JSON.stringify(currentAccount.settings);
 
-    nostrComponent.rehashSettings();
-    lightsatsComponent.rehashSettings();
-    debugComponent.rehashSettings();
+    rehashAll();
   }
 
   function handleReset() {
     settings = { ...defaultSettings };
 
-    nostrComponent.rehashSettings();
-    lightsatsComponent.rehashSettings();
-    debugComponent.rehashSettings();
+    rehashAll();
   }
 
   function handleUndo() {
-    settings = JSON.parse(lastSavedSettings);
+    currentAccount.settings = JSON.parse(lastSavedSettings);
   }
 
   async function changeAccount(account: NostrizeAccount) {
@@ -63,9 +82,14 @@
 
     lastSavedSettings = JSON.stringify(currentAccount.settings);
 
+    rehashAll();
+  }
+
+  function rehashAll() {
     nostrComponent.rehashSettings();
     lightsatsComponent.rehashSettings();
     debugComponent.rehashSettings();
+    nostrizeComponent.rehashSettings();
   }
 
   let showSaveResetButtons = true;
@@ -102,6 +126,7 @@
       {accounts}
       {changeAccount}
       {handleLogout}
+      {handleUnsavedChanges}
       bind:editingAccount
     />
 
@@ -132,6 +157,15 @@
             debugSettings={settings.debug}
             bind:this={debugComponent}
             bind:isDirty={isDirtyDebug}
+          />
+        </SectionItem>
+
+        <SectionItem title="Nostrize Settings" isDirty={isDirtyNostrize}>
+          <NostrizeSettings
+            slot="content"
+            bind:this={nostrizeComponent}
+            bind:isDirty={isDirtyNostrize}
+            bind:nostrizeSettings={settings.nostrizeSettings}
           />
         </SectionItem>
       </section>

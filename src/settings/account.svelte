@@ -12,6 +12,9 @@
   export let editingAccount: NostrizeAccount | null;
   export let expanded: boolean;
   export let toggleMenu: () => void;
+  export let handleUnsavedChanges: (
+    callback?: () => void,
+  ) => (e: MouseEvent) => void;
 
   function handleClickOutside(event: MouseEvent) {
     if (expanded && !(event.target as Element).closest(".account-sidebar")) {
@@ -59,7 +62,7 @@
   <div class="profile-menu">
     <button
       class="menu-item"
-      on:click={() => (editingAccount = currentAccount)}
+      on:click={handleUnsavedChanges(() => (editingAccount = currentAccount))}
     >
       <img
         src="edit-icon.svg"
@@ -71,7 +74,10 @@
       Edit Account
     </button>
     {#each accounts.filter((a) => a.uuid !== currentAccount.uuid) as account}
-      <button class="menu-item" on:click={() => setCurrentAccount(account)}>
+      <button
+        class="menu-item"
+        on:click={handleUnsavedChanges(() => setCurrentAccount(account))}
+      >
         <img
           class="account"
           width="24"
@@ -83,7 +89,7 @@
         {getAccountName(account)}
       </button>
     {/each}
-    <button class="menu-item" on:click={logOut}>
+    <button class="menu-item" on:click={handleUnsavedChanges(logOut)}>
       <img
         src="logout-icon.svg"
         width="24"

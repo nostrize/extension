@@ -11,6 +11,9 @@
   export let handleLogout;
   export let editingAccount: NostrizeAccount | null;
   export let expanded = false;
+  export let handleUnsavedChanges: (
+    callback?: () => void,
+  ) => (e: MouseEvent) => void;
 
   let showOpenInTab = true;
   let settingsUrl = browser.runtime.getURL("nostrize-settings.html");
@@ -21,6 +24,7 @@
       active: true,
       currentWindow: true,
     });
+
     if (tabs[0] && tabs[0].url === settingsUrl) {
       showOpenInTab = false;
     }
@@ -48,8 +52,9 @@
         {accounts}
         {changeAccount}
         {handleLogout}
-        bind:editingAccount
         {expanded}
+        {handleUnsavedChanges}
+        bind:editingAccount
         toggleMenu={toggleAccountMenu}
       />
     </div>
@@ -102,6 +107,7 @@
       data-tooltip-text="Won't you like to see and edit the settings in a separate tab?"
       data-show-tooltip-right="true"
       target="_blank"
+      on:click={handleUnsavedChanges()}
     >
       <img
         src="open-link.svg"

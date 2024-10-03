@@ -51,11 +51,16 @@ export type LightsatsSettings = {
   enabled: boolean;
 };
 
+export type NostrizeSettings = {
+  alwaysOpenInNewTab: boolean;
+};
+
 export type Settings = {
   version: number;
   debug: DebugSettings;
   nostrSettings: NostrSettings;
   lightsatsSettings: LightsatsSettings;
+  nostrizeSettings: NostrizeSettings;
 };
 
 export type AccountMetadata = Partial<{
