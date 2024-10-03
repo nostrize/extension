@@ -17,10 +17,10 @@
 
 <div class="nostrize-settings">
   <fieldset>
-    <legend>Always Open in New Tab</legend>
+    <legend>Open This Page (Settings)</legend>
     <CustomCheckbox
       id="alwaysOpenInNewTab"
-      text="Always Open in New Tab"
+      text="Always In A New Tab"
       bind:checked={nostrizeSettings.alwaysOpenInNewTab}
     />
   </fieldset>

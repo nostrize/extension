@@ -1,4 +1,5 @@
 <script lang="ts">
+  import browser from "webextension-polyfill";
   import { onMount } from "svelte";
 
   import type {
@@ -54,6 +55,22 @@
     currentAccount = Either.isRight(accountEither)
       ? Either.getRight(accountEither)
       : null;
+
+    if (
+      currentAccount &&
+      currentAccount.settings.nostrizeSettings.alwaysOpenInNewTab
+    ) {
+      const tabs = await browser.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      const settingsUrl = browser.runtime.getURL("nostrize-settings.html");
+
+      if (tabs[0] && tabs[0].url !== settingsUrl) {
+        browser.tabs.create({ url: settingsUrl });
+      }
+    }
   });
 
   async function handleAccountChange(account: NostrizeAccount) {
@@ -102,8 +119,8 @@
 
 {#if currentAccount && !editingAccount}
   <Settings
-    bind:editingAccount
     bind:currentAccount
+    bind:editingAccount
     {accounts}
     {handleAccountChange}
     {handleLogout}
