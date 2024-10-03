@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
   import Tooltip from "../components/tooltip/tooltip.svelte";
+  import type { LightsatsSettings } from "../helpers/accounts.types";
 
-  export let lightsatsSettings;
+  export let lightsatsSettings: LightsatsSettings;
   export let isDirty = false;
 
   let lightsatsSettingsHash = JSON.stringify(lightsatsSettings);
@@ -49,6 +50,7 @@
 
     <div style="display: flex; align-items: center;">
       <CustomCheckbox
+        id="lightsats-integration-checkbox"
         bind:checked={lightsatsSettings.enabled}
         text="Enable Lightsats Integration"
       />

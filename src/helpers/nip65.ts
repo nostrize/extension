@@ -1,8 +1,20 @@
-import { SimplePool } from "nostr-tools";
+import { SimplePool, type Event } from "nostr-tools";
 
 import { getOrInsertPageCache } from "./local-cache.js";
 
-function toReadWriteRelays(relays) {
+interface Relay {
+  relay: string;
+  read: boolean;
+  write: boolean;
+}
+
+interface ReadWriteRelays {
+  readRelays: string[];
+  writeRelays: string[];
+  flatRelays: Relay[];
+}
+
+function toReadWriteRelays(relays: Event): ReadWriteRelays {
   const relayTags = relays.tags.filter((tag) => tag[0] === "r");
 
   const readRelays = relayTags
@@ -22,31 +34,49 @@ function toReadWriteRelays(relays) {
   return { readRelays, writeRelays, flatRelays };
 }
 
-export async function getNip65Relays({ pubkey, relays, updatedCallback }) {
-  const response = await getOrInsertPageCache({
+interface GetNip65RelaysParams {
+  pubkey: string;
+  relays: string[];
+  updatedCallback?: (relays: ReadWriteRelays) => void;
+}
+
+export async function getNip65Relays({
+  pubkey,
+  relays,
+  updatedCallback,
+}: GetNip65RelaysParams): Promise<ReadWriteRelays> {
+  const response = (await getOrInsertPageCache({
     key: `nostrize-nip65-${pubkey}-${relays.join("")}`,
     insertCallback: () => fetchRelays({ pubkey, relays }),
     skipEmpty: true,
     updateCache: true,
-    updatedCallback: (response) => {
+    updatedCallback: (response: Event | null) => {
       if (updatedCallback) {
         if (response == null) {
-          updatedCallback({ readRelays: [], writeRelays: [] });
+          updatedCallback({ readRelays: [], writeRelays: [], flatRelays: [] });
         } else {
           updatedCallback(toReadWriteRelays(response));
         }
       }
     },
-  });
+  })) as Event | null;
 
   if (response == null) {
-    return { readRelays: [], writeRelays: [] };
+    return { readRelays: [], writeRelays: [], flatRelays: [] };
   }
 
   return toReadWriteRelays(response);
 }
 
-async function fetchRelays({ pubkey, relays }) {
+interface FetchRelaysParams {
+  pubkey: string;
+  relays: string[];
+}
+
+async function fetchRelays({
+  pubkey,
+  relays,
+}: FetchRelaysParams): Promise<Event | null> {
   const pool = new SimplePool();
 
   return pool.get(relays, {

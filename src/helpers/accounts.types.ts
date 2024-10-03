@@ -1,8 +1,3 @@
-export type DebugSettings = {
-  log: boolean;
-  namespace: string;
-};
-
 export type RelayConfig = {
   relay: string;
   enabled: boolean;
@@ -21,6 +16,7 @@ export type RelaySettings = {
 
 export type NostrConnectSettings = {
   url: string;
+  bunkerUrl: string;
   customRelay: string;
   username: string;
   provider: string;
@@ -53,11 +49,14 @@ export type LightsatsSettings = {
 
 export type NostrizeSettings = {
   alwaysOpenInNewTab: boolean;
+  debug: {
+    enableLogging: boolean;
+    namespace: string;
+  };
 };
 
 export type Settings = {
   version: number;
-  debug: DebugSettings;
   nostrSettings: NostrSettings;
   lightsatsSettings: LightsatsSettings;
   nostrizeSettings: NostrizeSettings;

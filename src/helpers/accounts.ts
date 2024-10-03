@@ -4,11 +4,7 @@ import { Either } from "./either";
 import { Some } from "./some";
 
 export const defaultSettings: Settings = {
-  version: 5,
-  debug: {
-    log: true,
-    namespace: "[N]",
-  },
+  version: 6,
   nostrSettings: {
     mode: "anon",
     relays: {
@@ -44,6 +40,7 @@ export const defaultSettings: Settings = {
     },
     nostrConnect: {
       url: "",
+      bunkerUrl: "",
       customRelay: "",
       username: "",
       provider: "",
@@ -62,6 +59,10 @@ export const defaultSettings: Settings = {
   },
   nostrizeSettings: {
     alwaysOpenInNewTab: false,
+    debug: {
+      enableLogging: false,
+      namespace: "[N]",
+    },
   },
 };
 

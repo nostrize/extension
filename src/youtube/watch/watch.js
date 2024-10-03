@@ -24,7 +24,7 @@ import {
 } from "../../helpers/nostr.js";
 import { getLnurlData } from "../../helpers/lnurl.js";
 import { setupModal } from "../../components/common.js";
-import { getNip65Relays } from "../../helpers/nip65.js";
+import { getNip65Relays } from "../../helpers/nip65.ts";
 import { ensureDomLoaded } from "../../helpers/dom.js";
 import { getNostrizeSettings } from "../../helpers/accounts.ts";
 

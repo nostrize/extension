@@ -1,5 +1,5 @@
 import { getNip07Relays } from "./nip07.js";
-import { getNip65Relays } from "./nip65.js";
+import { getNip65Relays } from "./nip65.ts";
 import { uniqueArrays } from "./utils.js";
 
 export async function getNostrizeUserRelays({ settings, pubkey }) {

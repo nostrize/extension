@@ -27,7 +27,7 @@ import {
   updateFollowButton,
 } from "./twitter-helpers.js";
 import { setupNostrProfileLink } from "./twitter-helpers.js";
-import { getNip65Relays } from "../../helpers/nip65.js";
+import { getNip65Relays } from "../../helpers/nip65.ts";
 import { getNostrizeSettings } from "../../helpers/accounts.ts";
 
 async function twitterProfilePage() {

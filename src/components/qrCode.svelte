@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { toString as toSvgString } from "qrcode/lib/browser.js";
   import { onMount } from "svelte";
 
@@ -7,7 +7,7 @@
   export let value = "";
   export let width = 256;
 
-  let svg = null;
+  let svg: string | null = null;
 
   async function generateQRCode() {
     svg = await toSvgString(value);
@@ -31,5 +31,5 @@
     {@html svg}
   </div>
 {:else}
-  <Loading text={null} size={width} />
+  <Loading size={width} />
 {/if}

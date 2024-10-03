@@ -1,8 +1,8 @@
-<script>
-  export let id;
-  export let text;
-  export let checked;
-  export let onclick;
+<script lang="ts">
+  export let id: string | null = null;
+  export let text: string | null = null;
+  export let checked: boolean;
+  export let onclick: ((checked: boolean) => void) | null = null;
   export let tooltip = "";
 
   function handleClick() {
@@ -29,7 +29,6 @@
     class="custom-checkbox"
     on:click={handleClick}
     class:checked
-    for={id}
     data-title={tooltip}
     class:hastooltip={tooltip !== ""}
   ></button>

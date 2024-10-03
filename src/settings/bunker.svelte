@@ -1,17 +1,18 @@
-<script>
+<script lang="ts">
   import { finalizeEvent, nip04, Relay } from "nostr-tools";
 
-  import Tooltip from "../components/tooltip/tooltip.svelte";
-
-  import "./common.css";
+  import type { NostrConnectSettings } from "../helpers/accounts.types";
   import { createKeyPair } from "../helpers/crypto";
   import { generateRandomHexString } from "../helpers/utils";
   import Loading from "../components/loading.svelte";
+  import Tooltip from "../components/tooltip/tooltip.svelte";
 
-  export let nostrConnectSettings;
+  import "./common.css";
 
-  let bunkerError = null;
-  let bunkerSuccess = null;
+  export let nostrConnectSettings: NostrConnectSettings;
+
+  let bunkerError: string | null = null;
+  let bunkerSuccess: string | null = null;
   let bunkerLoading = false;
 
   async function connectToBunker() {
@@ -69,7 +70,8 @@
 
       const signedEvent = finalizeEvent(
         eventTemplate,
-        nostrConnectSettings.ephemeralKey,
+        // actually it also accepts string
+        nostrConnectSettings.ephemeralKey as unknown as Uint8Array,
       );
 
       const relay = new Relay(providerRelay);
@@ -100,7 +102,11 @@
               try {
                 parsed = JSON.parse(decrypted);
               } catch (e) {
-                bunkerError = e.message;
+                if (e instanceof Error) {
+                  bunkerError = e.message;
+                } else {
+                  bunkerError = String(e);
+                }
 
                 reject(e);
 
@@ -121,10 +127,13 @@
 
                   bunkerLoading = false;
 
-                  resolve();
+                  resolve(null);
                 } catch (e) {
-                  bunkerError = e.message;
-
+                  if (e instanceof Error) {
+                    bunkerError = e.message;
+                  } else {
+                    bunkerError = String(e);
+                  }
                   bunkerLoading = false;
 
                   reject(e);
@@ -145,7 +154,11 @@
         );
       });
     } catch (error) {
-      bunkerError = error.message;
+      if (error instanceof Error) {
+        bunkerError = error.message;
+      } else {
+        bunkerError = String(error);
+      }
 
       bunkerLoading = false;
     }
@@ -206,7 +219,8 @@
 
     const signedEvent = finalizeEvent(
       eventTemplate,
-      nostrConnectSettings.ephemeralKey,
+      // actually it also accepts string
+      nostrConnectSettings.ephemeralKey as unknown as Uint8Array,
     );
 
     const r = new Relay(nostrConnectSettings.providerRelay);
@@ -300,12 +314,7 @@
     </button>
 
     {#if bunkerLoading}
-      <Loading
-        size={20}
-        strokeWidth={4}
-        text={null}
-        strokeColor="rgba(130 80 223 / 75%)"
-      />
+      <Loading size={20} strokeWidth={4} strokeColor="rgba(130 80 223 / 75%)" />
     {/if}
   </div>
 

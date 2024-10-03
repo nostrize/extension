@@ -9,7 +9,6 @@
   import SectionItem from "./section-item.svelte";
   import NostrSettings from "./nostr.svelte";
   import LightsatsSettings from "./lightsats.svelte";
-  import DebugSettings from "./debug.svelte";
   import NIP65RelayManager from "./nip65.svelte";
   import Leftbar from "./leftbar.svelte";
   import SaveResetButtons from "./save-reset-buttons.svelte";
@@ -28,16 +27,13 @@
 
   let lightsatsComponent: LightsatsSettings;
   let nostrComponent: NostrSettings;
-  let debugComponent: DebugSettings;
   let nostrizeComponent: NostrizeSettings;
 
   let isDirtyLightsats = false;
   let isDirtyNostr = false;
-  let isDirtyDebug = false;
   let isDirtyNostrize = false;
 
-  $: isDirty =
-    isDirtyLightsats || isDirtyNostr || isDirtyDebug || isDirtyNostrize;
+  $: isDirty = isDirtyLightsats || isDirtyNostr || isDirtyNostrize;
 
   let isDirtyNIP65 = false;
 
@@ -88,7 +84,6 @@
   function rehashAll() {
     nostrComponent.rehashSettings();
     lightsatsComponent.rehashSettings();
-    debugComponent.rehashSettings();
     nostrizeComponent.rehashSettings();
   }
 
@@ -148,15 +143,6 @@
             bind:this={lightsatsComponent}
             bind:lightsatsSettings={settings.lightsatsSettings}
             bind:isDirty={isDirtyLightsats}
-          />
-        </SectionItem>
-
-        <SectionItem title="Debug Settings" isDirty={isDirtyDebug}>
-          <DebugSettings
-            slot="content"
-            debugSettings={settings.debug}
-            bind:this={debugComponent}
-            bind:isDirty={isDirtyDebug}
           />
         </SectionItem>
 

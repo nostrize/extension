@@ -1,26 +1,30 @@
-<script>
+<script lang="ts">
   import { SimplePool } from "nostr-tools";
   import { onMount } from "svelte";
 
-  import { getNip65Relays } from "../helpers/nip65.js";
+  import type { Settings } from "../helpers/accounts.types.js";
+  import { getNip65Relays } from "../helpers/nip65";
   import { signEvent } from "../helpers/signer.js";
   import { getNostrizeUserRelays } from "../helpers/relays.js";
-
   import { getNostrizeUserPubkey } from "../helpers/nostr.js";
+  import { Either } from "../helpers/either";
+
   import Loading from "../components/loading.svelte";
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
-  import { Either } from "../helpers/either.ts";
 
   import "../settings/common.css";
 
-  export let settings;
+  export let settings: Settings;
   export let isDirty;
 
-  let nostrizeUserPubkey;
-  let nostrizeUserRelays;
+  let nostrizeUserPubkey: string | null = null;
+  let nostrizeUserRelays: {
+    readRelays: string[];
+    writeRelays: string[];
+  };
 
-  let nip65Relays = [];
-  let nip65RelaysBackup;
+  let nip65Relays: { relay: string; read: boolean; write: boolean }[] = [];
+  let nip65RelaysBackup: string;
 
   $: isDirty = nip65RelaysBackup !== JSON.stringify(nip65Relays);
 
@@ -40,11 +44,16 @@
     nip65Relays = [...nip65Relays, { relay: "", read: true, write: true }];
   }
 
-  function removeRelay(index) {
+  function removeRelay(index: number) {
     nip65Relays = nip65Relays.filter((_, i) => i !== index);
   }
 
-  function updateRelay(index, url, isRead, isWrite) {
+  function updateRelay(
+    index: number,
+    url: string,
+    isRead: boolean,
+    isWrite: boolean,
+  ) {
     nip65Relays = nip65Relays.map((relay, i) =>
       i === index
         ? { ...relay, relay: url, read: isRead, write: isWrite }
@@ -70,7 +79,7 @@
       return;
     }
 
-    nostrizeUserPubkey = Either.getRight(nostrizeUserPubkeyEither);
+    nostrizeUserPubkey = Either.getRight(nostrizeUserPubkeyEither) as string;
 
     try {
       nostrizeUserRelays = await getNostrizeUserRelays({
@@ -78,7 +87,11 @@
         pubkey: nostrizeUserPubkey,
       });
     } catch (e) {
-      error = "Failed to load user relays: " + e.message;
+      if (e instanceof Error) {
+        error = "Failed to load user relays: " + e.message;
+      } else {
+        error = "Failed to load user relays: " + String(e);
+      }
     } finally {
       isLoading = false;
     }
@@ -96,7 +109,11 @@
 
       nip65Relays = response.flatRelays;
     } catch (e) {
-      error = "Failed to load NIP-65 relays: " + e.message;
+      if (e instanceof Error) {
+        error = "Failed to load NIP-65 relays: " + e.message;
+      } else {
+        error = "Failed to load NIP-65 relays: " + String(e);
+      }
     }
 
     nip65RelaysBackup = JSON.stringify(nip65Relays);
@@ -185,20 +202,25 @@
             type="text"
             value={relay.relay}
             on:change={(e) =>
-              updateRelay(index, e.target.value, relay.read, relay.write)}
+              updateRelay(
+                index,
+                e.currentTarget.value,
+                relay.read,
+                relay.write,
+              )}
           />
 
           <CustomCheckbox
             checked={relay.read}
-            onclick={(e) =>
-              updateRelay(index, relay.relay, e.target.checked, relay.write)}
+            onclick={(value) =>
+              updateRelay(index, relay.relay, value, relay.write)}
             tooltip="Read"
           />
 
           <CustomCheckbox
             checked={relay.write}
-            onclick={(e) =>
-              updateRelay(index, relay.relay, relay.read, e.target.checked)}
+            onclick={(value) =>
+              updateRelay(index, relay.relay, relay.read, value)}
             tooltip="Write"
           />
 

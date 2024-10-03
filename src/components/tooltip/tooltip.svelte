@@ -1,11 +1,16 @@
-<script>
+<script lang="ts">
   export let text;
-  export let title;
+  export let title: string | undefined = "";
   export let iconText = "❓";
   export let iconClick = null;
 
-  function showTooltip(e) {
-    const tooltip = e.target.nextElementSibling;
+  function showTooltip(e: Event) {
+    const tooltip = (e.target as HTMLElement).nextElementSibling;
+
+    if (!(tooltip instanceof HTMLElement)) {
+      throw new Error("Tooltip element not found");
+    }
+
     tooltip.style.display = "block";
 
     // Check if tooltip is going off the top of the screen
@@ -18,8 +23,13 @@
     }
   }
 
-  function hideTooltip(e) {
-    const tooltip = e.target.nextElementSibling;
+  function hideTooltip(e: Event) {
+    const tooltip = (e.target as HTMLElement).nextElementSibling;
+
+    if (!(tooltip instanceof HTMLElement)) {
+      throw new Error("Tooltip element not found");
+    }
+
     tooltip.style.display = "none";
     tooltip.classList.remove("below");
   }

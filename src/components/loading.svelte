@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   export let text = "Loading...";
   export let size = 40;
   export let strokeWidth = 2.5;
