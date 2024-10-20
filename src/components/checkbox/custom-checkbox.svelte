@@ -4,6 +4,9 @@
   export let checked: boolean;
   export let onclick: ((checked: boolean) => void) | null = null;
   export let tooltip = "";
+  export let tooltipPosition: "above" | "below" | "left" | "right" = "above";
+  export let marginLeft = "0px";
+  export let marginRight = "0px";
 
   function handleClick() {
     checked = !checked;
@@ -26,17 +29,26 @@
     }}
   />
   <button
-    class="custom-checkbox"
     on:click={handleClick}
+    class="custom-checkbox"
     class:checked
-    data-title={tooltip}
-    class:hastooltip={tooltip !== ""}
+    class:simple-tooltip={tooltip !== ""}
+    style="margin-left: {marginLeft}; margin-right: {marginRight};"
+    data-tooltip-text={tooltip}
+    data-show-tooltip-above={tooltipPosition === "above"}
+    data-show-tooltip-below={tooltipPosition === "below"}
+    data-show-tooltip-left={tooltipPosition === "left"}
+    data-show-tooltip-right={tooltipPosition === "right"}
   ></button>
   <button
-    type="button"
     on:click={handleClick}
-    data-title={tooltip}
-    class:hastooltip={tooltip !== ""}
+    class:simple-tooltip={tooltip !== ""}
+    style="margin-left: 5px;"
+    data-tooltip-text={tooltip}
+    data-show-tooltip-above={tooltipPosition === "above"}
+    data-show-tooltip-below={tooltipPosition === "below"}
+    data-show-tooltip-left={tooltipPosition === "left"}
+    data-show-tooltip-right={tooltipPosition === "right"}
   >
     {#if text}
       {text}
@@ -103,27 +115,5 @@
   /* Custom tooltip styles */
   .checkbox-container button {
     position: relative;
-  }
-
-  .checkbox-container button.hastooltip:hover::after {
-    content: attr(data-title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
-    margin-bottom: 5px;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 14px;
-    white-space: nowrap;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .checkbox-container button.hastooltip:hover::after {
-    opacity: 1;
   }
 </style>

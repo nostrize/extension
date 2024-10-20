@@ -179,18 +179,16 @@ async function updateFollowList({ pubkey, tags, relays, log }) {
     eventTemplate,
   });
 
-  const pool = new SimplePool();
-
-  const res = await Promise.allSettled(pool.publish(relays, signedEvent));
-
-  const publishedCount = res.filter((r) => r.status === "fulfilled").length;
-  const publishFailedCount = res.filter((r) => r.status === "rejected").length;
+  const { fulfilled, rejected } = await publishEvent({
+    event: signedEvent,
+    relays,
+  });
 
   log(
-    `update follow list: publishedCount: ${publishedCount}, publishFailedCount: ${publishFailedCount}`,
+    `update follow list: publishedCount: ${fulfilled.length}, publishFailedCount: ${rejected.length}`,
   );
 
-  if (publishedCount === 0) {
+  if (fulfilled.length === 0) {
     throw new Error("failed to publish event");
   }
 
@@ -201,6 +199,19 @@ async function updateFollowList({ pubkey, tags, relays, log }) {
   log(`followSet: cache is updated`);
 
   return { followSet, latestEvent: signedEvent };
+}
+
+export async function publishEvent({ event, relays }) {
+  const pool = new SimplePool();
+
+  const res = await pool.publish(relays, event);
+
+  const events = await Promise.allSettled(res);
+
+  return {
+    fulfilled: events.filter((e) => e.status === "fulfilled"),
+    rejected: events.filter((e) => e.status === "rejected"),
+  };
 }
 
 export async function followAccount({
@@ -330,13 +341,19 @@ export function fetchLatestNotes({ pubkey, relays, callback }) {
   return cachedNotes;
 }
 
-export async function getNostrizeUserPubkey({ mode, nostrConnectSettings }) {
+export async function getNostrizeUserPubkey({
+  mode,
+  nostrConnectSettings,
+  canUseNip07 = true,
+}) {
   if (mode === "anon") {
     return Either.left("don't use this method for anonymous mode");
   }
 
-  if (mode === "nip07") {
+  if (mode === "nip07" && canUseNip07) {
     return Either.right(await getPubkeyFromNip07());
+  } else if (mode === "nip07" && !canUseNip07) {
+    return Either.left("can't use nip07 directly");
   } else if (mode === "nostrconnect" || mode === "bunker") {
     if (!nostrConnectSettings) {
       return Either.left("nostrconnect settings are required");

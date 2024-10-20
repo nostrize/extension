@@ -1,8 +1,7 @@
 <script lang="ts">
-  import browser from "webextension-polyfill";
-
   import type { NostrizeAccount } from "../helpers/accounts.types";
-  import Account from "./account.svelte";
+  import AccountMenu from "./account-menu.svelte";
+  import { getCurrentTabUrl, settingsUrl } from "../helpers/browser";
 
   export let setActiveSection: (section: string, icon: HTMLElement) => void;
   export let currentAccount: NostrizeAccount;
@@ -16,22 +15,16 @@
   ) => (e: MouseEvent) => void;
 
   let showOpenInTab = true;
-  let settingsUrl = browser.runtime.getURL("nostrize-settings.html");
 
-  // Function to check if the current tab is the settings page
-  async function checkCurrentTab() {
-    const tabs = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
+  async function setShowOpenInTab() {
+    const currentUrl = await getCurrentTabUrl();
 
-    if (tabs[0] && tabs[0].url === settingsUrl) {
+    if (currentUrl === settingsUrl) {
       showOpenInTab = false;
     }
   }
 
-  // Call the function when the component is mounted
-  checkCurrentTab();
+  setShowOpenInTab();
 
   function toggleAccountMenu() {
     expanded = !expanded;
@@ -47,7 +40,7 @@
 <nav class="sidebar" class:expanded>
   <div class="sidebar-content">
     <div class="account-container account" id="account">
-      <Account
+      <AccountMenu
         {currentAccount}
         {accounts}
         {changeAccount}

@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import "./common.css";
   import type { NostrizeAccount } from "../helpers/accounts.types";
   import { getAccountIcon, getAccountName } from "../helpers/accounts";
+
+  import "./common.css";
 
   export let currentAccount: NostrizeAccount;
   export let accounts: NostrizeAccount[];
@@ -42,7 +43,7 @@
 <nav class="account-sidebar" class:expanded>
   <div
     class="account-icon simple-tooltip"
-    data-tooltip-text={getAccountName(currentAccount)}
+    data-tooltip-text={`Account: ${getAccountName(currentAccount)}, Nostr Mode: ${currentAccount.settings.nostrSettings.mode}`}
     data-show-tooltip-right="true"
     role="button"
     class:expanded

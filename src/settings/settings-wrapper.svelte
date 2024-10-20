@@ -18,6 +18,7 @@
   import { defaultSettings } from "../helpers/accounts";
   import Settings from "./settings.svelte";
   import AccountManager from "./account-manager.svelte";
+  import { getCurrentTabUrl, settingsUrl } from "../helpers/browser";
 
   let accounts: NostrizeAccount[] = [];
   let currentAccount: NostrizeAccount | null = null;
@@ -60,14 +61,9 @@
       currentAccount &&
       currentAccount.settings.nostrizeSettings.alwaysOpenInNewTab
     ) {
-      const tabs = await browser.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
+      const currentUrl = await getCurrentTabUrl();
 
-      const settingsUrl = browser.runtime.getURL("nostrize-settings.html");
-
-      if (tabs[0] && tabs[0].url !== settingsUrl) {
+      if (currentUrl !== settingsUrl) {
         browser.tabs.create({ url: settingsUrl });
       }
     }
@@ -84,12 +80,15 @@
     await chrome.storage.local.set({ currentAccountId: null });
 
     currentAccount = null;
+    editingAccount = null;
   }
 
   async function handleNewAccount(account: NostrizeAccount) {
     await addNewNostrizeAccount(account);
 
     currentAccount = account;
+    editingAccount = account;
+
     accounts = [...accounts, account];
   }
 
@@ -97,6 +96,8 @@
     await deleteNostrizeAccount(account);
 
     currentAccount = null;
+    editingAccount = null;
+
     accounts = accounts.filter((a) => a.uuid !== account.uuid);
   }
 
@@ -129,7 +130,6 @@
   />
 {:else}
   <AccountManager
-    bind:currentAccount
     bind:editingAccount
     {accounts}
     {defaultSettings}

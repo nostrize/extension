@@ -1,6 +1,7 @@
 <script>
   import CustomCheckbox from "../components/checkbox/custom-checkbox.svelte";
   import Tooltip from "../components/tooltip/tooltip.svelte";
+  import RemoveBtn from "./components/remove-btn.svelte";
 
   export let relaysSettings;
   export let mode;
@@ -42,9 +43,7 @@
       />
       <CustomCheckbox bind:checked={relay.read} tooltip="Enable read" />
       <CustomCheckbox bind:checked={relay.write} tooltip="Enable write" />
-      <button class="settings-button" on:click={() => removeRelay(index)}>
-        Remove
-      </button>
+      <RemoveBtn on:click={() => removeRelay(index)} />
     {/each}
   </div>
   <button class="settings-button add-relay" on:click={addRelay}>

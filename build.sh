@@ -10,6 +10,8 @@ cp src/settings/edit-icon.svg dist/edit-icon.svg
 cp src/settings/delete-icon.svg dist/delete-icon.svg
 cp src/settings/open-link.svg dist/open-link.svg
 cp src/settings/logout-icon.svg dist/logout-icon.svg
+cp src/settings/verified.svg dist/verified.svg
+cp src/settings/not-verified.svg dist/not-verified.svg
 
 ./node_modules/.bin/webpack
 

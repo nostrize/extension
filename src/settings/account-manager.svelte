@@ -1,19 +1,33 @@
 <script lang="ts">
+  import { nip19 } from "nostr-tools";
+  import { onMount } from "svelte";
+
   import { generateRandomHexString } from "../helpers/utils";
   import type {
     UnfetchedAccount,
     NostrizeAccount,
     Settings,
     NostrMode,
+    FetchedAccount,
   } from "../helpers/accounts.types";
-
+  import { getAccountIcon, getAccountName } from "../helpers/accounts";
+  import { getNostrizeUserRelays } from "../helpers/relays";
+  import { getCurrentTabUrl, settingsUrl } from "../helpers/browser";
+  import {
+    fetchFromNip05,
+    getMetadataEvent,
+    getNostrizeUserPubkey,
+    publishEvent,
+  } from "../helpers/nostr.js";
+  import { Either } from "../helpers/either";
+  import Loading from "../components/loading.svelte";
+  import AccountList from "./account-list.svelte";
   import SectionItem from "./section-item.svelte";
 
   import "../settings/common.css";
-  import { getAccountIcon, getAccountName } from "../helpers/accounts";
+  import { signEvent } from "../helpers/signer";
 
   export let accounts: NostrizeAccount[];
-  export let currentAccount: NostrizeAccount | null;
   export let defaultSettings: Settings;
   export let editingAccount: NostrizeAccount | null;
 
@@ -33,11 +47,244 @@
     handleNewAccount(account);
   }
 
-  function isActiveAccount(account: NostrizeAccount) {
-    return (
-      (currentAccount && currentAccount.uuid === account.uuid) ||
-      (editingAccount && editingAccount.uuid === account.uuid)
-    );
+  let profileUrl: string | null = null;
+
+  async function setNostrProfileUrl(account: FetchedAccount) {
+    const canUseNip07 = (await getCurrentTabUrl()) !== settingsUrl;
+
+    const { writeRelays } = await getNostrizeUserRelays({
+      settings: account.settings,
+      pubkey: account.pubkey,
+      canUseNip07,
+    });
+
+    const nprofile = nip19.nprofileEncode({
+      pubkey: account.pubkey,
+      relays: writeRelays,
+    });
+
+    profileUrl = `${account.settings.nostrSettings.openNostr}/${nprofile}`;
+  }
+
+  if (editingAccount?.kind === "fetched") {
+    setNostrProfileUrl(editingAccount);
+  }
+
+  function getMetadataBackup(account: NostrizeAccount) {
+    return account.kind === "fetched"
+      ? JSON.stringify(account.metadata)
+      : JSON.stringify({
+          name: account.name,
+          icon: account.icon,
+        });
+  }
+
+  let metadataBackup = editingAccount && getMetadataBackup(editingAccount);
+
+  $: isDirty =
+    editingAccount && getMetadataBackup(editingAccount) !== metadataBackup;
+
+  function saveButtonClick() {
+    if (editingAccount) {
+      handleEditAccount(editingAccount);
+
+      metadataBackup = getMetadataBackup(editingAccount);
+    }
+  }
+
+  let publishError: string | null = null;
+  let publishSuccess: string | null = null;
+  let isPublishing = false;
+
+  async function publishButtonClick() {
+    if (!editingAccount) {
+      publishError = "No account selected";
+
+      return;
+    }
+
+    if (editingAccount.kind === "unfetched") {
+      publishError = "Fetch your profile first to get your public key";
+
+      return;
+    }
+
+    isPublishing = true;
+
+    const metadataEventTemplate = {
+      kind: 0,
+      pubkey: editingAccount.pubkey,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [],
+      content: JSON.stringify(editingAccount.metadata),
+    };
+
+    const signedMetadataEvent = await signEvent({
+      eventTemplate: metadataEventTemplate,
+      mode: editingAccount.settings.nostrSettings.mode,
+      nostrConnectSettings: editingAccount.settings.nostrSettings.nostrConnect,
+    });
+
+    const { writeRelays } = await getNostrizeUserRelays({
+      settings: editingAccount.settings,
+      pubkey: editingAccount.pubkey,
+      canUseNip07: (await getCurrentTabUrl()) !== settingsUrl,
+    });
+
+    const { fulfilled } = await publishEvent({
+      event: signedMetadataEvent,
+      relays: writeRelays,
+    });
+
+    if (fulfilled.length === 0) {
+      publishError = "Failed to publish profile";
+    } else {
+      publishSuccess = `Profile published successfully (${fulfilled.length}/${writeRelays.length} relays)`;
+    }
+
+    isPublishing = false;
+    metadataBackup = getMetadataBackup(editingAccount);
+  }
+
+  function editButtonClick(account: NostrizeAccount) {
+    editingAccount = account;
+
+    metadataBackup = getMetadataBackup(editingAccount);
+  }
+
+  let fetchError: string | null = null;
+  let isFetching = false;
+
+  async function fetchProfile() {
+    if (!editingAccount) {
+      fetchError = "No account selected";
+
+      return;
+    }
+
+    if (editingAccount.settings.nostrSettings.mode === "nip07") {
+      fetchError =
+        "NIP-07 accounts can't fetch their profile directly, use the link";
+
+      return;
+    }
+
+    if (editingAccount.settings.nostrSettings.mode === "anon") {
+      fetchError =
+        "Anonymous accounts can't fetch their profile, please change your account mode";
+
+      return;
+    }
+
+    isFetching = true;
+
+    const pubkeyEither = await getNostrizeUserPubkey({
+      mode: editingAccount.settings.nostrSettings.mode,
+      nostrConnectSettings: editingAccount.settings.nostrSettings.nostrConnect,
+    });
+
+    if (Either.isLeft(pubkeyEither)) {
+      fetchError = Either.getLeft(pubkeyEither);
+      isFetching = false;
+
+      return;
+    }
+
+    const pubkey = Either.getRight(pubkeyEither);
+
+    const nostrizeUserRelays = await getNostrizeUserRelays({
+      settings: editingAccount.settings,
+      pubkey,
+    });
+
+    const metadataEvent = await getMetadataEvent({
+      cacheKey: pubkey,
+      filter: { authors: [pubkey], kinds: [0], limit: 1 },
+      relays: nostrizeUserRelays.writeRelays,
+    });
+
+    if (metadataEvent) {
+      const metadata = JSON.parse(metadataEvent.content);
+
+      editingAccount = {
+        ...editingAccount,
+        kind: "fetched",
+        metadata,
+        pubkey,
+      };
+    } else {
+      fetchError = "Failed to fetch profile";
+    }
+
+    isFetching = false;
+  }
+
+  let nip05Verified: boolean | null = null;
+  let nip05VerifiedError: string | null = null;
+
+  async function verifyNip05(event: Event) {
+    if (!editingAccount) {
+      nip05Verified = null;
+      nip05VerifiedError = "No account selected";
+
+      return;
+    }
+
+    if (editingAccount.kind === "unfetched") {
+      nip05Verified = null;
+      nip05VerifiedError = "Fetch your profile first to get your public key";
+
+      return;
+    }
+
+    const input = event.currentTarget as HTMLInputElement;
+    const value = input.value;
+
+    const [username, domain] = value.split("@");
+
+    const nip05Either = await fetchFromNip05({
+      user: username,
+      fetchUrl: `https://${domain}/.well-known/nostr.json?user=${username}`,
+    });
+
+    if (Either.isLeft(nip05Either)) {
+      nip05Verified = false;
+      nip05VerifiedError = Either.getLeft(nip05Either);
+
+      return;
+    }
+
+    const { pubkey } = Either.getRight(nip05Either);
+
+    nip05Verified = pubkey === editingAccount.pubkey;
+  }
+
+  function nip05Action(node: HTMLInputElement) {
+    function handleInput() {
+      verifyNip05({ currentTarget: node } as unknown as Event);
+    }
+
+    // Verify on initial load
+    setTimeout(handleInput, 0);
+
+    // Add event listener for subsequent changes
+    node.addEventListener("input", handleInput);
+
+    return {
+      destroy() {
+        node.removeEventListener("input", handleInput);
+      },
+    };
+  }
+
+  let nip96Server: string | undefined;
+
+  onMount(() => {
+    nip96Server = editingAccount?.settings.nostrizeSettings.nip96.server;
+  });
+
+  function uploadNip98() {
+    console.log("uploadNip98");
   }
 </script>
 
@@ -65,55 +312,17 @@
     </div>
   {:else}
     <SectionItem title="Your Accounts" isExpanded={true}>
-      <ul class="account-list" slot="content">
-        {#each accounts as account (account.uuid)}
-          <li class="account-item">
-            <button
-              class="account-select-btn"
-              class:active={isActiveAccount(account)}
-              on:click={() => handleAccountChange(account)}
-            >
-              <div style="margin-top: 1px;">
-                <img
-                  src={getAccountIcon(account)}
-                  width="16"
-                  height="16"
-                  alt={getAccountName(account)}
-                  class="account"
-                  style="margin-right: 4px;"
-                />
-              </div>
-              <div style="margin-top: 2px;">
-                {getAccountName(account)} ({getNostrModeLabel(
-                  account.settings.nostrSettings.mode,
-                )})
-              </div>
-            </button>
-            <button
-              class="settings-button account-edit-btn"
-              on:click={() => (editingAccount = account)}
-            >
-              <img
-                src="edit-icon.svg"
-                width="16"
-                height="16"
-                alt="Edit Account"
-              />
-            </button>
-            <button
-              class="settings-button account-delete-btn"
-              on:click={() => handleDeleteAccount(account)}
-            >
-              <img
-                src="delete-icon.svg"
-                width="16"
-                height="16"
-                alt="Delete Account"
-              />
-            </button>
-          </li>
-        {/each}
-      </ul>
+      <AccountList
+        slot="content"
+        {accounts}
+        bind:editingAccount
+        {editButtonClick}
+        {handleAccountChange}
+        {getAccountIcon}
+        {getAccountName}
+        {getNostrModeLabel}
+        {handleDeleteAccount}
+      />
     </SectionItem>
 
     {#if editingAccount}
@@ -143,18 +352,14 @@
             <div class="input-container">
               <label for="icon">Account Picture URL:</label>
               <input type="url" id="icon" bind:value={editingAccount.icon} />
+              {#if nip96Server}
+                <label for="icon"
+                  >Use upload service (NIP-98: {nip96Server}):</label
+                >
+                <input type="file" id="nip98" />
+                <button on:click={uploadNip98}>Upload</button>
+              {/if}
             </div>
-
-            {#if editingAccount.settings.nostrSettings.mode === "nip07"}
-              <a
-                href="https://nostrize.me/pages/nip07-metadata-manager.html"
-                target="_blank"
-                class="simple-tooltip"
-                data-tooltip-text="Nostrize can't directly fetch your profile within itself. Click to open the NIP-07 Metadata Manager."
-              >
-                Fetch your profile
-              </a>
-            {/if}
           {:else if editingAccount.kind === "fetched"}
             <div class="input-container">
               <label for="pubkey">Public Key:</label>
@@ -167,22 +372,49 @@
             </div>
 
             <div class="input-container">
-              <label for="name">Name:</label>
+              <label for="name">Name & Display Name:</label>
               <input
                 type="text"
                 id="name"
                 bind:value={editingAccount.metadata.name}
-                disabled
               />
             </div>
 
             <div class="input-container">
-              <label for="nip05">Nostr Address (NIP-05):</label>
+              <div>
+                <label for="nip05">Nostr Address (NIP-05):</label>
+                <span
+                  style={`display: ${nip05Verified === true ? "inline" : "none"};`}
+                  class="simple-tooltip"
+                  data-tooltip-text="This Nostr Address points to your pubkey"
+                >
+                  <img
+                    src="verified.svg"
+                    width="12"
+                    height="12"
+                    alt="Nostr Address is checked with your pubkey"
+                    style="border-radius: 50%;"
+                  />
+                </span>
+                <span
+                  style={`display: ${nip05Verified === false ? "inline" : "none"};`}
+                  class="simple-tooltip"
+                  data-tooltip-text={nip05VerifiedError}
+                >
+                  <img
+                    src="not-verified.svg"
+                    width="12"
+                    height="12"
+                    alt="Nostr Address and pubkey check failed"
+                    style="border-radius: 50%;"
+                  />
+                </span>
+              </div>
               <input
                 type="text"
                 id="nip05"
                 bind:value={editingAccount.metadata.nip05}
-                disabled
+                use:nip05Action
               />
             </div>
 
@@ -192,24 +424,93 @@
                 type="url"
                 id="icon"
                 bind:value={editingAccount.metadata.picture}
-                disabled
               />
             </div>
           {/if}
 
-          <div class="flex-container">
-            <button
-              class="settings-button save-btn"
-              on:click={() =>
-                editingAccount && handleEditAccount(editingAccount)}
+          {#if editingAccount.settings.nostrSettings.mode === "nip07"}
+            <a
+              href="https://nostrize.me/pages/nip07-metadata-manager.html"
+              target="_blank"
+              class="simple-tooltip"
+              data-tooltip-text="Nostrize can't directly fetch your profile within itself. Click to open the nostrize.me NIP-07 Profile Manager."
             >
-              Save
+              Fetch your profile
+            </a>
+          {:else if editingAccount.settings.nostrSettings.mode !== "anon"}
+            <div style="display: flex; gap: 4px;">
+              <div>
+                <button
+                  class="settings-button fetch-profile-btn"
+                  on:click={fetchProfile}
+                >
+                  Fetch your profile
+                </button>
+              </div>
+              <div>
+                {#if isFetching}
+                  <Loading
+                    size={16}
+                    strokeColor="darkseagreen"
+                    textColor="darkseagreen"
+                    text="Fetching..."
+                  />
+                {/if}
+              </div>
+            </div>
+
+            {#if fetchError}
+              <div class="fetch-error">{fetchError}</div>
+            {/if}
+          {/if}
+
+          <div style="display: flex; gap: 4px; flex-wrap: no-wrap;">
+            <button
+              class="settings-button save-publish-btn"
+              class:dirty={isDirty}
+              on:click={saveButtonClick}
+              disabled={!isDirty}
+            >
+              Save Profile
             </button>
+
+            <button
+              class="settings-button save-publish-btn"
+              class:dirty={isDirty}
+              on:click={publishButtonClick}
+              disabled={!isDirty}
+            >
+              Publish Profile
+            </button>
+
+            {#if isPublishing}
+              <Loading
+                size={16}
+                strokeColor="darkseagreen"
+                textColor="darkseagreen"
+                text="Publishing..."
+              />
+            {/if}
+
             <button
               type="button"
               class="settings-button cancel-btn"
               on:click={() => (editingAccount = null)}>Cancel</button
             >
+
+            {#if publishError}
+              <div class="fetch-error">{publishError}</div>
+            {/if}
+
+            {#if publishSuccess}
+              <div class="fetch-success">{publishSuccess}</div>
+            {/if}
+          </div>
+
+          <div>
+            {#if profileUrl && editingAccount.kind === "fetched"}
+              <a href={profileUrl} target="_blank">Open Nostr Profile </a>
+            {/if}
           </div>
         </fieldset>
       </SectionItem>
@@ -237,54 +538,6 @@
     margin-top: 50px;
   }
 
-  .account-list {
-    list-style-type: none;
-    padding: 0;
-    width: 100%;
-  }
-
-  .account-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    gap: 10px;
-  }
-
-  .account-item > button {
-    cursor: pointer;
-  }
-
-  .account-item > button.active {
-    background-color: rgba(130, 80, 223, 0.4);
-  }
-
-  .account-select-btn {
-    display: flex;
-    flex-grow: 1;
-    text-align: left;
-    padding: 6px;
-    border: none;
-    background-color: transparent;
-  }
-
-  .account-select-btn:hover {
-    background-color: rgba(130, 80, 223, 0.4);
-  }
-
-  img.account {
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .account-delete-btn {
-    background-color: rgb(255 0 0 / 75%);
-  }
-
-  .account-delete-btn:hover {
-    background-color: rgb(255 0 0 / 100%);
-  }
-
   .create-account-btn {
     margin-top: 20px;
     background-color: rgba(130, 80, 223, 0.1);
@@ -299,11 +552,28 @@
     font-size: 0.8em;
   }
 
-  .save-btn {
-    background-color: #4caf50;
+  .save-publish-btn {
+    background-color: rgba(76, 175, 80, 0.8);
+  }
+
+  .save-publish-btn:not(.dirty) {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .cancel-btn {
-    background-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.8);
+  }
+
+  .save-publish-btn:hover {
+    background-color: rgba(76, 175, 80, 1);
+  }
+
+  .cancel-btn:hover {
+    background-color: rgba(244, 67, 54, 1);
+  }
+
+  .fetch-error {
+    color: red;
   }
 </style>

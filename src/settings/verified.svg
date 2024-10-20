@@ -1,0 +1,13 @@
+<svg
+  width="12"
+  height="12"
+  viewBox="0 0 16 16"
+  xmlns="http://www.w3.org/2000/svg"
+  style="background-color: darkgray; border-radius: 50%;"
+>
+  <circle cx="8" cy="8" r="8" fill="darkgray" />
+  <path
+    d="M6.5 11.5l-3-3 1-1 2 2 4-4 1 1-5 5z"
+    fill="green"
+  />
+</svg>

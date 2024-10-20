@@ -4,7 +4,7 @@ import { Either } from "./either";
 import { Some } from "./some";
 
 export const defaultSettings: Settings = {
-  version: 6,
+  version: 2,
   nostrSettings: {
     mode: "anon",
     relays: {
@@ -51,7 +51,7 @@ export const defaultSettings: Settings = {
       ephemeralKey: "",
       ephemeralPubkey: "",
     },
-    openNostr: "https://nost.at",
+    openNostr: "https://nostr.at",
   },
   lightsatsSettings: {
     apiKey: "",
@@ -62,6 +62,10 @@ export const defaultSettings: Settings = {
     debug: {
       enableLogging: false,
       namespace: "[N]",
+    },
+    nip96: {
+      server: "https://nostr.build",
+      enabled: true,
     },
   },
 };

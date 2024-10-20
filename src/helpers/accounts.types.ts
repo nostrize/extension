@@ -53,6 +53,10 @@ export type NostrizeSettings = {
     enableLogging: boolean;
     namespace: string;
   };
+  nip96: {
+    server: string;
+    enabled: boolean;
+  };
 };
 
 export type Settings = {

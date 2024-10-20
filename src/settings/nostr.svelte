@@ -38,7 +38,17 @@
 
 <div class="nostr-settings">
   <fieldset>
-    <legend>Relays</legend>
+    <legend>
+      <Tooltip
+        title="Relays"
+        text="Relay is a server which sends and receives content for users that subscribe to it"
+      />
+    </legend>
+    <a href="https://stats.nostr.band/#relay_users" target="_blank"
+      >Popular Nostr Relays</a
+    >
+
+    <a href="https://relays.xport.top" target="_blank">Xport Relay list</a>
 
     <Relays
       bind:relaysSettings={nostrSettings.relays}

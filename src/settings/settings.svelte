@@ -156,7 +156,11 @@
         </SectionItem>
       </section>
       <section id="tools-section">
-        <SectionItem title="NIP-65 Relay Manager" isDirty={isDirtyNIP65}>
+        <SectionItem
+          title="NIP-65 Relay Manager"
+          isDirty={isDirtyNIP65}
+          isExpanded={true}
+        >
           <div slot="content">
             {#if settings.nostrSettings.mode === "nostrconnect" || settings.nostrSettings.mode === "bunker"}
               <NIP65RelayManager bind:isDirty={isDirtyNIP65} {settings} />

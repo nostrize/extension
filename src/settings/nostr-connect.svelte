@@ -5,18 +5,12 @@
   import { generateRandomHexString } from "../helpers/utils";
   import { Either } from "../helpers/either.ts";
   import { createKeyPair } from "../helpers/crypto";
-  import {
-    getNostrizeSettings,
-    saveNostrizeSettings,
-  } from "../helpers/accounts.ts";
   import Tooltip from "../components/tooltip/tooltip.svelte";
   import QrCode from "../components/qrCode.svelte";
   import Loading from "../components/loading.svelte";
 
   export let nostrConnectSettings;
   export let relays;
-
-  console.log("nostrConnectSettings", nostrConnectSettings);
 
   let remoteSignerProvidersLoading = true;
   let remoteSignerProviders = [];
@@ -114,7 +108,11 @@
     return url.toString();
   }
 
+  let testingConnection = false;
+
   async function testNostrConnect() {
+    testingConnection = true;
+
     // Client creates a local keypair
     if (!nostrConnectSettings.ephemeralKey) {
       const { secret, pubkey } = createKeyPair();
@@ -185,11 +183,15 @@
           } else if (parsed.result === "ack") {
             nostrconnectError = "";
             nostrconnectSuccess = "Connection is successful!";
+            testingConnection = false;
           } else if (parsed.result === "pong") {
             nostrconnectError = "";
             nostrconnectSuccess = "Ping? Pong! NostrConnect is working";
+            testingConnection = false;
           } else {
+            nostrconnectSuccess = "";
             nostrconnectError = `Unknown response: ${parsed.result}, ${parsed.error}`;
+            testingConnection = false;
           }
         },
       },
@@ -264,29 +266,6 @@
         nostrConnectSettings.providerRelay,
       );
     }
-  }
-
-  async function saveNostrConnectData(e) {
-    const settings = await Either.getOrElseThrow({
-      eitherFn: getNostrizeSettings,
-    });
-
-    await saveNostrizeSettings({
-      settings: {
-        ...settings,
-        nostrSettings: {
-          ...settings.nostrSettings,
-          mode: "nostrconnect",
-          nostrConnect: nostrConnectSettings,
-        },
-      },
-    });
-
-    e.target.textContent = "Saved ✅";
-
-    setTimeout(() => {
-      e.target.textContent = "Save NostrConnect Settings Only";
-    }, 3000);
   }
 
   async function createNostrConnectAccount() {
@@ -500,13 +479,20 @@
         readonly="readonly"
         placeholder="nostrconnect://"
       />
-      <button class="copy-btn flex-right" on:click={copyButtonClick}>📋</button>
-      <Tooltip
-        title={null}
-        text="Reset Keys and Regenerate URL"
-        iconClick={resetKeys}
-        iconText="🔄"
-      />
+      <button
+        class="copy-btn flex-right simple-tooltip"
+        data-tooltip-text="Copy NostrConnect URL to clipboard"
+        on:click={copyButtonClick}
+      >
+        📋
+      </button>
+      <button
+        on:click={resetKeys}
+        class="reset-btn flex-right simple-tooltip"
+        data-tooltip-text="Reset NostrConnect keys & Regenerate URL"
+      >
+        🔄
+      </button>
     </div>
     {#if nostrConnectSettings.url}
       <div style="display: flex; justify-content: center; padding: 10px;">
@@ -516,9 +502,13 @@
     <button class="settings-button" on:click={testNostrConnect}>
       Test Connection
     </button>
-    <button class="settings-button" on:click={saveNostrConnectData}>
-      Save NostrConnect Settings Only
-    </button>
+    {#if testingConnection}
+      <Loading
+        size={16}
+        text="Testing connection..."
+        strokeColor="rgba(130 80 223 / 75%)"
+      />
+    {/if}
   </div>
 
   {#if nostrconnectError}
@@ -534,7 +524,8 @@
     background-color: #f0f0f0;
   }
 
-  button.copy-btn {
+  button.copy-btn,
+  button.reset-btn {
     cursor: pointer;
     border: none;
     margin-left: 5px;

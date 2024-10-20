@@ -2,14 +2,21 @@ import { getNip07Relays } from "./nip07.js";
 import { getNip65Relays } from "./nip65.ts";
 import { uniqueArrays } from "./utils.js";
 
-export async function getNostrizeUserRelays({ settings, pubkey }) {
+export async function getNostrizeUserRelays({
+  settings,
+  pubkey,
+  canUseNip07 = true,
+}) {
   const useLocalRelays = settings.nostrSettings.relays.local.useRelays;
 
   const localRelays = toReadWriteRelays(
     settings.nostrSettings.relays.local.relays,
   );
 
-  if (settings.nostrSettings.mode === "anon") {
+  if (
+    settings.nostrSettings.mode === "anon" ||
+    (settings.nostrSettings.mode === "nip07" && !canUseNip07)
+  ) {
     // don't even check useRelays in anon mode
     return localRelays;
   }

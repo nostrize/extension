@@ -2,7 +2,6 @@
   export let text;
   export let title: string | undefined = "";
   export let iconText = "❓";
-  export let iconClick = null;
 
   function showTooltip(e: Event) {
     const tooltip = (e.target as HTMLElement).nextElementSibling;
@@ -46,12 +45,6 @@
     class="help-icon"
     role="button"
     tabindex="0"
-    style="cursor: {iconClick
-      ? // eslint-disable-next-line quotes
-        'pointer'
-      : // eslint-disable-next-line quotes
-        'help'}; margin-left: 5px; position: relative;"
-    on:click={iconClick}
     on:mouseenter={showTooltip}
     on:mouseleave={hideTooltip}
     on:keydown={(e) => {
@@ -82,21 +75,26 @@
   }
 
   .tooltip {
+    --tooltip-font-size: 12px;
+    --tooltip-max-width: 300px;
+
     display: none;
     position: absolute;
+    font-weight: normal;
+    font-size: var(--tooltip-font-size);
+    max-width: var(--tooltip-max-width);
     background-color: black;
     color: white;
-    padding: 10px; /* Add padding for better readability */
+    padding: 10px;
     border-radius: 5px;
-    bottom: 125%; /* Position the tooltip above the help icon */
+    bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
-    white-space: normal; /* Allow text to wrap */
+    white-space: normal;
     z-index: 10;
-    min-width: 50vw; /* Allow the tooltip to expand based on its content */
-    max-width: 90vw; /* Maximum width to prevent it from being too wide */
-    text-align: center; /* Center align text inside the tooltip */
-    pointer-events: none; /* Prevent the tooltip from interfering with hover */
+    width: max-content;
+    text-align: center;
+    pointer-events: none;
   }
 
   .tooltip.below {

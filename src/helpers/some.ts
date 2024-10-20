@@ -16,7 +16,7 @@ export function Just<T>(value: T): Just<T> {
 
 // Implementation of Some
 export function Some<T>(input: T | null | undefined): Some<T> {
-  const isNone = input === null || input === undefined;
+  const isNone = !input;
   const isJust = !isNone;
 
   const map = <U>(f: (v: T) => U): Some<U> => {

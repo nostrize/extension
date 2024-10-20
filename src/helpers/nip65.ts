@@ -12,6 +12,7 @@ interface ReadWriteRelays {
   readRelays: string[];
   writeRelays: string[];
   flatRelays: Relay[];
+  createdAt: number | null;
 }
 
 function toReadWriteRelays(relays: Event): ReadWriteRelays {
@@ -31,7 +32,7 @@ function toReadWriteRelays(relays: Event): ReadWriteRelays {
     write: tag[2] === "write" || !tag[2],
   }));
 
-  return { readRelays, writeRelays, flatRelays };
+  return { readRelays, writeRelays, flatRelays, createdAt: relays.created_at };
 }
 
 interface GetNip65RelaysParams {
@@ -53,7 +54,12 @@ export async function getNip65Relays({
     updatedCallback: (response: Event | null) => {
       if (updatedCallback) {
         if (response == null) {
-          updatedCallback({ readRelays: [], writeRelays: [], flatRelays: [] });
+          updatedCallback({
+            readRelays: [],
+            writeRelays: [],
+            flatRelays: [],
+            createdAt: null,
+          });
         } else {
           updatedCallback(toReadWriteRelays(response));
         }
@@ -62,7 +68,7 @@ export async function getNip65Relays({
   })) as Event | null;
 
   if (response == null) {
-    return { readRelays: [], writeRelays: [], flatRelays: [] };
+    return { readRelays: [], writeRelays: [], flatRelays: [], createdAt: null };
   }
 
   return toReadWriteRelays(response);
