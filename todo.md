@@ -5,6 +5,7 @@
 - [ ] Upload your metadata profile picture
 - [ ] Follower list editor
 - [ ] Download your own notes as zip
+- [ ] Sync your Nostrize settings (encrypted)
 
 ## Keys
 - [ ] Import nsec
@@ -23,6 +24,7 @@
 - [ ] Gitlab integration
 - [ ] Gitlab boosts
 - [ ] Twitch integration
+- [ ] Nostr/Nostrize Apps (A marketplace for Nostr apps)
 
 ## Services
 - [ ] Publish your notes on nostrize.me/username

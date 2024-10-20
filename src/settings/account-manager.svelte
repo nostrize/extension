@@ -244,7 +244,7 @@
 
     const nip05Either = await fetchFromNip05({
       user: username,
-      fetchUrl: `https://${domain}/.well-known/nostr.json?user=${username}`,
+      fetchUrl: `https://${domain}/.well-known/nostr.json?name=${username}`,
     });
 
     if (Either.isLeft(nip05Either)) {

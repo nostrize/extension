@@ -137,21 +137,21 @@
           />
         </SectionItem>
 
-        <SectionItem title="Lightsats Integration" isDirty={isDirtyLightsats}>
-          <LightsatsSettings
-            slot="content"
-            bind:this={lightsatsComponent}
-            bind:lightsatsSettings={settings.lightsatsSettings}
-            bind:isDirty={isDirtyLightsats}
-          />
-        </SectionItem>
-
         <SectionItem title="Nostrize Settings" isDirty={isDirtyNostrize}>
           <NostrizeSettings
             slot="content"
             bind:this={nostrizeComponent}
             bind:isDirty={isDirtyNostrize}
             bind:nostrizeSettings={settings.nostrizeSettings}
+          />
+        </SectionItem>
+
+        <SectionItem title="Lightsats Integration" isDirty={isDirtyLightsats}>
+          <LightsatsSettings
+            slot="content"
+            bind:this={lightsatsComponent}
+            bind:lightsatsSettings={settings.lightsatsSettings}
+            bind:isDirty={isDirtyLightsats}
           />
         </SectionItem>
       </section>

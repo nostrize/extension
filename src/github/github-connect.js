@@ -9,7 +9,7 @@ export async function getGithubConnectData({ user, log }) {
   // if the repo name is kept as the fork
   let res = await fetchFromNip05({
     user,
-    fetchUrl: `https://${user}.github.io/github-connect/.well-known/nostr.json?user=${user}`,
+    fetchUrl: `https://${user}.github.io/github-connect/.well-known/nostr.json?name=${user}`,
   });
 
   if (Either.isRight(res)) {
@@ -22,7 +22,7 @@ export async function getGithubConnectData({ user, log }) {
   // if the repo is renamed to [username].github.io
   res = await fetchFromNip05({
     user,
-    fetchUrl: `https://${user}.github.io/.well-known/nostr.json?user=${user}`,
+    fetchUrl: `https://${user}.github.io/.well-known/nostr.json?name=${user}`,
   });
 
   if (Either.isRight(res)) {

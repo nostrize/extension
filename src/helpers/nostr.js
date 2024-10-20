@@ -37,7 +37,7 @@ export async function fetchNip05Data({ nip05, cacheKey }) {
     key: cacheKey,
     insertCallback: () => {
       const [username, domain] = nip05.split("@");
-      const fetchUrl = `https://${domain}/.well-known/nostr.json?user=${username}`;
+      const fetchUrl = `https://${domain}/.well-known/nostr.json?name=${username}`;
 
       return Either.getOrElseThrow({
         eitherFn: () => fetchFromNip05({ user: username, fetchUrl }),
